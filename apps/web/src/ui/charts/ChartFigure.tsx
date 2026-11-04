@@ -92,23 +92,27 @@ export function ChartFigure({
         </ul>
       )}
       {details && details.length > 0 ? (
-        <table className="visually-hidden">
-          <caption>{t("chart.values", { title })}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{t("chart.legend.name")}</th>
-              <th scope="col">{t("chart.legend.value")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {details.map((row) => (
-              <tr key={row.label}>
-                <td>{row.label}</td>
-                <td>{row.value}</td>
+        // Uma tabela não encolhe abaixo do conteúdo: quem esconde é o invólucro, senão ela
+        // alarga a página numa coluna estreita (a pressão ao vivo, a 768 px).
+        <div className="visually-hidden">
+          <table>
+            <caption>{t("chart.values", { title })}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{t("chart.legend.name")}</th>
+                <th scope="col">{t("chart.legend.value")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {details.map((row) => (
+                <tr key={row.label}>
+                  <td>{row.label}</td>
+                  <td>{row.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : null}
     </figure>
   );

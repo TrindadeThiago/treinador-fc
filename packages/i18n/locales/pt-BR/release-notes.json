@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.3.0",
+    "date": "2026-11-05",
+    "changes": [
+      "A partida ao vivo ganhou um painel de pressão. No topo, quem está pressionando nos últimos 10 minutos, em texto (\"Seu time está pressionando\", \"Jogo equilibrado\" ou \"Seu time está sob pressão\") e numa barra com a porcentagem de cada lado. Abaixo, um gráfico da partida inteira: acima do meio o seu time pressiona, abaixo o adversário, com os gols marcados e o valor de cada minuto ao passar o mouse.",
+      "A pressão é a chance que cada time tem de criar uma finalização em cada minuto, a mesma que o jogo usa para sortear os lances. Ela muda com substituições, postura, expulsões, cansaço e placar, então ajuda a decidir quando mexer no time. Os resultados das partidas não mudaram: a mesma seed dá a mesma carreira de antes.",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.2.0",
     "date": "2026-11-05",
     "changes": [

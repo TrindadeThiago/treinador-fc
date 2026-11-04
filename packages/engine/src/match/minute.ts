@@ -251,20 +251,19 @@ interface MinuteFactors {
   homeShare: number;
 }
 
-function playChance(
+/**
+ * Chance de `side` criar uma finalização no minuto (research.md R2): parte da posse, ataque contra
+ * defesa, mando, posturas, placar e armadores. Não sorteia nada; é também a "pressão" do minuto.
+ */
+function chanceProbability(
   state: MatchState,
-  context: MatchContext,
-  clock: ClockKey,
   side: Side,
   factors: MinuteFactors,
-  rng: Rng,
-): void {
+  attackers: readonly FieldPlayer[],
+  clock: ClockKey,
+): number {
   const other = opponent(side);
   const tuning = MATCH_TUNING;
-  const attackers = fieldPlayers(state, side, context);
-  const defenders = fieldPlayers(state, other, context);
-  if (attackers.length === 0) return;
-
   const share = side === "home" ? factors.homeShare : 1 - factors.homeShare;
   const attack = factors.strength[side].attack;
   const keeperShare = tuning.goalkeeperShareOfDefense;
@@ -284,8 +283,29 @@ function playChance(
     push *= tuning.comfortableLead.own;
   }
   const playmakers = 1 + tuning.traits.playmakerChanceRate * countTrait(attackers, "playmaker");
+  return (
+    tuning.chanceRate * 2 * share * ratio(attack, defense) * home * posture * push * playmakers
+  );
+}
+
+function playChance(
+  state: MatchState,
+  context: MatchContext,
+  clock: ClockKey,
+  side: Side,
+  factors: MinuteFactors,
+  rng: Rng,
+): void {
+  const other = opponent(side);
+  const tuning = MATCH_TUNING;
+  const attackers = fieldPlayers(state, side, context);
+  const defenders = fieldPlayers(state, other, context);
+  // Calculada depois do lance do mandante no mesmo minuto: um gol dele muda a do visitante.
   const probability =
-    tuning.chanceRate * 2 * share * ratio(attack, defense) * home * posture * push * playmakers;
+    attackers.length === 0 ? 0 : chanceProbability(state, side, factors, attackers, clock);
+  // Pressão do minuto, guardada para a tela ao vivo; não consome o sorteio.
+  state.pressure?.[side].push(probability);
+  if (attackers.length === 0) return;
   if (rng.float() >= probability) return;
 
   const kind = chanceKind(rng, attackers);

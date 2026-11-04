@@ -71,6 +71,9 @@ export function cloneState(state: MatchState): MatchState {
     teams: { home: cloneTeam(state.teams.home), away: cloneTeam(state.teams.away) },
     events: [...state.events],
     possession: { ...state.possession },
+    ...(state.pressure
+      ? { pressure: { home: [...state.pressure.home], away: [...state.pressure.away] } }
+      : {}),
     ...(state.regulationScore ? { regulationScore: { ...state.regulationScore } } : {}),
     ...(state.shootout
       ? {

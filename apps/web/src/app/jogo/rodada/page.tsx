@@ -31,6 +31,7 @@ import { ExtraTimeNotice } from "../../../ui/live/ExtraTimeNotice";
 import { LeaveDialog } from "../../../ui/live/LeaveDialog";
 import { MatchScoreboard } from "../../../ui/live/MatchScoreboard";
 import { OtherMatches } from "../../../ui/live/OtherMatches";
+import { PressurePanel } from "../../../ui/live/PressurePanel";
 import { ProgressBar } from "../../../ui/live/ProgressBar";
 import { MatchSummary } from "../../../ui/MatchSummary";
 import { RoundResults } from "../../../ui/RoundResults";
@@ -176,7 +177,12 @@ function LiveRoundView({
             />
           ) : null}
         </div>
-        {mine ? <LiveStats match={mine.match} save={save} /> : null}
+        {mine ? (
+          <div className={styles.stats}>
+            <PressurePanel match={mine.match} side={mine.side} save={save} />
+            <LiveStats match={mine.match} save={save} />
+          </div>
+        ) : null}
       </div>
       <OtherMatches rows={others} />
     </div>
