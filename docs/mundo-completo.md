@@ -118,6 +118,8 @@ computador: o projeto não os distribui.
   uma parte maior da folha (90%).
 - Os clubes que só jogam o estadual pagam a folha o ano inteiro, com o fator do estadual
   (`economy.wageFactorPct` = 36%), e recebem patrocínio toda temporada pelas regras do estadual.
+  Os elencos deles se renovam como os das ligas (evolução, aposentadoria, jovens e o mínimo de 22
+  jogadores), com os minutos dos estaduais.
 - Calibragem (1.0.6, duas seeds, 30 temporadas): caixa médio de 3,6 para 10 milhões (0,3 a 0,85 folha
   anual), todas as ligas entre 0,4 e 1,5 folha na 30ª temporada e menos de 1% dos clubes em crise.
 - O limite por arquivo JSON do pacote passou de 10 para 16 MB (`docs/mod-format.md`, seção "Limites"), para

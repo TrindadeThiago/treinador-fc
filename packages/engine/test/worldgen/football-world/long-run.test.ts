@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { ageOn } from "../../../src/calendar/date";
 import { advanceCareerDays } from "../../../src/career/day";
 import { EMPTY_HISTORY, startNextSeason } from "../../../src/career/next-season";
 import type { CareerSeasonState } from "../../../src/career/season-state";
 import { annualWageBill } from "../../../src/finance/create";
 import { ensureContracts } from "../../../src/market/contracts";
+import { isRegionalOnly } from "../../../src/regional/scope";
 import { DEFAULT_PROFILE, generateFootballWorld } from "../../../src/worldgen/football-world";
 import { completeHiddenAttributes } from "../../../src/worldgen/hidden";
 import { ok } from "../../career/qualification-helpers";
@@ -26,6 +28,10 @@ interface Stats {
   /** Caixa médio em folhas anuais médias, no fim de cada temporada. */
   cashInWageBills: number[];
   crisisShare: number[];
+  /** Idade média dos jogadores dos clubes só regionais no início de cada temporada (A13). */
+  regionalAge: number[];
+  /** Força somada dos jogadores dos clubes só regionais no início de cada temporada (A13). */
+  regionalStrength: number[];
 }
 
 const _strengthOf = new Map(
@@ -55,6 +61,8 @@ function measure(): Stats {
     cash: [],
     cashInWageBills: [],
     crisisShare: [],
+    regionalAge: [],
+    regionalStrength: [],
   };
   for (let season = 1; season <= SEASONS; season++) {
     for (const league of [state.league, ...state.competitions]) {
@@ -63,6 +71,18 @@ function measure(): Stats {
         stats.sizes.push(`T${season} ${league.competitionId}: ${sizes}`);
       }
     }
+    const regional = new Set(
+      state.world.clubs
+        .filter((club) => isRegionalOnly(state.world, club.id))
+        .map((club) => club.id),
+    );
+    const regionalPlayers = state.world.players.filter((player) => regional.has(player.clubId));
+    const today = `${state.league.year}-07-01`;
+    stats.regionalAge.push(
+      regionalPlayers.reduce((sum, player) => sum + ageOn(player.birthDate, today), 0) /
+        Math.max(1, regionalPlayers.length),
+    );
+    stats.regionalStrength.push(regionalPlayers.reduce((sum, player) => sum + player.strength, 0));
     for (const club of state.world.clubs) {
       const squad = state.world.players.filter((player) => player.clubId === club.id);
       const keepers = squad.filter((player) => player.position === "GK").length;
@@ -128,6 +148,12 @@ describe(`${SEASONS} temporadas no mundo ${PROFILE.id} (024 US4)`, () => {
 
   it("os elencos de todos os clubes ficam válidos", () => {
     expect(stats.squadProblems).toEqual([]);
+  });
+
+  it("os clubes só regionais renovam o elenco: idade média abaixo de 28 e força que muda (A13)", () => {
+    for (const age of stats.regionalAge) expect(age).toBeLessThan(28);
+    // Antes da A13 a força somada era a mesma em todas as temporadas (ninguém evoluía).
+    expect(new Set(stats.regionalStrength).size).toBe(stats.regionalStrength.length);
   });
 
   it("o acesso e o rebaixamento acontecem toda temporada", () => {
