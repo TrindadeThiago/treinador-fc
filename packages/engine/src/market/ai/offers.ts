@@ -15,6 +15,26 @@ function roundThousand(value: number): number {
 }
 
 /**
+ * Jogadores que o usuário contratou na temporada, comprados ou livres (A2b da auditoria): não
+ * recebem propostas da IA até a temporada seguinte. Sem a carência, comprar barato e esperar uma
+ * proposta rendia até 60%: a pedida vem do valor no clube vendedor e a proposta, do valor no clube
+ * do usuário (o valor sobe com a reputação do dono) e da contraproposta (até 120% do valor).
+ */
+export function signedThisSeason(context: MarketContext): Set<string> {
+  return new Set(
+    context.market.log
+      .filter(
+        (entry) =>
+          entry.season === context.league.number &&
+          entry.outcome === undefined &&
+          entry.toClubId === context.managerClubId &&
+          (entry.kind === "buy" || entry.kind === "free"),
+      )
+      .map((entry) => entry.playerId),
+  );
+}
+
+/**
  * Proposta de um clube da IA por um jogador do humano (011 R9): só de quem tem a posição
  * descoberta ou fraca, ganharia força com ele e tem orçamento para a oferta.
  */
@@ -26,12 +46,14 @@ export function incomingOfferFor(
   const rules = marketRules(context.world, context.league.competitionId);
   const ai = aiMarketRules(context.world, context.league.competitionId);
   const year = context.league.year;
+  const signed = signedThisSeason(context);
   const own = context.world.players
     .filter(
       (player) =>
         player.clubId === context.managerClubId &&
         !player.contract?.loan &&
         !blocked.has(player.id) &&
+        !signed.has(player.id) &&
         canRemovePlayer(context.world, context.managerClubId, player.id),
     )
     .sort((a, b) => (a.id < b.id ? -1 : 1));
