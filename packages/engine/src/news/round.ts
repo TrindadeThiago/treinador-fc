@@ -9,6 +9,7 @@ import { marketValue } from "../market/value";
 import type { KnockoutFormat } from "../model/types";
 import { playerLines } from "../season/record";
 import type { MatchRecord, Season } from "../season/types";
+import { cloneData } from "../serialize/clone";
 import { clinched } from "./clinched";
 import { type Fact, matchFacts, matchKey, streakOf } from "./facts";
 import { compare as compareHeadlines, rankFeed } from "./feed";
@@ -18,7 +19,7 @@ import type { Headline, HeadlineType, HeadlineVars, NewsContext, NewsState } fro
 import { variantOf } from "./variants";
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 /** Gols de cada jogador na temporada da divisão até a rodada. */

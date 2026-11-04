@@ -5,6 +5,7 @@ import { squadLimit } from "../market/squad";
 import { POSITIONS, type Position } from "../model/catalogs";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { createRng } from "../rng/xoshiro";
+import { squadOf } from "../world/squads";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
 import { SQUAD_RULES } from "./rules";
@@ -62,19 +63,34 @@ export function balanceSquads(
   /** Registros completos dos dispensados (viram livres quando há mercado, 010). */
   releasedPlayers: CompletedPlayer[];
 } {
-  let players = [...world.players];
+  // Elencos de trabalho por clube, na ordem do mundo (jovens entram no fim, como no `push`); os
+  // dispensados saem do mundo de uma vez no final. Filtrar o mundo inteiro a cada contagem custava
+  // clubes × jogadores × iterações na virada.
+  const youths: CompletedPlayer[] = [];
+  const removed = new Set<string>();
   const promoted: PlayerRef[] = [];
   const released: PlayerRef[] = [];
   const releasedPlayers: CompletedPlayer[] = [];
   let seq = renewal.nextPlayerSeq;
   const caps = aiMarketRules(world, league.competitionId).positionMax;
+  const utilities = new Map<string, number>();
+  const utilityOf = (player: CompletedPlayer) => {
+    let value = utilities.get(player.id);
+    if (value === undefined) {
+      value = utility(player, date);
+      utilities.set(player.id, value);
+    }
+    return value;
+  };
+  const byUtility = (a: CompletedPlayer, b: CompletedPlayer) =>
+    utilityOf(a) - utilityOf(b) || (a.id < b.id ? -1 : 1);
   for (const clubId of league.divisions.flatMap((entry) => entry.clubIds).sort()) {
     const club = world.clubs.find((entry) => entry.id === clubId);
     if (!club) continue;
     const rng = createRng(`${careerSeed}:squad:${season}:${clubId}`);
-    const squad = () => players.filter((player) => player.clubId === clubId);
+    const squad: CompletedPlayer[] = [...squadOf(world, clubId)];
     const count = (position: Position) =>
-      squad().filter((player) => player.position === position).length;
+      squad.reduce((total, player) => total + (player.position === position ? 1 : 0), 0);
     const add = (position: Position) => {
       const youth = createYouth(
         world,
@@ -86,8 +102,15 @@ export function balanceSquads(
         rng,
       );
       seq += 1;
-      players.push(youth);
+      youths.push(youth);
+      squad.push(youth);
       promoted.push(playerRef(youth, date));
+    };
+    const release = (out: CompletedPlayer) => {
+      released.push(playerRef(out, date));
+      releasedPlayers.push(out);
+      removed.add(out.id);
+      squad.splice(squad.indexOf(out), 1);
     };
     // O elenco do jogador só tem o máximo total: ele decide quem fica (sem teto por posição).
     const isManager = clubId === managerClubId;
@@ -95,30 +118,27 @@ export function balanceSquads(
     // Teto por posição (011 R3): libera os de menor utilidade acima dele.
     for (const position of isManager ? [] : POSITIONS) {
       while (count(position) > caps[position]) {
-        const out = squad()
-          .filter((player) => player.position === position)
-          .sort((a, b) => utility(a, date) - utility(b, date) || (a.id < b.id ? -1 : 1))[0];
+        const out = squad.filter((player) => player.position === position).sort(byUtility)[0];
         if (!out) break;
-        released.push(playerRef(out, date));
-        releasedPlayers.push(out);
-        players = players.filter((player) => player.id !== out.id);
+        release(out);
       }
     }
     for (const position of POSITIONS) {
       while (count(position) < SQUAD_RULES.positionMin[position]) add(position);
     }
-    while (squad().length < SQUAD_RULES.min) add(neediestPosition(squad(), rng, caps));
-    while (squad().length > max) {
-      const candidates = squad()
-        .filter((player) => count(player.position) > SQUAD_RULES.positionMin[player.position])
-        .sort((a, b) => utility(a, date) - utility(b, date) || (a.id < b.id ? -1 : 1));
-      const out = candidates[0];
+    while (squad.length < SQUAD_RULES.min) add(neediestPosition(squad, rng, caps));
+    while (squad.length > max) {
+      const counts = new Map(POSITIONS.map((position) => [position, count(position)]));
+      const out = squad
+        .filter(
+          (player) => (counts.get(player.position) ?? 0) > SQUAD_RULES.positionMin[player.position],
+        )
+        .sort(byUtility)[0];
       if (!out) break;
-      released.push(playerRef(out, date));
-      releasedPlayers.push(out);
-      players = players.filter((player) => player.id !== out.id);
+      release(out);
     }
   }
+  const players = [...world.players, ...youths].filter((player) => !removed.has(player.id));
   return {
     world: { ...world, players },
     renewal: { ...renewal, nextPlayerSeq: seq },

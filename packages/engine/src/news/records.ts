@@ -1,3 +1,4 @@
+import { cloneData } from "../serialize/clone";
 import type { Fact } from "./facts";
 import type { ClubRecordKind, HeadlineVars, LeagueRecordKind, RecordEntry, Records } from "./types";
 
@@ -16,7 +17,7 @@ export interface RecordCandidate {
 }
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 /** Estritamente melhor: valor maior, ou igual com desempate maior quando há desempate. */

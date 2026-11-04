@@ -5,6 +5,7 @@ import type { Reached } from "../continental/types";
 import type { CompletedBank } from "../model/types";
 import { isRegional } from "../regional/scope";
 import { regionalWeightFor } from "../regional/weight";
+import { cloneData } from "../serialize/clone";
 import { rulesCompetitionOf } from "../world/countries";
 import { boardRules } from "./rules";
 import type { BoardContext, BoardState, ConfidenceFactor, SeasonGoals } from "./types";
@@ -90,7 +91,7 @@ export function withRegionalGoals(
   leagues: readonly LeagueSeason[],
 ): BoardState {
   if (regionalSeasons(world, leagues).length === 0) return board;
-  const next = JSON.parse(JSON.stringify(board)) as BoardState;
+  const next = cloneData(board);
   for (const clubId of Object.keys(next.clubs).sort()) {
     const club = next.clubs[clubId];
     if (!club?.goals) continue;
@@ -121,7 +122,7 @@ export function boardAfterRegional(
         if (!goal || goal.result || goal.competitionId !== league.competitionId) continue;
         if (goal.level !== season.divisionLevel) continue;
         if (status !== "eliminated" && status !== "champion") continue;
-        board ??= JSON.parse(JSON.stringify(context.board)) as BoardState;
+        board ??= cloneData(context.board);
         reached ??= reachedByClub(context.world, season);
         const club = board.clubs[clubId];
         const target = club?.goals?.regional;

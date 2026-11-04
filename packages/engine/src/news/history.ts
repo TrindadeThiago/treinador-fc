@@ -1,6 +1,7 @@
 import type { SeasonHistoryEntry } from "../career/types";
 import type { CompletedBank } from "../model/types";
 import type { PlayerSeasonStats } from "../season/types";
+import { cloneData } from "../serialize/clone";
 import type { AllTime, Legend, NewsState } from "./types";
 
 function byId(a: string, b: string): number {
@@ -13,7 +14,7 @@ export function accumulate(
   stats: readonly PlayerSeasonStats[],
   world: CompletedBank,
 ): AllTime {
-  const players = JSON.parse(JSON.stringify(allTime.players)) as AllTime["players"];
+  const players = cloneData(allTime.players);
   const names = new Map(world.players.map((player) => [player.id, player.displayName]));
   for (const line of [...stats].sort((a, b) => byId(a.playerId, b.playerId))) {
     if (line.matches === 0 && line.goals === 0) continue;

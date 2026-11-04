@@ -3,6 +3,7 @@ import type { LeagueSeason } from "../career/types";
 import type { FinanceState } from "../finance/types";
 import type { CompletedBank } from "../model/types";
 import { createRng } from "../rng/xoshiro";
+import { cloneData } from "../serialize/clone";
 import { generateCoach } from "./coaches";
 import { playedRounds, seasonGoals } from "./goals";
 import { boardRules } from "./rules";
@@ -103,7 +104,7 @@ export function extendBoard(
   finances: FinanceState,
   careerSeed: string,
 ): BoardState {
-  const next = JSON.parse(JSON.stringify(board)) as BoardState;
+  const next = cloneData(board);
   const rules = boardRules(world, league.competitionId);
   const rng = createRng(`${careerSeed}:board:create:${league.number}:${league.competitionId}`);
   addLeagueClubs(next, world, league, finances, rules, rng);
