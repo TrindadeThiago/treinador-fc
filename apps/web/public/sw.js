@@ -37,17 +37,20 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith(
     (async () => {
-      const cache = await caches.open(CACHE);
+      // `caches.open` cria o cache se ele não existe: um worker antigo ainda atendendo um pedido
+      // quando a versão nova assume recriaria o cache que ela acabou de apagar, e ele ficaria órfão
+      // até a versão seguinte. Sem o próprio cache, o worker só repassa à rede.
+      const cache = (await caches.has(CACHE)) ? await caches.open(CACHE) : undefined;
       // A carreira vai na query (?c=<id>); o arquivo é o mesmo para qualquer carreira.
-      const cached = await cache.match(request, { ignoreSearch: true });
+      const cached = await cache?.match(request, { ignoreSearch: true });
       if (cached) return cached;
       try {
         const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
+        if (response.ok && cache) await cache.put(request, response.clone());
         return response;
       } catch (error) {
         if (request.mode === "navigate") {
-          const home = await cache.match("/");
+          const home = await cache?.match("/");
           if (home) return home;
         }
         throw error;
