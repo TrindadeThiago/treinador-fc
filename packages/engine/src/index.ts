@@ -227,6 +227,7 @@ export {
 } from "./finance/create";
 export type { FinanceError, FinanceErrorCode } from "./finance/errors";
 export { FINANCE_ERROR_CODES, FINANCE_ERROR_PARAMS, financeError } from "./finance/errors";
+export { type CashForecast, seasonCashForecast } from "./finance/forecast";
 export type { GateEstimate } from "./finance/gate";
 export { gateFor, nextHomeGateEstimate, powQuarters } from "./finance/gate";
 export type {

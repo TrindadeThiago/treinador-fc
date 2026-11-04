@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.2.0",
+    "date": "2026-11-05",
+    "changes": [
+      "Finanças ganharam uma previsão até o fim da temporada. O resumo do topo mostra o saldo previsto, e a Visão geral detalha de onde ele vem: o saldo de hoje, a bilheteria dos jogos em casa que faltam (liga e copas já sorteadas), os salários das rodadas que faltam, os juros da dívida e a premiação da liga pela posição de hoje (antes do primeiro jogo, pelo meio da tabela), com a faixa do último colocado ao campeão.",
+      "A previsão também diz quanto dá para gastar hoje sem o caixa ficar negativo antes da premiação e em que data o caixa chega ao ponto mais baixo, ou avisa quando ele deve ficar negativo. Ela usa o preço do ingresso, o estádio, o elenco e a dívida de hoje, e não conta prêmios de copa nem compras e vendas de jogadores.",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.1.0",
     "date": "2026-11-05",
     "changes": [

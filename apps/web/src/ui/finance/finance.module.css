@@ -58,3 +58,8 @@
   margin: 0;
   color: var(--color-muted);
 }
+
+.spend {
+  margin: 0;
+  font-weight: 600;
+}
