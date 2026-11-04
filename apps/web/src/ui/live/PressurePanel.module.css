@@ -1,0 +1,114 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--color-muted);
+}
+
+.now {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.verdict,
+.caption,
+.values,
+.note {
+  margin: 0;
+}
+
+.caption,
+.note {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+/* Duas partes com um respiro de 2px entre elas; os números ficam no texto abaixo. */
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+}
+
+.mine,
+.theirs {
+  min-width: 4px;
+  transition: width 0.4s ease;
+}
+
+.mine {
+  background: var(--color-accent);
+  border-radius: 4px 0 0 4px;
+}
+
+.theirs {
+  background: var(--color-info);
+  border-radius: 0 4px 4px 0;
+}
+
+.values {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.midline {
+  stroke: var(--color-muted);
+  stroke-width: 1;
+}
+
+.half {
+  stroke: var(--color-border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.crosshair {
+  stroke: var(--color-muted);
+  stroke-width: 1;
+}
+
+.line {
+  stroke: var(--color-text);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.areaMine {
+  fill: var(--color-accent);
+  fill-opacity: 0.18;
+}
+
+.areaTheirs {
+  fill: var(--color-info);
+  fill-opacity: 0.18;
+}
+
+.goalMine,
+.goalTheirs {
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.goalMine {
+  fill: var(--color-accent);
+}
+
+.goalTheirs {
+  fill: var(--color-info);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mine,
+  .theirs {
+    transition: none;
+  }
+}
