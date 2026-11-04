@@ -16,6 +16,7 @@ import type { CompletedBank } from "../model/types";
 import { newsAfterRound } from "../news/round";
 import type { NewsState } from "../news/types";
 import { evolvePlayers, midSeasonRound } from "../renewal/evolution";
+import { withRegionalClubs } from "../renewal/regional";
 import type { RenewalState } from "../renewal/types";
 import type { SeasonError } from "../season/errors";
 import { interestFor } from "./actions";
@@ -318,9 +319,10 @@ export function applyRoundSystems(
   let nextRenewal = renewal?.state;
   if (renewal && round === midSeasonRound(league)) {
     // Evolução do meio da temporada (009 R3), no mesmo caminho do ao vivo e do direto.
+    // Os clubes só regionais do país (023, A13) evoluem junto, com os minutos dos estaduais.
     const evolved = evolvePlayers(
       world,
-      league,
+      withRegionalClubs(world, league),
       renewal.careerSeed,
       "mid",
       1,

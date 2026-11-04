@@ -5,6 +5,7 @@ import { ensureContracts } from "../market/contracts";
 import { addFreeAgents, toFreeAgent } from "../market/free-agents";
 import { evolvePlayers, midSeasonRound } from "./evolution";
 import { measureWorld } from "./measure";
+import { withRegionalClubs } from "./regional";
 import { regulate, regulatorFor, withRegulator } from "./regulator";
 import { playerRef, retirePlayers } from "./retirement";
 import { balanceSquads } from "./squads";
@@ -46,7 +47,7 @@ export const evolvePlayersStep: TurnoverStep = {
     const last = Math.max(...finished.divisions.map((season) => season.calendar.length));
     const { world, record } = evolvePlayers(
       context.world,
-      finished,
+      withRegionalClubs(context.world, finished),
       context.careerSeed,
       "end",
       midSeasonRound(finished) + 1,
@@ -105,7 +106,7 @@ export const retirePlayersStep: TurnoverStep = {
     const clubs = new Map(context.world.players.map((player) => [player.id, player.clubId]));
     const { world, retired } = retirePlayers(
       context.world,
-      context.finished,
+      withRegionalClubs(context.world, context.finished),
       context.careerSeed,
       context.finished.number,
       nextSeasonDate(context),
@@ -125,7 +126,7 @@ export const generateYouthStep: TurnoverStep = {
     if (!context.renewal) return context;
     const { world, renewal, arrived } = generateYouth(
       context.world,
-      context.finished,
+      withRegionalClubs(context.world, context.finished),
       context.renewal,
       context.careerSeed,
       context.finished.number,
@@ -159,7 +160,7 @@ export const balanceSquadsStep: TurnoverStep = {
     const before = new Map(context.world.players.map((player) => [player.id, player.clubId]));
     const { world, renewal, promoted, released, releasedPlayers } = balanceSquads(
       context.world,
-      context.finished,
+      withRegionalClubs(context.world, context.finished),
       context.renewal,
       context.careerSeed,
       context.finished.number,
