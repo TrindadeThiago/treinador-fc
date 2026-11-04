@@ -3,6 +3,7 @@ import { reachedAtLeast, reachedByClub } from "../continental/reached";
 import { campaignStatuses } from "../continental/status";
 import type { Reached } from "../continental/types";
 import type { CompletedBank } from "../model/types";
+import { cloneData } from "../serialize/clone";
 import { rulesCompetitionOf } from "../world/countries";
 import { boardRules } from "./rules";
 import type { BoardContext, BoardState, ConfidenceFactor, SeasonGoals } from "./types";
@@ -81,7 +82,7 @@ export function withContinentalGoals(
   leagues: readonly LeagueSeason[],
 ): BoardState {
   if (internationalSeasons(world, leagues).length === 0) return board;
-  const next = JSON.parse(JSON.stringify(board)) as BoardState;
+  const next = cloneData(board);
   for (const clubId of Object.keys(next.clubs).sort()) {
     const club = next.clubs[clubId];
     if (!club?.goals) continue;
@@ -114,7 +115,7 @@ export function boardAfterContinental(
       const status = statuses.get(clubId);
       if (!goal || goal.result || goal.competitionId !== league.competitionId) continue;
       if (status !== "eliminated" && status !== "champion") continue;
-      board ??= JSON.parse(JSON.stringify(context.board)) as BoardState;
+      board ??= cloneData(context.board);
       reached ??= reachedByClub(context.world, season);
       const club = board.clubs[clubId];
       const target = club?.goals?.continental;

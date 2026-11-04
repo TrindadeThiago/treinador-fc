@@ -16,14 +16,28 @@ export function windowDeals(context: MarketContext): TransferRecord[] {
   const rules = marketRules(context.world, context.league.competitionId);
   const window = transferWindows(context.league, rules)[windowIndex(context)];
   if (!window) return [];
-  return context.market.log.filter(
+  // O log é copiado a cada negócio (nunca alterado no lugar): a memória vale pela lista e pela janela.
+  const key = `${context.league.number}:${window.fromRound}:${window.toRound}`;
+  let byWindow = WINDOW_DEALS.get(context.market.log);
+  if (!byWindow) {
+    byWindow = new Map();
+    WINDOW_DEALS.set(context.market.log, byWindow);
+  }
+  const hit = byWindow.get(key);
+  if (hit) return hit;
+  const deals = context.market.log.filter(
     (entry) =>
       entry.season === context.league.number &&
       entry.outcome === undefined &&
       entry.round >= window.fromRound &&
       entry.round <= window.toRound,
   );
+  byWindow.set(key, deals);
+  return deals;
 }
+
+/** Negócios da janela memorizados por log (a IA consulta milhares de vezes por rodada). */
+const WINDOW_DEALS = new WeakMap<readonly TransferRecord[], Map<string, TransferRecord[]>>();
 
 /** Compras (definitivas ou empréstimos recebidos) do clube na janela. */
 export function buysInWindow(context: MarketContext, clubId: string): number {

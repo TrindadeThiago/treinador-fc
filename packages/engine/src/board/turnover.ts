@@ -1,4 +1,5 @@
 import type { TurnoverStep } from "../career/types";
+import { cloneData } from "../serialize/clone";
 import { coachReputation, hireCoach } from "./coaches";
 import { withContinentalGoals } from "./continental";
 import { seasonGoals } from "./goals";
@@ -8,7 +9,7 @@ import { boardRules } from "./rules";
 import type { BoardState } from "./types";
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 /**

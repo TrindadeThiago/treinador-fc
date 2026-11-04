@@ -266,19 +266,25 @@ export function completeCareerDay(
   const awarded: (CompetitionPrize & { competitionId: string })[] = [];
   /** Fatos das competições entre países hoje: títulos, avanços, eliminações, goleadas (022 R7, R8). */
   const continental: ContinentalFacts = { titles: [], advances: [], eliminations: [], routs: [] };
+  // Mundo cansado do dia: o mesmo para todos os slots (vem do estado do início do dia).
+  let tired: CompletedBank | undefined;
+  const tiredToday = () => {
+    tired ??= tiredWorld(state, day.date);
+    return tired;
+  };
   for (const slot of day.slots) {
     const season = slotSeason(next, slot);
     let completed: ReturnType<typeof completeLeagueRound>;
     if (simulationKindFor(next, slot.competitionId, managerClubId) === "summary") {
       // Liga de outro país: simulação resumida (020), sem rodada ao vivo nem escalação do técnico.
-      completed = playSummaryLeagueRound(season, tiredWorld(state, day.date));
+      completed = playSummaryLeagueRound(season, tiredToday());
     } else {
       let round: LiveRound;
       if (live && live.competitionId === slot.competitionId) {
         round = live;
       } else {
         const own = lineups && playsIn(next, slot, lineupClubs) ? lineups : undefined;
-        const started = startLeagueRound(season, tiredWorld(state, day.date), own);
+        const started = startLeagueRound(season, tiredToday(), own);
         if (!started.ok) return started;
         round = finishRound(started.round);
       }

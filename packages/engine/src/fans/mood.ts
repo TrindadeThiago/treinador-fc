@@ -5,6 +5,7 @@ import type { CupEvent } from "../knockout/events";
 import { regionalWeightFor } from "../regional/weight";
 import { standings } from "../season/standings";
 import type { MatchRecord } from "../season/types";
+import { cloneData } from "../serialize/clone";
 import { idolEvents } from "./idols";
 import { rivalryOf } from "./rivalries";
 import { type FansRules, fansRules } from "./rules";
@@ -15,7 +16,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 /** Faixa do humor pelos limites `bands` (research.md R3). */

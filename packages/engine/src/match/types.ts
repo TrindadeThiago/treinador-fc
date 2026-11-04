@@ -14,7 +14,7 @@ export interface Lineup {
 
 export interface TeamInput {
   clubId: string;
-  squad: CompletedPlayer[];
+  squad: readonly CompletedPlayer[];
   lineup: Lineup;
   /** Lesionados ou suspensos: não podem ser escalados nem entrar. */
   unavailable?: string[];

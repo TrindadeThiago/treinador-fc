@@ -53,9 +53,23 @@ export function worldWithFitness(
   date: string,
   rules: FitnessRules,
 ): CompletedBank {
-  if (Object.keys(state.players).length === 0) return world;
-  const players = squadWithFitness(world.players, state, date, rules);
-  return players === world.players ? world : { ...world, players: [...players] };
+  // Só quem está no estado pode estar cansado (os demais têm 100): mede a condição deles e não a de
+  // cada jogador do mundo. O resultado é o de `squadWithFitness` sobre o mundo inteiro.
+  const tired = new Map<string, number>();
+  for (const id of Object.keys(state.players)) {
+    const value = fitnessOn(state, id, date, rules);
+    if (value < FULL) tired.set(id, value);
+  }
+  if (tired.size === 0) return world;
+  let changed = false;
+  const players = world.players.map((player) => {
+    const value = tired.get(player.id);
+    if (value === undefined) return player;
+    changed = true;
+    const strength = Math.round((player.strength * fitnessFactorBp(value, rules)) / 10000);
+    return { ...player, strength };
+  });
+  return changed ? { ...world, players } : world;
 }
 
 /**

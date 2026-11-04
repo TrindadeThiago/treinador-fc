@@ -3,6 +3,7 @@ import { matchResultFor } from "../fans/mood";
 import type { CupEnd, CupEvent } from "../knockout/events";
 import { createRng } from "../rng/xoshiro";
 import type { MatchRecord } from "../season/types";
+import { cloneData } from "../serialize/clone";
 import {
   clubReputation,
   coachOf,
@@ -20,7 +21,7 @@ import { boardRules } from "./rules";
 import type { BoardContext, BoardState, BoardUpdate, RoundRef } from "./types";
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 function scopeOf(context: BoardContext) {

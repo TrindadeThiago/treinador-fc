@@ -34,6 +34,42 @@ export function marketValueFor(
  * × fator do contrato (regras da competição do país do dono). Emprestado vale pelo clube de origem. Múltiplo de 1.000.
  */
 export function marketValue(player: CompletedPlayer, world: CompletedBank, year: number): number {
+  // Jogadores, clubes e competições nunca mudam no lugar: o valor de um jogador vale enquanto as
+  // listas de clubes e de competições, a data de referência e o ano forem os mesmos.
+  const hit = VALUES.get(player);
+  if (
+    hit &&
+    hit.clubs === world.clubs &&
+    hit.competitions === world.competitions &&
+    hit.referenceDate === world.manifest.referenceDate &&
+    hit.year === year
+  ) {
+    return hit.value;
+  }
+  const value = computeMarketValue(player, world, year);
+  VALUES.set(player, {
+    clubs: world.clubs,
+    competitions: world.competitions,
+    referenceDate: world.manifest.referenceDate,
+    year,
+    value,
+  });
+  return value;
+}
+
+/** Último valor calculado de cada jogador e o mundo em que valia (a IA pede milhares por rodada). */
+const VALUES = new WeakMap<
+  CompletedPlayer,
+  {
+    clubs: CompletedBank["clubs"];
+    competitions: CompletedBank["competitions"];
+    referenceDate: string;
+    year: number;
+    value: number;
+  }
+>();
+
+function computeMarketValue(player: CompletedPlayer, world: CompletedBank, year: number): number {
   const ownerId = player.contract?.loan?.fromClubId ?? player.clubId;
   const club = world.clubs.find((entry) => entry.id === ownerId);
   if (!club) return 0;

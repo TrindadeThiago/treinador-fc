@@ -3,6 +3,7 @@ import type { LeagueSeason } from "../career/types";
 import { releaseManagerClub } from "../market/release";
 import type { MarketState } from "../market/types";
 import type { Rng } from "../rng/xoshiro";
+import { cloneData } from "../serialize/clone";
 import { clubReputation, hireCoach, nextId, releaseCoach } from "./coaches";
 import { playedRounds, seasonGoals } from "./goals";
 import { closeStint, openStint, seasonRecord } from "./history";
@@ -10,7 +11,7 @@ import { type BoardRules, boardRules } from "./rules";
 import type { BoardContext, BoardError, BoardState, JobOffer, Vacancy } from "./types";
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneData(value);
 }
 
 /**
