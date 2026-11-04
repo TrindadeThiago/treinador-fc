@@ -1,5 +1,5 @@
 // Placar agregado no mata-mata, linha do volante no campo e ícones das características.
-import type { LiveMatch, MatchRecord } from "@brasfoot-like/engine";
+import { FORMATION_IDS, type LiveMatch, type MatchRecord } from "@brasfoot-like/engine";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { aggregateOf, liveAggregate } from "../../src/game/aggregate";
@@ -62,29 +62,38 @@ describe("placar agregado", () => {
 });
 
 describe("campo da escalação", () => {
-  it("o volante fica numa linha atrás dos meias", () => {
+  it("o volante fica atrás dos meias e à frente da defesa, em todos os esquemas", () => {
     const save = careerSave("volante");
-    render(
-      <Pitch
-        lineup={{ ...save.lineup, formation: "4-4-2", starters: {} }}
-        players={new Map()}
-        unavailable={new Map()}
-        onSelect={() => {}}
-        onFocusPlayer={() => {}}
-      />,
-    );
-    const positions = screen
-      .getAllByRole("button")
-      .map((button) => button.querySelector("span")?.textContent);
-    const dm = positions.indexOf(label("position.DM"));
-    const lastMf = positions.lastIndexOf(label("position.MF"));
-    const firstBack = positions.findIndex(
-      (text) => text === label("position.FB") || text === label("position.CB"),
-    );
-    expect(dm).toBeGreaterThan(lastMf);
-    expect(dm).toBeLessThan(firstBack);
-    // Linhas: ATA, MEI, VOL, defesa e gol.
-    expect(screen.getByRole("region").children).toHaveLength(5);
+    for (const formation of FORMATION_IDS) {
+      const { unmount } = render(
+        <Pitch
+          lineup={{ ...save.lineup, formation, starters: {} }}
+          players={new Map()}
+          unavailable={new Map()}
+          onSelect={() => {}}
+          onFocusPlayer={() => {}}
+        />,
+      );
+      // Ataque no alto: quanto maior o `top`, mais perto do próprio gol.
+      const tops = new Map<string, number[]>();
+      for (const button of screen.getAllByRole("button")) {
+        const position = button.querySelector("span span:last-child")?.textContent ?? "";
+        const top = Number.parseFloat(button.style.top);
+        tops.set(position, [...(tops.get(position) ?? []), top]);
+      }
+      const max = (position: string) =>
+        Math.max(...(tops.get(label(`position.${position}`)) ?? []));
+      const min = (position: string) =>
+        Math.min(...(tops.get(label(`position.${position}`)) ?? []));
+      expect(screen.getAllByRole("button")).toHaveLength(11);
+      if (tops.has(label("position.DM"))) {
+        if (tops.has(label("position.MF"))) expect(min("DM")).toBeGreaterThan(max("MF"));
+        expect(max("DM")).toBeLessThan(min("CB"));
+      }
+      expect(max("FW")).toBeLessThan(min("CB"));
+      expect(min("GK")).toBeGreaterThan(max("CB"));
+      unmount();
+    }
   });
 
   it("titulares e reservas mostram as características em ícones com o nome", () => {

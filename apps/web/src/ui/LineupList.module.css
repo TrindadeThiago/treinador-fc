@@ -29,7 +29,7 @@
   font: inherit;
   width: 100%;
   display: grid;
-  grid-template-columns: 40px 1fr 32px auto auto;
+  grid-template-columns: 16px 40px 1fr 32px auto auto;
   align-items: center;
   gap: var(--space-2);
   padding: 6px var(--space-2);
@@ -46,9 +46,30 @@
 }
 
 .selected,
-.selected:hover {
+.selected:hover,
+.row[data-drop-over] {
   border-color: var(--color-accent);
   background: var(--color-highlight);
+}
+
+.row[data-dragging] {
+  opacity: 0.45;
+}
+
+/* A alça aceita o toque para arrastar; o resto da linha deixa a página rolar com o dedo. */
+.grip {
+  display: inline-flex;
+  color: var(--color-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.grip svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .free {

@@ -167,6 +167,8 @@
   "lineup.outOfPosition": "Fora de posição · rende {percent}%",
   "lineup.natural": "Posição natural: {position}",
   "lineup.naturalShort": "Natural: {position}",
+  "lineup.offShort": "{position} · {percent}%",
+  "lineup.dragHint": "Arraste um jogador sobre outro (ou sobre uma vaga) para trocar; ou clique nos dois.",
   "lineup.selected": "{name} selecionado. Escolha o destino.",
   "lineup.selectedEmpty": "Lugar selecionado. Escolha um jogador.",
   "lineup.swapped": "{name} foi para o novo lugar.",

@@ -24,6 +24,7 @@ import { playerName } from "../../../ui/lineup-text";
 import { Pitch } from "../../../ui/Pitch";
 import { PlayerDetails } from "../../../ui/PlayerDetails";
 import type { ShortcutId } from "../../../ui/shortcuts";
+import { useLineupDrag } from "../../../ui/useLineupDrag";
 import { useShortcuts } from "../../../ui/useShortcuts";
 import styles from "./page.module.css";
 
@@ -62,9 +63,15 @@ function LineupScreen({ save, game }: { save: SaveFile; game: ReturnType<typeof 
       setMessage(t("lineup.cancelled"));
       return;
     }
-    const moving = occupantOf(save.lineup, step.from);
-    const displaced = occupantOf(save.lineup, step.to);
-    const result = game.placePlayer(step.from, step.to);
+    move(step.from, step.to);
+  };
+
+  /** Troca de lugar pelo clique em dois lugares ou pelo arrastar, com a mesma mensagem. */
+  const move = (from: Place, to: Place) => {
+    setSource(undefined);
+    const moving = occupantOf(save.lineup, from);
+    const displaced = occupantOf(save.lineup, to);
+    const result = game.placePlayer(from, to);
     if (!result.ok) {
       setMessage(
         result.code === "bench_full" ? t("lineup.benchFull", { max: SEASON_BENCH_LIMIT }) : "",
@@ -79,6 +86,7 @@ function LineupScreen({ save, game }: { save: SaveFile; game: ReturnType<typeof 
       setMessage(t("lineup.swapped", { name: playerName(save, moving) }));
     }
   };
+  const drag = useLineupDrag(move);
 
   const closeDetails = useCallback(() => setDetails(undefined), []);
   const shortcuts = useMemo<Partial<Record<ShortcutId, () => void>>>(
@@ -139,6 +147,7 @@ function LineupScreen({ save, game }: { save: SaveFile; game: ReturnType<typeof 
         </p>
       ) : null}
       <LineupIssues issues={validation.issues} save={save} />
+      <p className={styles.hint}>{t("lineup.dragHint")}</p>
       <div className={styles.board}>
         <Pitch
           lineup={save.lineup}
@@ -149,6 +158,7 @@ function LineupScreen({ save, game }: { save: SaveFile; game: ReturnType<typeof 
           selected={source}
           onSelect={select}
           onFocusPlayer={setFocused}
+          drag={drag}
         />
         <LineupList
           lineup={save.lineup}
@@ -160,8 +170,10 @@ function LineupScreen({ save, game }: { save: SaveFile; game: ReturnType<typeof 
           selected={source}
           onSelect={select}
           onFocusPlayer={setFocused}
+          drag={drag}
         />
       </div>
+      {drag.ghost}
       <PlayerDetails save={save} playerId={details} onClose={closeDetails} />
     </div>
   );
