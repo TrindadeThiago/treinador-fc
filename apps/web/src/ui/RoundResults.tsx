@@ -1,6 +1,6 @@
 "use client";
 
-import type { Club, MatchRecord, Rivalry } from "@brasfoot-like/engine";
+import type { Club, MatchRecord, Rivalry, Side } from "@brasfoot-like/engine";
 import { useT } from "../i18n";
 import { Crest } from "./Crest";
 import { DerbyBadge } from "./fans/DerbyBadge";
@@ -14,10 +14,19 @@ interface RoundResultsProps {
   clubId: string;
   /** Rivalidades do banco, para marcar os clássicos (013). */
   rivalries?: readonly Rivalry[] | undefined;
+  /** Agregado do jogo, quando ele é a volta de um ida e volta. */
+  aggregate?: (record: MatchRecord) => Record<Side, number> | undefined;
 }
 
 /** Resultados dos jogos de uma rodada. */
-export function RoundResults({ round, records, clubs, clubId, rivalries }: RoundResultsProps) {
+export function RoundResults({
+  round,
+  records,
+  clubs,
+  clubId,
+  rivalries,
+  aggregate,
+}: RoundResultsProps) {
   const t = useT();
   const byId = new Map(clubs.map((club) => [club.id, club]));
   const title = t("home.lastRound", { round });
@@ -29,6 +38,7 @@ export function RoundResults({ round, records, clubs, clubId, rivalries }: Round
           const home = byId.get(record.home);
           const away = byId.get(record.away);
           const mine = record.home === clubId || record.away === clubId;
+          const total = aggregate?.(record);
           return (
             <li
               key={`${record.home}-${record.away}`}
@@ -48,6 +58,11 @@ export function RoundResults({ round, records, clubs, clubId, rivalries }: Round
                       home: record.decision.shootout.score.home,
                       away: record.decision.shootout.score.away,
                     })}
+                  </small>
+                ) : null}
+                {total ? (
+                  <small className={styles.aggregate}>
+                    {t("cup.aggregateShort", { home: total.home, away: total.away })}
                   </small>
                 ) : null}
               </span>

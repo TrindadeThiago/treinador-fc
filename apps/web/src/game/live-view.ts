@@ -10,6 +10,7 @@ import type { SaveFile } from "@brasfoot-like/save";
 import { t } from "../i18n";
 import { phaseLabel } from "../ui/cup/phase";
 import { clockText } from "../ui/event-text";
+import { liveAggregate } from "./aggregate";
 
 /** Lance de uma partida da rodada, como a interface guarda e narra (`useLiveRound`). */
 export interface FeedItem {
@@ -159,6 +160,8 @@ export interface OtherMatchRow {
   home: { clubId: string; name: string };
   away: { clubId: string; name: string };
   score: Record<Side, number>;
+  /** Agregado, quando o jogo é a volta de um ida e volta. */
+  aggregate: Record<Side, number> | undefined;
   recent: Side | undefined;
 }
 
@@ -183,6 +186,7 @@ export function otherMatchRows(live: LiveRound, save: SaveFile, clubId: string):
       home: club(match.sides.home),
       away: club(match.sides.away),
       score: match.state.score,
+      aggregate: liveAggregate(match),
       recent: recentGoal(match)?.side,
     }));
 }

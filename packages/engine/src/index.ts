@@ -283,9 +283,11 @@ export {
   totalLegs,
 } from "./knockout/rules";
 export {
+  aggregateWith,
   cupChampion,
   cupReached,
   deciderFor,
+  legAggregate,
   phaseDecided,
   phaseWinners,
   tieState,

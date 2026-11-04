@@ -15,6 +15,11 @@ const Row = memo(
         <span className={styles.home}>{row.home.name}</span>
         <strong className={row.recent ? `${styles.score} ${styles.recent}` : styles.score}>
           {row.score.home} × {row.score.away}
+          {row.aggregate ? (
+            <small className={styles.aggregate}>
+              {t("cup.aggregateShort", { home: row.aggregate.home, away: row.aggregate.away })}
+            </small>
+          ) : null}
         </strong>
         <span className={styles.away}>{row.away.name}</span>
         {row.recent ? (
@@ -31,6 +36,8 @@ const Row = memo(
     a.row.score.home === b.row.score.home &&
     a.row.score.away === b.row.score.away &&
     a.row.recent === b.row.recent &&
+    a.row.aggregate?.home === b.row.aggregate?.home &&
+    a.row.aggregate?.away === b.row.aggregate?.away &&
     a.row.competition === b.row.competition,
 );
 

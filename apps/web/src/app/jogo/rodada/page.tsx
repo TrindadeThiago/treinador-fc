@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { aggregateOf } from "../../../game/aggregate";
 import { GameLayout } from "../../../game/GameLayout";
 import type { useGame } from "../../../game/GameProvider";
 import { matchContext, otherMatchRows, shootoutWinner } from "../../../game/live-view";
@@ -204,6 +205,7 @@ function RoundEnd({
         clubs={save.bank.clubs}
         clubId={save.clubId}
         rivalries={save.bank.rivalries}
+        aggregate={(record) => aggregateOf(save, record, record.score, competitionId)}
       />
       {mine ? <MatchSummary record={mine} save={save} /> : null}
       <div className={styles.actions}>
