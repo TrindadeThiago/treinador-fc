@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.0.6",
+    "date": "2026-11-03",
+    "changes": [
+      "Corrigido: no mundo padrão, com vários países, as finanças de todos os clubes andavam uma vez para cada liga do mundo a cada rodada. Os juros de um empréstimo eram cobrados cerca de 15 vezes por rodada, as obras de estádio terminavam 15 vezes mais rápido e um clube com caixa negativo entrava em crise muito antes do previsto. Isso valia também para o seu clube.",
+      "Agora juros, obras, crise e as decisões financeiras do computador andam só nas rodadas da liga do país de cada clube. Os juros cobrados passam a ser os que aparecem na tela de finanças.",
+      "A economia do mundo padrão foi recalibrada. Sem a cobrança repetida, os clubes passavam a acumular dinheiro sem parar (o caixa médio passava de 50 milhões em 30 temporadas). A folha de salários das ligas agora acompanha a força de cada país, a Série D deixou de perder dinheiro todo ano e, em 30 temporadas, o caixa médio fica abaixo de uma folha anual.",
+      "Os clubes que só jogam o estadual passam a pagar salários o ano inteiro, com uma folha de clube pequeno, e a receber patrocínio a cada temporada. Antes eles recebiam patrocínio só no primeiro ano e nunca pagavam salário.",
+      "Saves existentes continuam abrindo e já passam a cobrar os juros uma vez por rodada; os clubes do estadual deles também passam a pagar salários. Dívidas, obras e o caixa de antes da atualização não são recalculados, e a nova folha das ligas vale para carreiras começadas a partir desta versão. Nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.0.5",
     "date": "2026-10-31",
     "changes": [

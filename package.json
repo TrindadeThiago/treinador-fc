@@ -30,7 +30,7 @@
     "gen:continental-mod": "pnpm --filter @brasfoot-like/tools gen:continental-mod",
     "gen:regional-mod": "pnpm --filter @brasfoot-like/tools gen:regional-mod",
     "gen:football-world": "pnpm --filter @brasfoot-like/tools gen:football-world",
-    "sim:gates": "pnpm sim:world --seasons 30 && pnpm sim:economy --seasons 30 && pnpm sim:world --scale --countries 3 --seasons 30 --qualification",
+    "sim:gates": "pnpm sim:world --football-world --seasons 10 && pnpm sim:world --scale --countries 3 --seasons 30 --qualification",
     "hooks:install": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
@@ -38,5 +38,5 @@
     "typescript": "~6.0.3",
     "vitest": "^5.0.4"
   },
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
