@@ -2,22 +2,29 @@
 
 import type { SaveFile } from "@brasfoot-like/save";
 import { balanceSeries, monthlyFlows } from "../../game/finance-series";
+import { cashForecastOf } from "../../game/forecast";
 import { formatMoney, formatMonthShort, useT } from "../../i18n";
 import { BarChart } from "../charts/BarChart";
 import { ChartFigure } from "../charts/ChartFigure";
 import { LineChart } from "../charts/LineChart";
 import { FinanceSummary } from "../FinanceSummary";
+import { ForecastCard } from "./ForecastCard";
 import styles from "./finance.module.css";
 
-/** Visão geral (028): saldo ao longo da temporada em linha e receitas × despesas por mês em barras. */
+/**
+ * Visão geral (028): previsão até o fim da temporada, saldo ao longo da temporada em linha e
+ * receitas × despesas por mês em barras.
+ */
 export function OverviewTab({ save }: { save: SaveFile }) {
   const t = useT();
   const balance = balanceSeries(save);
   const flows = monthlyFlows(save);
+  const forecast = cashForecastOf(save);
   const label = (key: string) =>
     key === "start" ? t("finance.chart.start") : formatMonthShort(key);
   return (
     <div className={styles.tab}>
+      {forecast ? <ForecastCard forecast={forecast} /> : null}
       {balance ? (
         <ChartFigure
           title={t("finance.chart.balance.title")}
