@@ -4,6 +4,7 @@ import type { CompletedBank } from "../model/types";
 import { creditLine, repayLoan, setTicketPrice, startStadiumWorks, takeLoan } from "./actions";
 import { annualWageBill } from "./create";
 import { economyRules } from "./rules";
+import { financeClubIds } from "./scope";
 import type { FinanceState } from "./types";
 
 /** Regras simples da IA (research.md R7). */
@@ -103,7 +104,7 @@ function reviewCredit(
 /**
  * Decisões dos clubes do computador (US7, FR-021), em ordem de id: a cada 4 rodadas revisam o
  * preço e as obras (com estádio cheio, ou com caixa acima de 18 meses de folha); toda rodada, o
- * crédito. O clube do jogador nunca é alterado.
+ * crédito. Só os clubes do país da liga (`financeClubIds`); o clube do jogador nunca é alterado.
  */
 export function aiRoundReview(
   finances: FinanceState,
@@ -118,7 +119,7 @@ export function aiRoundReview(
   const works = options.works ?? review;
   const date = seasonDate(world.manifest.referenceDate, league.year);
   let next = finances;
-  for (const clubId of Object.keys(finances.clubs).sort()) {
+  for (const clubId of financeClubIds(finances, world, league)) {
     if (clubId === managerClubId) continue;
     const annual = annualWageBill(world, clubId, date);
     const monthly = Math.floor(annual / 12);

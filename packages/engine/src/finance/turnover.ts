@@ -1,9 +1,10 @@
 import { seasonDate } from "../calendar/date";
 import type { TurnoverContext, TurnoverStep } from "../career/types";
 import { aiRoundReview } from "./ai";
-import { annualWageBill, sponsorshipFor } from "./create";
+import { annualWageBill, regionalSponsorship, sponsorshipFor } from "./create";
 import { draft, post } from "./ledger";
 import { divisionEconomy, economyRules } from "./rules";
+import { financeClubIds } from "./scope";
 import { type EconomyRules, LEDGER_CATEGORIES, type LedgerCategory } from "./types";
 
 /**
@@ -113,6 +114,21 @@ export const paySponsorship: TurnoverStep = {
           amount: sponsorshipFor(rules, season.divisionLevel, reputation, wages),
         });
       }
+    }
+    // Clubes só regionais do país (023): o patrocínio pelas regras do estadual deles.
+    const inLeague = new Set(context.league.divisions.flatMap((season) => season.clubIds));
+    const date = seasonDate(context.world.manifest.referenceDate, context.league.year);
+    for (const clubId of financeClubIds(working, context.world, context.league)) {
+      if (inLeague.has(clubId)) continue;
+      const amount = regionalSponsorship(context.world, clubId, date);
+      if (amount === undefined) continue;
+      post(working, {
+        clubId,
+        season: context.league.number,
+        round: 0,
+        category: "sponsorship",
+        amount,
+      });
     }
     return { ...context, finances: working };
   },
