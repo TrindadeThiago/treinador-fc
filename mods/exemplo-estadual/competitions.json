@@ -294,6 +294,9 @@
         ]
       }
     ],
+    "economy": {
+      "wageFactorPct": 36
+    },
     "format": {
       "stages": [
         {
@@ -518,6 +521,9 @@
         ]
       }
     ],
+    "economy": {
+      "wageFactorPct": 36
+    },
     "format": {
       "stages": [
         {
@@ -742,6 +748,9 @@
         ]
       }
     ],
+    "economy": {
+      "wageFactorPct": 36
+    },
     "format": {
       "stages": [
         {
@@ -966,6 +975,9 @@
         ]
       }
     ],
+    "economy": {
+      "wageFactorPct": 36
+    },
     "format": {
       "stages": [
         {

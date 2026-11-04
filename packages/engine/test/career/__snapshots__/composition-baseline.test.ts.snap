@@ -293,6 +293,7 @@ exports[`composição sem vagas entre competições (baseline 021) > banco de 3 
         [
           1,
           [
+            "clube-zim-001",
             "clube-zim-002",
             "clube-zim-004",
             "clube-zim-005",
@@ -302,18 +303,17 @@ exports[`composição sem vagas entre competições (baseline 021) > banco de 3 
             "clube-zim-010",
             "clube-zim-013",
             "clube-zim-014",
-            "clube-zim-016",
           ],
         ],
         [
           2,
           [
-            "clube-zim-001",
             "clube-zim-003",
             "clube-zim-006",
             "clube-zim-011",
             "clube-zim-012",
             "clube-zim-015",
+            "clube-zim-016",
             "clube-zim-017",
             "clube-zim-018",
             "clube-zim-019",

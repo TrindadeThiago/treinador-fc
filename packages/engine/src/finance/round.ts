@@ -24,6 +24,7 @@ import { annualWageBill } from "./create";
 import { gateFor } from "./gate";
 import { draft, post, pushGate } from "./ledger";
 import { economyRules } from "./rules";
+import { financeClubIds } from "./scope";
 import type { FinanceState } from "./types";
 
 /** Estado de renovação da carreira passado à rodada (009): evolução do meio da temporada. */
@@ -129,7 +130,19 @@ export function applyRoundFinances(
     }
   }
 
-  const ids = Object.keys(working.clubs).sort();
+  // Juros, obras e crise: só os clubes do país da liga (cada liga principal fecha a sua rodada).
+  const ids = financeClubIds(working, world, league);
+  // Clubes do país fora da liga (os só regionais, 023) também pagam a folha, nas rodadas da divisão
+  // mais longa: o elenco deles joga o estadual, mas recebe o ano inteiro.
+  const inLeague = new Set(league.divisions.flatMap((season) => season.clubIds));
+  const longest = Math.max(0, ...league.divisions.map((season) => season.calendar.length));
+  if (round <= longest) {
+    for (const clubId of ids) {
+      if (inLeague.has(clubId)) continue;
+      const annual = annualWageBill(world, clubId, date);
+      post(working, entry(clubId, "wages", -wageInstalment(annual, round, longest)));
+    }
+  }
   for (const clubId of ids) {
     const club = working.clubs[clubId];
     if (club && club.debt > 0) {

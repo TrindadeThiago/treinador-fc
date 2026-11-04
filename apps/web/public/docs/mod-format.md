@@ -677,6 +677,12 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   `stadium.options[]` com `seats`, `cost`, `rounds`), rodadas para entrar em crise (`crisisRounds`),
   fator de salários (`wageFactorPct`) e regras por divisão (`divisions[]` com `level`,
   `referencePrice`, `fanFactorPct`, `sponsorship`, `prizes`, `creditBase`).
+  Num mundo de vários países, os juros, as obras, a contagem de rodadas para a crise e as decisões
+  financeiras da IA andam nas rodadas da liga principal do país do clube; os clubes que só jogam o
+  estadual seguem a liga principal do seu país. As regras valem as da competição principal do país.
+  Num estadual (`regional`), `economy` vale só para os clubes que não jogam outra competição: o
+  `wageFactorPct` dá a folha deles (pagam o ano inteiro; sem ele, 36%, de clube pequeno) e as regras
+  por divisão dão o patrocínio de cada temporada.
 - `market` — janelas (`windows[]` com `fromRound`/`toRound`), anos de contrato (`contractYears`),
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de

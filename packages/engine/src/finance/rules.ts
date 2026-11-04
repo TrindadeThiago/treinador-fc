@@ -42,6 +42,13 @@ export const DEFAULT_ECONOMY: EconomyRules = {
   ],
 };
 
+/**
+ * Fator da folha de um clube só regional (023, A12) quando o estadual não declara
+ * `economy.wageFactorPct`: clube pequeno, que vive de patrocínio e de poucos jogos em casa. Vale
+ * também para saves e mods anteriores à 1.0.6, cujos estaduais não têm economia.
+ */
+export const DEFAULT_REGIONAL_WAGE_FACTOR_PCT = 36;
+
 /** Regras de um nível; um nível sem entrada usa as do último nível conhecido. */
 export function divisionEconomy(rules: EconomyRules, level: number): DivisionEconomy {
   const exact = rules.divisions.find((division) => division.level === level);

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { advanceCareerDays } from "../../../src/career/day";
 import { EMPTY_HISTORY, startNextSeason } from "../../../src/career/next-season";
 import type { CareerSeasonState } from "../../../src/career/season-state";
+import { annualWageBill } from "../../../src/finance/create";
 import { ensureContracts } from "../../../src/market/contracts";
 import { DEFAULT_PROFILE, generateFootballWorld } from "../../../src/worldgen/football-world";
 import { completeHiddenAttributes } from "../../../src/worldgen/hidden";
@@ -22,6 +23,8 @@ interface Stats {
   /** Por temporada, por confederação e país: clubes na competição principal. */
   slots: Map<string, number[]>;
   cash: number[];
+  /** Caixa médio em folhas anuais médias, no fim de cada temporada. */
+  cashInWageBills: number[];
   crisisShare: number[];
 }
 
@@ -50,6 +53,7 @@ function measure(): Stats {
     brazilSwaps: [],
     slots: new Map(),
     cash: [],
+    cashInWageBills: [],
     crisisShare: [],
   };
   for (let season = 1; season <= SEASONS; season++) {
@@ -86,7 +90,13 @@ function measure(): Stats {
     const before = JSON.stringify(state.league.divisions.map((d) => [...d.clubIds].sort()));
     const end = ok(advanceCareerDays(state, { toEnd: true }, SEED, manager)).state;
     const cash = Object.values(end.finances.clubs);
-    stats.cash.push(Math.round(cash.reduce((sum, club) => sum + club.cash, 0) / cash.length));
+    const meanCash = cash.reduce((sum, club) => sum + club.cash, 0) / cash.length;
+    stats.cash.push(Math.round(meanCash));
+    const date = `${end.league.year}-12-31`;
+    const ids = Object.keys(end.finances.clubs);
+    const wages =
+      ids.reduce((sum, id) => sum + annualWageBill(end.world, id, date), 0) / ids.length;
+    stats.cashInWageBills.push(meanCash / wages);
     stats.crisisShare.push(cash.filter((club) => club.inCrisis).length / cash.length);
     const next = ok(startNextSeason(end, SEED, history, manager));
     history = next.history;
@@ -131,14 +141,15 @@ describe(`${SEASONS} temporadas no mundo ${PROFILE.id} (024 US4)`, () => {
     }
   });
 
-  // Faixa medida em 30 temporadas do mundo compacto (T042): o caixa médio cai uns 0,2 milhão por
-  // temporada e fecha perto de -5 milhões, com 9% dos clubes em crise; é a mesma deriva de longo
-  // prazo que a linha de base da 020 já mostra (clubes em crise a partir da 17ª temporada). As faixas
-  // abaixo seguram a deriva: mais que isso é regressão.
-  it("a economia fica dentro da faixa: caixa médio acima de -8 milhões e no máximo 15% dos clubes em crise", () => {
+  // Faixas da economia. A queda do caixa medida na 024 (perto de -5 milhões em 30 temporadas, 9% em
+  // crise) vinha do A12: juros e obras andavam uma vez por liga do mundo a cada rodada. Corrigido e
+  // recalibrado (2 seeds, 30 temporadas): caixa médio de 3,6 a 10 milhões (0,3 a 0,85 folha anual),
+  // crise abaixo de 1%. O teto em folhas pega a inflação que apareceu sem o dreno.
+  it("a economia fica dentro da faixa: caixa médio acima de -8 milhões e até 3 folhas, no máximo 15% dos clubes em crise", () => {
     for (const cash of stats.cash) expect(cash).toBeGreaterThan(-8_000_000);
+    for (const bills of stats.cashInWageBills) expect(bills).toBeLessThanOrEqual(3);
     for (const share of stats.crisisShare) expect(share).toBeLessThanOrEqual(0.15);
-    // Nas primeiras 10 temporadas o mundo ainda é saudável: no máximo 8% dos clubes em crise (medido: 6% na 6ª temporada, com o caixa médio caindo uns 0,3 milhão por temporada).
+    // Nas primeiras 10 temporadas o mundo ainda é saudável: no máximo 8% dos clubes em crise.
     for (const share of stats.crisisShare.slice(0, 10)) expect(share).toBeLessThanOrEqual(0.08);
   });
 }, 7_200_000);

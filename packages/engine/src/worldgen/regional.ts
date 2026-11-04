@@ -1,3 +1,4 @@
+import { DEFAULT_REGIONAL_WAGE_FACTOR_PCT } from "../finance/rules";
 import { CREST_SHAPES, POSITIONS, type Position } from "../model/catalogs";
 import type {
   Club,
@@ -224,6 +225,13 @@ export interface EstaduaisInput {
  * completam as divisões com os nacionais da região, os elencos pequenos, a competição e os clássicos.
  * A ordem das forks é a de sempre: `generateRegionalBank` produz o mesmo banco de antes.
  */
+/**
+ * Economia dos estaduais (023, A12 da auditoria): só a folha dos clubes que vivem do estadual, que
+ * pagam o ano inteiro com a receita de um clube pequeno (patrocínio e poucos jogos em casa).
+ * Calibrado no mundo padrão para a receita cobrir a folha com pouca folga.
+ */
+export const REGIONAL_ECONOMY = { wageFactorPct: DEFAULT_REGIONAL_WAGE_FACTOR_PCT } as const;
+
 export function buildEstaduais(input: EstaduaisInput): {
   competitions: Competition[];
   clubs: Club[];
@@ -293,6 +301,7 @@ export function buildEstaduais(input: EstaduaisInput): {
         region: state.name,
         weight: { pct: 100, byReputation: [{ from: 60, pct: 40 }] },
       },
+      economy: { ...REGIONAL_ECONOMY },
       divisions: [
         {
           level: 1,

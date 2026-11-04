@@ -1,11 +1,11 @@
 import { seasonDate } from "../calendar/date";
 import type { LeagueSeason } from "../career/types";
 import { deriveWage } from "../derived/economy";
-import type { CompletedBank } from "../model/types";
+import type { Competition, CompletedBank } from "../model/types";
 import { rulesCompetitionOf } from "../world/countries";
 import { squadOf } from "../world/squads";
 import { draft, post } from "./ledger";
-import { divisionEconomy, economyRules } from "./rules";
+import { DEFAULT_REGIONAL_WAGE_FACTOR_PCT, divisionEconomy, economyRules } from "./rules";
 import type { ClubFinance, EconomyRules, FinanceState } from "./types";
 
 /**
@@ -30,11 +30,50 @@ export function defaultTicketPrice(rules: EconomyRules, level: number, reputatio
   return Math.min(rules.priceRange.max, Math.max(rules.priceRange.min, price));
 }
 
-function competitionOf(world: CompletedBank, clubId: string): string {
-  return rulesCompetitionOf(world, clubId).id;
+/** Estadual de cada clube só regional (023): está num estadual e em nenhuma outra competição. */
+const REGIONAL_HOME = new WeakMap<readonly Competition[], Map<string, string>>();
+
+function regionalHome(world: Pick<CompletedBank, "competitions">): Map<string, string> {
+  const hit = REGIONAL_HOME.get(world.competitions);
+  if (hit) return hit;
+  const elsewhere = new Set<string>();
+  const regional = new Map<string, string>();
+  for (const competition of world.competitions) {
+    for (const division of competition.divisions) {
+      for (const clubId of division.clubIds) {
+        if (competition.regional === undefined) elsewhere.add(clubId);
+        else if (!regional.has(clubId)) regional.set(clubId, competition.id);
+      }
+    }
+  }
+  for (const clubId of elsewhere) regional.delete(clubId);
+  REGIONAL_HOME.set(world.competitions, regional);
+  return regional;
 }
 
-/** Folha anual do clube: 12 × Σ salários mensais × wageFactorPct (R4). */
+/**
+ * Patrocínio da temporada de um clube só regional (023), pelas regras do estadual e pela divisão
+ * dele no estadual, como na criação da carreira; nada para quem joga uma competição não regional.
+ */
+export function regionalSponsorship(
+  world: CompletedBank,
+  clubId: string,
+  referenceDate: string,
+): number | undefined {
+  const competitionId = regionalHome(world).get(clubId);
+  if (competitionId === undefined) return undefined;
+  const competition = world.competitions.find((entry) => entry.id === competitionId);
+  const level =
+    competition?.divisions.find((division) => division.clubIds.includes(clubId))?.level ?? 1;
+  const reputation = world.clubs.find((club) => club.id === clubId)?.reputation ?? 0;
+  const wages = annualWageBill(world, clubId, referenceDate);
+  return sponsorshipFor(economyRules(world, competitionId), level, reputation, wages);
+}
+
+/**
+ * Folha anual do clube: 12 × Σ salários mensais × wageFactorPct (R4). O fator é o da competição
+ * principal do país; para um clube só regional (023), o do estadual onde ele vive.
+ */
 export function annualWageBill(
   world: CompletedBank,
   clubId: string,
@@ -42,12 +81,17 @@ export function annualWageBill(
 ): number {
   const club = world.clubs.find((entry) => entry.id === clubId);
   if (!club) throw new Error(`clube inexistente: ${clubId}`);
-  const rules = economyRules(world, competitionOf(world, clubId));
+  const regional = regionalHome(world).get(clubId);
+  const factor =
+    regional === undefined
+      ? economyRules(world, rulesCompetitionOf(world, clubId).id).wageFactorPct
+      : (world.competitions.find((entry) => entry.id === regional)?.economy?.wageFactorPct ??
+        DEFAULT_REGIONAL_WAGE_FACTOR_PCT);
   const monthly = squadOf(world, clubId).reduce(
     (sum, player) => sum + (player.contract?.wage ?? deriveWage(player, club, referenceDate)),
     0,
   );
-  return Math.round((12 * monthly * rules.wageFactorPct) / 100);
+  return Math.round((12 * monthly * factor) / 100);
 }
 
 /**

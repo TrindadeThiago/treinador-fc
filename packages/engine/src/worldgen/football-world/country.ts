@@ -208,6 +208,15 @@ export function newContext(
   };
 }
 
+/**
+ * Folha de um país de uma divisão só, em % da escala (024): 115% com força 0,8 a 98% com força 1,5.
+ * Antes era 75% para todos, calibrado quando juros e obras andavam uma vez por liga do mundo a cada
+ * rodada (A12 da auditoria) e drenavam o caixa; sem esse dreno, as ligas sobravam 16% a 30% da folha.
+ */
+export function oneDivisionWagePct(strength: number): number {
+  return Math.round(115 - 25 * (strength - 0.8));
+}
+
 /** Economia do país: as regras padrão em escala. */
 export function countryEconomy(
   strength: number,
@@ -226,9 +235,13 @@ export function countryEconomy(
   if (rounds < 38 && holder.economy) {
     holder.economy.wageFactorPct = Math.max(20, Math.round((wage * rounds) / 38));
   }
-  // País de uma divisão só: sem a receita de quem sobe da divisão de baixo, a folha é um pouco menor.
+  // País de uma divisão só: a folha acompanha a força. O ingresso não escala com o país e os
+  // salários crescem com a força dos jogadores, então a bilheteria cobre menos folha nos fortes.
+  // Calibrado no mundo padrão para uma margem estrutural pequena (receita um pouco acima da folha).
   if (divisions === 1 && holder.economy) {
-    holder.economy.wageFactorPct = Math.round(((holder.economy.wageFactorPct ?? wage) * 75) / 100);
+    holder.economy.wageFactorPct = Math.round(
+      ((holder.economy.wageFactorPct ?? wage) * oneDivisionWagePct(strength)) / 100,
+    );
   }
   return holder.economy as NonNullable<Competition["economy"]>;
 }
