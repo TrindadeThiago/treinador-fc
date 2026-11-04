@@ -19,9 +19,9 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 | A5 (economia sem pressão) | **Mantido** por decisão de design (2026-11-04), ver nota. |
 | A2b (comprar barato e revender) | **Feito** na **1.0.10** com carência de propostas (ver nota). |
 | T2 (testes de propriedade) | **Feito** na **1.0.10**, sem dependência nova (ver nota). |
-| A4 (ondas de craques) | Pendente: duas tentativas medidas e descartadas (ver nota); pede calibragem com meta definida. |
+| A4 (ondas de craques) | **Parado** por decisão (2026-11-04), com a meta definida e o diagnóstico medido (ver nota). |
 | Constantes de partida (`directRedRate`, `injuryRate`) | **Abandonado**: a mudança quebra 11 testes de baseline e os valores já estão dentro das faixas do projeto. |
-| A4 | Pendente. |
+| — | Nenhum item pendente: o A4 está parado por decisão. |
 
 **Nota sobre o A2.** A estimativa original (+25% de lucro geral) era exagerada. Medido no mundo de teste, o lucro existia só para quem tinha 1 ano de contrato (cerca de 12% dos jogadores): 58% desses ciclos davam lucro, no máximo +35% e mediana +4%. Com 2 anos, 0,4%; com 3 ou mais, 0%. A severidade desceu de Alta para **Média**. A correção foi um piso na pedida de compra do usuário (`buyAskingPrice`, `market/club-response.ts`), igual ao que a venda imediata pagaria depois de renovado. Valores como `lastYearValuePct` e `QUICK_SALE_PCT` ficaram como estavam: mexer neles muda a IA e quebra os baselines de seed. **Limite conhecido:** comprar no último ano, renovar e esperar uma proposta recebida (85% a 110% do valor) ainda rende; é aleatório e limitado.
 
@@ -48,6 +48,19 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 **Nota sobre o T2.** Testes de propriedade com um gerador de casos por PRNG com seed (`test/properties/`), sem `fast-check`: classificação (posições como permutação, pontos e jogos fechando), escalação automática (válida para elencos aleatórios), partida (placar igual aos gols dos eventos e dos jogadores; avançar em passos igual a de uma vez) e dinheiro (transferências e empréstimos aleatórios sem criar dinheiro e com elencos nos limites; caixa igual ao livro-caixa numa temporada inteira e nos 440 clubes do mundo padrão). Todas passam no código atual.
 
 **Nota sobre o A4.** Medido no mundo padrão em 30 temporadas: a onda forte do mundo antigo não aparece (os craques oscilam entre 293 e 411 depois de dobrar nas 5 primeiras temporadas, de 179 para 346), mas o bônus de potencial do regulador satura em +5 a +9 nas ligas de 20 clubes, porque a faixa de promessas (15 a 35) é absoluta e foi calibrada para 40 clubes. Duas correções foram medidas e descartadas: (1) alvos relativos à primeira medição de cada país: os craques foram a 562 no pico, porque o alvo de força 59 era o que segurava países que nascem em 61 a 64; (2) faixa de promessas por clube: os craques caem sem parar até 249 na 30ª temporada e o bônus continua saturado em todos os países, porque o mundo padrão tem menos promessas por clube que o antigo. A diferença entre países já é pequena na geração (força média de 61,3 a 63,5 entre a Costa Rica e a Inglaterra; correlação força × craques por clube de 0,27 na primeira temporada). Próximo passo: definir a meta (quantos craques no mundo, se os países fortes devem ter mais) e recalibrar o regulador, de preferência por coorte de idade.
+
+**Meta do A4 (definida em 2026-11-04).** Medida em 30 temporadas e em duas seeds, nos jogadores das ligas principais:
+- total de craques (força ≥ 78) em torno de **250** em regime, a partir da 6ª temporada (as 5 primeiras são transição);
+- variação de **±15%**: entre 212 e 288 da 6ª à 30ª temporada;
+- distribuição **proporcional ao quadrado da força do país** (a regra das vagas continentais): ~25 craques na Inglaterra e no Brasil, ~7 na Costa Rica, cerca de 11 × força²;
+- correlação entre força² do país e craques **≥ 0,6** na 15ª e na 30ª temporada (0,23 a 0,27 antes).
+
+**Diagnóstico da calibragem do A4 (2026-11-04), parado por decisão.** Implementado e medido (30 temporadas cada, seed `mundo-padrao-1`): um campo `renewal.starsTarget` por país (11 × força²) e um regulador que mira os craques pelo indicador "jogadores até 31 anos com potencial ≥ 78". O que as rodadas mostraram:
+- Sem controle de craques (bônus 0), os craques sobem de 179 para 348 até a 6ª temporada e depois **caem sem parar**, até 74 na 30ª: a geração de jovens sozinha sustenta bem menos de 100. O regulador antigo chegava a ~350 porque o bônus saturava em +5 a +9 e compensava isso.
+- O pico das primeiras temporadas é o **estoque do mundo gerado**: 667 jogadores com potencial de craque (3,7 por craque) amadurecem e se aposentam em ~20 temporadas. Nenhum controle sobre os jovens novos o segura; com qualquer regulador, os craques ficam em ~340 entre a 6ª e a ~15ª temporada.
+- Qualquer realimentação pelos craques oscila, porque um jovem leva de 6 a 10 temporadas para virar craque: bônus acumulado (117 a 353), razão adaptativa (85 a 419), bônus proporcional aos craques (77 a 493). O bônus proporcional ao indicador foi o mais estável (201 a 224 da 13ª à 26ª temporada), mas a razão entre potencial alto e craques muda com a estrutura de idades.
+- A distribuição proporcional à força funcionou em todas as variantes: correlação força² × craques de 0,61 a 0,85 (0,23 a 0,27 antes).
+- Caminho que ficou indicado: bônus **fixo** por país (nível positivo, ~+4 em média, mais uma diferença pela força), sem realimentação, junto com **gerar o mundo em equilíbrio** (margem de potencial menor nos jovens do mundo padrão), ou então uma transição até a 15ª temporada na meta.
 
 ## Resumo executivo
 
