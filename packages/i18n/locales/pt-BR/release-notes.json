@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.8",
+    "date": "2026-11-05",
+    "changes": [
+      "O jogo ficou mais rápido no mundo padrão: uma temporada inteira é simulada em cerca de 40% menos tempo, e a virada de temporada em cerca de um terço do tempo de antes. Quem mais sente é quem avança vários dias de uma vez.",
+      "Os resultados não mudaram: a mesma seed dá exatamente a mesma carreira de antes, com as mesmas partidas, transferências e finanças. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.0.7",
     "date": "2026-11-04",
     "changes": [
