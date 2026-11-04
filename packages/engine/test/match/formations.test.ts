@@ -1,12 +1,33 @@
 import { describe, expect, it } from "vitest";
-import { FORMATION_IDS, FORMATIONS, POSTURES } from "../../src/match/formations";
+import {
+  FORMATION_IDS,
+  FORMATIONS,
+  POSTURES,
+  PREFERRED_FORMATION_IDS,
+} from "../../src/match/formations";
 
 const DEFENDERS = new Set(["CB", "FB"]);
 const MIDFIELDERS = new Set(["DM", "MF"]);
 
 describe("catálogo de esquemas (FR-003)", () => {
-  it("tem os 6 esquemas previstos", () => {
-    expect(FORMATION_IDS).toEqual(["4-4-2", "4-3-3", "3-5-2", "4-5-1", "5-3-2", "4-2-3-1"]);
+  it("tem os 11 esquemas previstos, com os 6 originais primeiro", () => {
+    expect(FORMATION_IDS).toEqual([
+      "4-4-2",
+      "4-3-3",
+      "3-5-2",
+      "4-5-1",
+      "5-3-2",
+      "4-2-3-1",
+      "3-4-3",
+      "4-1-4-1",
+      "4-1-2-1-2",
+      "5-4-1",
+      "4-2-2-2",
+    ]);
+  });
+
+  it("o computador escolhe só entre os 6 originais (a mesma seed dá a mesma carreira)", () => {
+    expect(PREFERRED_FORMATION_IDS).toEqual(FORMATION_IDS.slice(0, 6));
   });
 
   it.each(FORMATION_IDS)("%s tem 11 vagas únicas e exatamente 1 goleiro", (id) => {

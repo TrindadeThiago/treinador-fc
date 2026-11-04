@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { autoLineup } from "../../src/match/auto-lineup";
-import { FORMATION_IDS, slotPosition } from "../../src/match/formations";
+import { PREFERRED_FORMATION_IDS, slotPosition } from "../../src/match/formations";
 import { effectiveStrength } from "../../src/match/strength";
 import type { Lineup } from "../../src/match/types";
 import type { CompletedPlayer } from "../../src/model/types";
@@ -21,13 +21,13 @@ const squadOf = (clubId: string) =>
   testWorld().players.filter((player) => player.clubId === clubId);
 
 describe("esquema preferido e escalações (FR-007, FR-008)", () => {
-  it("é o esquema do catálogo de maior força efetiva e é determinístico", () => {
+  it("é o esquema de maior força efetiva entre os que o computador usa, e é determinístico", () => {
     for (const club of testWorld().clubs.slice(0, 20)) {
       const squad = squadOf(club.id);
       const chosen = preferredFormation(squad);
-      expect(FORMATION_IDS).toContain(chosen);
+      expect(PREFERRED_FORMATION_IDS).toContain(chosen);
       expect(preferredFormation([...squad].reverse())).toBe(chosen);
-      const values = FORMATION_IDS.map((formation) => {
+      const values = PREFERRED_FORMATION_IDS.map((formation) => {
         const result = autoLineup({ squad, formation });
         return result.ok ? total(result.lineup, squad) : 0;
       });

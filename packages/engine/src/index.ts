@@ -405,7 +405,13 @@ export { advanceMatch, simulateMatch, startMatch } from "./match/engine";
 export type { MatchError, MatchErrorCode } from "./match/errors";
 export { MATCH_ERROR_CODES, MATCH_ERROR_PARAMS } from "./match/errors";
 export type { Formation, FormationId, Posture, Slot } from "./match/formations";
-export { FORMATION_IDS, FORMATIONS, POSTURES, slotPosition } from "./match/formations";
+export {
+  FORMATION_IDS,
+  FORMATIONS,
+  POSTURES,
+  PREFERRED_FORMATION_IDS,
+  slotPosition,
+} from "./match/formations";
 export { MATCH_REALISM_LIMITS } from "./match/limits";
 export type { MatchMetrics, MetricCheck } from "./match/metrics";
 export { checkRealism, createMetricsAccumulator } from "./match/metrics";

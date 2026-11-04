@@ -47,7 +47,11 @@ function sampleOf(result: MatchResult, starters: ReadonlySet<string>): Sample {
 }
 
 /** Banco padrão com escalações automáticas por clube e esquema, para pares sorteados. */
-export function comparisonWorld(seed = "equivalencia-resumida"): {
+export function comparisonWorld(
+  seed = "equivalencia-resumida",
+  /** Esquemas sorteados para cada lado (todos do catálogo, por padrão). */
+  formations: readonly FormationId[] = FORMATION_IDS,
+): {
   world: CompletedBank;
   inputs(count: number, label: string): MatchInput[];
 } {
@@ -87,12 +91,12 @@ export function comparisonWorld(seed = "equivalencia-resumida"): {
           home: {
             clubId: home,
             squad: squads.get(home) ?? [],
-            lineup: lineupFor(home, rng.pick(FORMATION_IDS)),
+            lineup: lineupFor(home, rng.pick(formations)),
           },
           away: {
             clubId: away,
             squad: squads.get(away) ?? [],
-            lineup: lineupFor(away, rng.pick(FORMATION_IDS)),
+            lineup: lineupFor(away, rng.pick(formations)),
           },
           seed: `${label}:${index}`,
           fatigue: { drainPer90: 40, penaltyBpPerPoint: 40 },

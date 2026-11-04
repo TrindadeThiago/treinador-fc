@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { PREFERRED_FORMATION_IDS } from "../../src/match/formations";
 import { comparisonWorld, samples, summarize, totalVariation } from "../helpers/summary-compare";
 
 // 020 FR-016 / SC-002 (research.md R12): as duas simulações têm distribuições equivalentes. As
 // faixas abaixo são as declaradas; a distância de variação total considera o ruído de comparar
 // duas amostras finitas (entre duas amostras só da completa, em jogos diferentes, ela fica em
-// ~0,03 com 8 000 jogos).
+// ~0,03 com 8 000 jogos). Os esquemas sorteados são os que o computador escolhe: a resumida só
+// simula jogos entre clubes dele, e os esquemas que só o técnico usa ficam na simulação completa
+// (o realismo deles é medido em realism/formations.test.ts).
 const GAMES = 8000;
 const BANDS = {
   goals: 0.08,
@@ -17,7 +20,7 @@ const BANDS = {
 } as const;
 
 describe("equivalência estatística: simulação resumida × completa (020 FR-016)", () => {
-  const { inputs } = comparisonWorld();
+  const { inputs } = comparisonWorld(undefined, PREFERRED_FORMATION_IDS);
   const list = inputs(GAMES, "equivalencia");
   const full = summarize(samples(list, "full"));
   const summary = summarize(samples(list, "summary"));
