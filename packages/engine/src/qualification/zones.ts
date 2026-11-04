@@ -1,4 +1,5 @@
 import type { BerthSource, CompletedBank } from "../model/types";
+import { compareText } from "../serialize/compare";
 import type { BerthZone } from "./types";
 
 /**
@@ -37,8 +38,8 @@ export function berthZones(
     (a, b) =>
       a.from - b.from ||
       a.to - b.to ||
-      a.competitionId.localeCompare(b.competitionId) ||
-      a.berthId.localeCompare(b.berthId),
+      compareText(a.competitionId, b.competitionId) ||
+      compareText(a.berthId, b.berthId),
   );
 }
 

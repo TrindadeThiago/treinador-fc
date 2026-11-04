@@ -1,4 +1,5 @@
 import type { CompletedBank } from "../model/types";
+import { compareText } from "../serialize/compare";
 import { squadOf } from "../world/squads";
 import { SEASON_CREDIBILITY_LIMITS } from "./limits";
 import { standings } from "./standings";
@@ -57,7 +58,7 @@ export function seasonReport(season: Season, world: CompletedBank): SeasonReport
   const table = standings(season, world);
   const strength = new Map(season.clubIds.map((clubId) => [clubId, clubStrength(world, clubId)]));
   const byStrength = [...season.clubIds].sort(
-    (a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || a.localeCompare(b),
+    (a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || compareText(a, b),
   );
   const champion = table[0];
   const last = table[table.length - 1];

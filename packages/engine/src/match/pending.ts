@@ -1,4 +1,5 @@
 import type { CompletedPlayer } from "../model/types";
+import { compareText } from "../serialize/compare";
 import { slotValue } from "./auto-lineup";
 import { slotPosition } from "./formations";
 import { emit, type MatchContext, playerState, type RemovalHook, substitutionCap } from "./minute";
@@ -20,7 +21,7 @@ function playerOf(context: MatchContext, playerId: string): CompletedPlayer | un
 }
 
 function canonical(a: CompletedPlayer, b: CompletedPlayer): number {
-  return b.strength - a.strength || a.id.localeCompare(b.id);
+  return b.strength - a.strength || compareText(a.id, b.id);
 }
 
 /** Reserva disponível mais adequado para a vaga (mesmo critério da escalação automática). */
@@ -105,7 +106,7 @@ function cheapestOutfield(
       (entry): entry is { slot: string; player: CompletedPlayer; value: number } =>
         entry.player !== undefined,
     )
-    .sort((a, b) => a.value - b.value || a.player.id.localeCompare(b.player.id))[0];
+    .sort((a, b) => a.value - b.value || compareText(a.player.id, b.player.id))[0];
 }
 
 function resolveOne(

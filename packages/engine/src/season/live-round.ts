@@ -10,6 +10,7 @@ import { maximizeAssignment } from "../match/hungarian";
 import { matchResult } from "../match/result";
 import type { Lineup, MatchChange, MatchState, Side } from "../match/types";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
+import { compareText } from "../serialize/compare";
 import { advanceStages } from "../stages/advance";
 import { applyMatchToStatus } from "./discipline";
 import { type SeasonError, seasonError } from "./errors";
@@ -205,7 +206,7 @@ export function formationChange(
     .filter((id): id is string => id !== null)
     .map((id) => byId.get(id))
     .filter((player): player is CompletedPlayer => player !== undefined)
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
   const slots = FORMATIONS[formation].slots;
   const assignment: Record<string, string | null> = {};
   for (const slot of slots) assignment[slot.id] = null;

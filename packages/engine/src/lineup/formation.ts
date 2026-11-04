@@ -4,10 +4,11 @@ import { maximizeAssignment } from "../match/hungarian";
 import type { Lineup } from "../match/types";
 import type { CompletedPlayer } from "../model/types";
 import { SEASON_BENCH_LIMIT } from "../season/lineups";
+import { compareText } from "../serialize/compare";
 import type { Place } from "./types";
 
 function canonical(a: CompletedPlayer, b: CompletedPlayer): number {
-  return b.strength - a.strength || a.id.localeCompare(b.id);
+  return b.strength - a.strength || compareText(a.id, b.id);
 }
 
 /**

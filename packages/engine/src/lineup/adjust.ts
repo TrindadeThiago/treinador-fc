@@ -2,6 +2,7 @@ import { slotValue } from "../match/auto-lineup";
 import { FORMATIONS } from "../match/formations";
 import type { Lineup } from "../match/types";
 import type { CompletedPlayer } from "../model/types";
+import { compareText } from "../serialize/compare";
 import { managerAutoLineup } from "./auto";
 import type { LineupChange, Unavailability } from "./types";
 
@@ -23,7 +24,7 @@ export function adjustLineup(
   const blocked = new Map(unavailable.map((entry) => [entry.playerId, entry]));
   const available = squad
     .filter((player) => !blocked.has(player.id))
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 
   if (available.length < STARTERS) {
     const auto = managerAutoLineup(squad, lineup.formation, lineup.posture, unavailable);
