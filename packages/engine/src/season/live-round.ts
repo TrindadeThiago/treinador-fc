@@ -108,7 +108,8 @@ export function startRound(
     }
     matches.push({
       fixture,
-      state: started.state,
+      // A tela ao vivo desenha a pressão de cada minuto (o registro não muda o sorteio).
+      state: { ...started.state, pressure: { home: [], away: [] } },
       sides: { home: fixture.home, away: fixture.away },
       prepared: prepared.value.sides,
       divisionLevel: season.divisionLevel,

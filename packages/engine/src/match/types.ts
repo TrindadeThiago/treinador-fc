@@ -224,6 +224,11 @@ export interface MatchState {
   events: MatchEvent[];
   /** Soma das frações de posse do mandante por minuto e minutos jogados. */
   possession: { home: number; total: number };
+  /**
+   * Pressão de cada lado em cada minuto jogado: a chance de finalização daquele minuto, na ordem do
+   * relógio. Só existe nas partidas de uma rodada (`startRound`), para a tela ao vivo.
+   */
+  pressure?: Record<Side, number[]>;
   /** Placar ao fim dos 90 minutos, guardado quando a partida segue para a prorrogação. */
   regulationScore?: Record<Side, number>;
   /** A prorrogação começou: o limite de substituições sobe em um. */
