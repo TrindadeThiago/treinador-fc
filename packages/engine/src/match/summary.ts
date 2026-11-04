@@ -1,5 +1,6 @@
 import type { CompletedPlayer } from "../model/types";
 import { createRng, type Rng } from "../rng/xoshiro";
+import { compareText } from "../serialize/compare";
 import { adequacy } from "./adequacy";
 import { slotValue } from "./auto-lineup";
 import { FORMATIONS, type FormationId } from "./formations";
@@ -215,7 +216,7 @@ function remove(
       (a, b) =>
         slotValue(b, entry.position) - slotValue(a, entry.position) ||
         b.strength - a.strength ||
-        a.id.localeCompare(b.id),
+        compareText(a.id, b.id),
     )[0];
   if (!reserve) return;
   timeline.bench = timeline.bench.filter((player) => player.id !== reserve.id);

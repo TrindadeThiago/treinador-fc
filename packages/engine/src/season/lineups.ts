@@ -3,6 +3,7 @@ import { FORMATION_IDS, type FormationId, slotPosition } from "../match/formatio
 import { effectiveStrength } from "../match/strength";
 import type { Lineup } from "../match/types";
 import type { CompletedPlayer } from "../model/types";
+import { compareText } from "../serialize/compare";
 
 export const SEASON_BENCH_LIMIT = 12;
 
@@ -52,7 +53,7 @@ export function lineupForMatch(
   unavailable: readonly { playerId: string; remaining: number }[],
 ): MatchLineup {
   const blocked = [...unavailable].sort(
-    (a, b) => a.remaining - b.remaining || a.playerId.localeCompare(b.playerId),
+    (a, b) => a.remaining - b.remaining || compareText(a.playerId, b.playerId),
   );
   const fielded: string[] = [];
   for (;;) {

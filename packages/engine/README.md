@@ -29,10 +29,14 @@ Mesmo estado + mesma seed = mesmo resultado, em qualquer navegador. Por isso, em
 - datas são do calendário do jogo (`calendar/date.ts`) — nunca `Date` ou `performance`;
 - só aritmética exata: nada de `Math.log/exp/pow/sin/cos/...` nem `**` (o resultado dessas
   funções pode variar entre engines); `Math.sqrt`, `Math.floor`, `Math.imul` são permitidos;
-- use `rng.fork("rótulo")` para isolar etapas: mudar uma etapa não desloca as outras.
+- use `rng.fork("rótulo")` para isolar etapas: mudar uma etapa não desloca as outras;
+- ordem de textos e ids com `compareText` (`serialize/compare.ts`), nunca `localeCompare` sem locale
+  fixo: ela segue o idioma do navegador (em tcheco "ch" vai para depois do "h", em dinamarquês "aa"
+  vai para depois do "z") e mudava o resultado da mesma seed.
 
-Essas regras são verificadas por `pnpm lint` (Biome), `pnpm typecheck` (sem tipos de DOM/Node)
-e `test/architecture.test.ts`.
+Essas regras são verificadas por `pnpm lint` (Biome), `pnpm typecheck` (sem tipos de DOM/Node),
+`test/architecture.test.ts` e `test/career/locale-determinism.test.ts` (dias do mundo padrão com a
+ordem do tcheco dão o mesmo estado).
 
 ## Testes
 

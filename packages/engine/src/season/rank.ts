@@ -1,5 +1,6 @@
 import type { Tiebreaker } from "../model/catalogs";
 import { createRng } from "../rng/xoshiro";
+import { compareText } from "../serialize/compare";
 import type { FormResult, MatchRecord, StandingRow } from "./types";
 
 export interface Points {
@@ -130,7 +131,7 @@ function breakTies(
 ): StandingRow[] {
   if (group.length <= 1) return group;
   const [criterion, ...rest] = criteria;
-  if (!criterion) return [...group].sort((a, b) => a.clubId.localeCompare(b.clubId));
+  if (!criterion) return [...group].sort((a, b) => compareText(a.clubId, b.clubId));
   const values = criterionValues(criterion, group, records, points, seed);
   const buckets = new Map<number, StandingRow[]>();
   for (const row of group) {

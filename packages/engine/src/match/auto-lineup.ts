@@ -1,5 +1,6 @@
 import type { Position } from "../model/catalogs";
 import type { CompletedPlayer } from "../model/types";
+import { compareText } from "../serialize/compare";
 import { type MatchError, matchError } from "./errors";
 import { FORMATIONS, type FormationId, type Posture } from "./formations";
 import { maximizeAssignment } from "./hungarian";
@@ -22,7 +23,7 @@ const BENCH_SECTORS: readonly (readonly Position[])[] = [["CB", "FB"], ["DM", "M
 
 /** Ordem canônica: mais forte primeiro, desempate pelo id (FR-030). */
 function canonical(a: CompletedPlayer, b: CompletedPlayer): number {
-  return b.strength - a.strength || a.id.localeCompare(b.id);
+  return b.strength - a.strength || compareText(a.id, b.id);
 }
 
 /** Valor de um jogador numa vaga — o mesmo critério da força efetiva do time. */

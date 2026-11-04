@@ -1,4 +1,5 @@
 import type { ModPackage, ValidatedBank } from "../model/types";
+import { compareText } from "../serialize/compare";
 import type { SemanticRule } from "./context";
 import { SECTIONS, type ValidationIssue } from "./issues";
 import { checkCalendar } from "./semantic/calendar";
@@ -46,8 +47,8 @@ function compareIssues(a: ValidationIssue, b: ValidationIssue): number {
   return (
     SECTIONS.indexOf(a.section) - SECTIONS.indexOf(b.section) ||
     firstIndex(a) - firstIndex(b) ||
-    a.code.localeCompare(b.code) ||
-    JSON.stringify(a.path).localeCompare(JSON.stringify(b.path))
+    compareText(a.code, b.code) ||
+    compareText(JSON.stringify(a.path), JSON.stringify(b.path))
   );
 }
 

@@ -1,3 +1,4 @@
+import { compareText } from "../serialize/compare";
 import { playerLines } from "./record";
 import type { PlayerSeasonStats, Season } from "./types";
 
@@ -42,15 +43,13 @@ export function seasonStats(season: Season): PlayerSeasonStats[] {
       }
     }
   }
-  return [...rows.values()].sort((a, b) => a.playerId.localeCompare(b.playerId));
+  return [...rows.values()].sort((a, b) => compareText(a.playerId, b.playerId));
 }
 
 function ranking(season: Season, key: "goals" | "assists", limit: number): PlayerSeasonStats[] {
   return seasonStats(season)
     .filter((row) => row[key] > 0)
-    .sort(
-      (a, b) => b[key] - a[key] || a.matches - b.matches || a.playerId.localeCompare(b.playerId),
-    )
+    .sort((a, b) => b[key] - a[key] || a.matches - b.matches || compareText(a.playerId, b.playerId))
     .slice(0, limit);
 }
 

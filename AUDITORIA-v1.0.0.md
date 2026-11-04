@@ -13,6 +13,7 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 | A9 (meta da diretoria) | **Feito** no PR #66, publicado na **1.0.5** (ver nota). |
 | A12 (novo): finanças de todos os clubes andavam uma vez por liga do mundo a cada rodada; economia do mundo padrão recalibrada | **Feito** na **1.0.6** (ver nota). Não estava na auditoria; achado ao medir o mundo padrão. |
 | A13 (novo): elencos dos clubes só de estadual não se renovam | Pendente (ver nota do A12). |
+| A14 (novo): a ordem por id dependia do idioma do navegador | **Feito** na **1.0.7** (ver nota). |
 | Constantes de partida (`directRedRate`, `injuryRate`) | **Abandonado**: a mudança quebra 11 testes de baseline e os valores já estão dentro das faixas do projeto. |
 | A2b, A4, A5, A10, T2 | Pendentes. |
 
@@ -29,6 +30,8 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 **Sobre o A5.** A crise segue perto de 0% no mundo padrão, mas não por excesso de dinheiro: a dívida média é quase nula e quem tem margem negativa se sustenta vendendo jogadores. Chegar a 1% a 5% de crise pede mexer no crédito da IA ou endurecer a economia, uma decisão de design ainda aberta. Também resta um crescimento leve do caixa no fim das 30 temporadas, quando os estádios chegam ao teto e as obras param.
 
 **Nota sobre o A13.** `retirePlayers`, `generateYouth` e `balanceSquads` (`renewal/`) só tratam os clubes das divisões da liga principal. Os jogadores dos clubes só de estadual não se aposentam nem são repostos: a idade média sobe 0,9 ano por temporada (27,3 para 29,1 em duas temporadas no mundo padrão) e o elenco encolhe aos poucos com contratos vencidos. Não corrigido.
+
+**Nota sobre o A14.** 17 usos de `localeCompare` sem locale fixo no motor desempatavam ordenações por id (escalação automática, substituições, ajuste de esquema, desempate final da tabela, ordem das vagas entre competições, artilharia, ordem dos erros de validação). A ordem segue o idioma do navegador: em tcheco e eslovaco "ch" vai para depois do "h", em dinamarquês e norueguês "aa" vai para depois do "z". No mundo padrão, os 534 ids da China (`clube-chn-…`, `jogador-chn-…`) mudavam de lugar: com a mesma seed, o estado das competições divergia a partir do 20º dia de jogos, e o 3º e o 4º lugares da liga inglesa no fim da temporada eram outros. Correção: `compareText` (`serialize/compare.ts`, ordem das unidades de código), uma regra no teste de arquitetura que proíbe `localeCompare` sem `"pt-BR"` explícito, e `test/career/locale-determinism.test.ts`, que roda 24 dias do mundo padrão com a ordem do tcheco e exige o mesmo estado. Fica de fora `market/search.ts`, que ordena a busca por nome com `"pt-BR"`.
 
 ## Resumo executivo
 

@@ -17,6 +17,11 @@ const FORBIDDEN: { pattern: RegExp; reason: string }[] = [
   { pattern: /\bDate\./, reason: "Date (use o calendário do jogo)" },
   { pattern: /\bperformance\./, reason: "performance (fonte não determinística)" },
   { pattern: /\*\*/, reason: "operador ** (use multiplicação explícita)" },
+  {
+    // A ordem segue o idioma do navegador: em tcheco "ch" vai para depois do "h" (ids da China).
+    pattern: /\.localeCompare\((?!.*"pt-BR")/,
+    reason: "localeCompare sem locale fixo (use compareText de serialize/compare)",
+  },
 ];
 
 function listTsFiles(dir: string): string[] {

@@ -1,5 +1,6 @@
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import type { PlayerStatus, Season } from "../season/types";
+import { compareText } from "../serialize/compare";
 import { squadOf } from "../world/squads";
 import type { SeasonUnavailability } from "./types";
 
@@ -29,6 +30,6 @@ export function clubUnavailability(
 ): SeasonUnavailability[] {
   const squad = squadOf(world, clubId);
   return unavailabilityOf(squad, season.status).sort(
-    (a, b) => a.remaining - b.remaining || a.playerId.localeCompare(b.playerId),
+    (a, b) => a.remaining - b.remaining || compareText(a.playerId, b.playerId),
   );
 }
