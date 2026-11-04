@@ -103,6 +103,16 @@ describe("finanças por liga no mundo padrão", () => {
     }
     expect(perRound.size).toBeGreaterThan(0);
     expect([...perRound].filter(([, count]) => count > 1)).toEqual([]);
+    // T2: em cada um dos 440 clubes, caixa − caixa do início = soma do livro-caixa.
+    const finances = played.state.finances;
+    const sums = new Map<string, number>();
+    for (const entry of finances.ledger) {
+      sums.set(entry.clubId, (sums.get(entry.clubId) ?? 0) + entry.amount);
+    }
+    const mismatched = Object.values(finances.clubs).filter(
+      (club) => club.cash - club.seasonStartCash !== (sums.get(club.clubId) ?? 0),
+    );
+    expect(mismatched.map((club) => club.clubId)).toEqual([]);
   }, 60_000);
 });
 

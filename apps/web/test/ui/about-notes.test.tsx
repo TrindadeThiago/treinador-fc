@@ -50,9 +50,9 @@ describe("Notas de versão (031 US6)", () => {
     renderApp("/notas-de-versao", freshStore());
     await screen.findByRole("heading", { level: 1, name: t("notes.title") });
     const notes = releaseNotes();
-    const regions = notes.map((note) =>
-      screen.getByRole("region", { name: new RegExp(note.version) }),
-    );
+    // A versão exata: "1.0.1" sem limite também casaria com "1.0.10" (e o ponto com qualquer letra).
+    const exact = (version: string) => new RegExp(`\\b${version.replaceAll(".", "\\.")}\\b`);
+    const regions = notes.map((note) => screen.getByRole("region", { name: exact(note.version) }));
     regions.forEach((region, index) => {
       const details = region.querySelector("details") as HTMLDetailsElement;
       expect(details.open).toBe(index === 0);
