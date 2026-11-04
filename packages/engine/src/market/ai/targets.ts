@@ -3,7 +3,7 @@ import type { Position } from "../../model/catalogs";
 import type { CompletedPlayer } from "../../model/types";
 import { canSignForeign } from "../../world/foreign";
 import { playersAt } from "../../world/squads";
-import { attraction, exigency, respondToContract, wageDemand } from "../player-response";
+import { attraction, exigency, wageDemand } from "../player-response";
 import { marketRules } from "../rules";
 import { canAddPlayer } from "../squad";
 import type { MarketContext } from "../types";
@@ -77,12 +77,15 @@ export function purchaseTarget(
     if (appeal < exigency(player) - margin) continue;
     // Poda barata: a pedida não fica abaixo do valor com o menor ruído e o maior desconto.
     if (minimumFee(context, player, floor) > needs.budget) continue;
+    // Filtros puros: a ordem não muda o resultado, então o vendedor (mais barato, com elenco, força
+    // e necessidades memorizados) vem antes do salário e da pedida.
+    if (!sellerAccepts(context, player, buyer, cache)) continue;
+    // O salário pedido é sempre aceito: o interesse do atleta já foi conferido acima, com as
+    // mesmas regras que `respondToContract` usa.
     const wage = wageDemand(context, player, buyer);
-    if (respondToContract(context, player, buyer, wage).kind !== "accepted") continue;
     const fee = aiAskingPrice(context, player, cache);
     const cost = fee + 12 * wage;
     if (cost > needs.budget) continue;
-    if (!sellerAccepts(context, player, buyer, cache)) continue;
     const years = Math.max(0, YOUTH_PIVOT - ageOn(player.birthDate, date));
     const youth = (rules.youthBonus * years * (needs.old ? 2 : 1)) / 10;
     const score = gain + youth - (2 * cost) / needs.budget;

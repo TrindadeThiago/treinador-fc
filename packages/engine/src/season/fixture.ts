@@ -1,18 +1,16 @@
 import { unavailabilityOf } from "../lineup/unavailability";
 import type { Decider, Lineup, MatchFatigue, MatchInput, Side } from "../match/types";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
+import { squadsIndex } from "../world/squads";
 import { type SeasonError, seasonError } from "./errors";
 import { lineupForMatch } from "./lineups";
 import type { Absence, Fixture, PlayerStatus, Season, SeasonWarning } from "./types";
 
-export function squadsByClub(world: CompletedBank): Map<string, CompletedPlayer[]> {
-  const squads = new Map<string, CompletedPlayer[]>();
-  for (const player of world.players) {
-    const squad = squads.get(player.clubId);
-    if (squad) squad.push(player);
-    else squads.set(player.clubId, [player]);
-  }
-  return squads;
+/** Elencos por clube, na ordem do mundo: o índice memorizado de `world/squads` (somente leitura). */
+export function squadsByClub(
+  world: CompletedBank,
+): ReadonlyMap<string, readonly CompletedPlayer[]> {
+  return squadsIndex(world);
 }
 
 export interface SideLineup {
@@ -26,7 +24,7 @@ function sideLineup(
   season: Season,
   round: number,
   clubId: string,
-  squad: CompletedPlayer[],
+  squad: readonly CompletedPlayer[],
   status: Record<string, PlayerStatus>,
   external: Lineup | undefined,
 ): { ok: true; value: SideLineup } | { ok: false; error: SeasonError } {
@@ -79,7 +77,7 @@ export interface PreparedFixture {
 export function prepareFixture(
   season: Season,
   fixture: Fixture,
-  squads: Map<string, CompletedPlayer[]>,
+  squads: ReadonlyMap<string, readonly CompletedPlayer[]>,
   lineups: Record<string, Lineup> | undefined,
   decider?: Decider,
   fatigue?: MatchFatigue,

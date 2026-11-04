@@ -25,6 +25,42 @@ function leagueFormat(
 
 /** Tabela de classificação derivada dos registros (FR-010 a FR-014). */
 export function standings(season: Season, world: CompletedBank): StandingRow[] {
+  // A diretoria, a torcida e as notícias pedem a mesma tabela várias vezes por rodada (a diretoria,
+  // uma por clube). Registros, clubes, fases e competições nunca mudam no lugar: a tabela vale
+  // enquanto as mesmas listas forem as da temporada. A lista devolvida é compartilhada (somente leitura).
+  const hit = TABLES.get(season);
+  if (
+    hit &&
+    hit.records === season.records &&
+    hit.clubIds === season.clubIds &&
+    hit.stages === season.stages &&
+    hit.competitions === world.competitions
+  ) {
+    return hit.table;
+  }
+  const table = computeStandings(season, world);
+  TABLES.set(season, {
+    records: season.records,
+    clubIds: season.clubIds,
+    stages: season.stages,
+    competitions: world.competitions,
+    table,
+  });
+  return table;
+}
+
+const TABLES = new WeakMap<
+  Season,
+  {
+    records: Season["records"];
+    clubIds: Season["clubIds"];
+    stages: Season["stages"];
+    competitions: CompletedBank["competitions"];
+    table: StandingRow[];
+  }
+>();
+
+function computeStandings(season: Season, world: CompletedBank): StandingRow[] {
   // Divisão em fases (019): a posição final de FR-024, para torcida, diretoria, composição e histórico.
   if (season.stages) return stagedStandings(season, world);
   const { points, tiebreakers } = leagueFormat(season, world);

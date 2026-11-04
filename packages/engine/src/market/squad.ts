@@ -1,5 +1,5 @@
 import type { Position } from "../model/catalogs";
-import type { CompletedBank } from "../model/types";
+import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { SQUAD_RULES } from "../renewal/rules";
 import { rulesCompetitionOf } from "../world/countries";
 import { squadOf } from "../world/squads";
@@ -49,8 +49,16 @@ export function canRemovePlayer(world: CompletedBank, clubId: string, playerId: 
 
 /** Posição do jogador entre os do clube por força (1 = mais forte; desempate por id). */
 export function strengthRank(world: CompletedBank, clubId: string, playerId: string): number {
-  const squad = [...squadOf(world, clubId)].sort(
-    (a, b) => b.strength - a.strength || (a.id < b.id ? -1 : 1),
-  );
-  return squad.findIndex((player) => player.id === playerId) + 1;
+  // O elenco vem do índice por lista de jogadores (`squadOf`), que nunca muda no lugar.
+  const squad = squadOf(world, clubId);
+  let ranks = RANKS.get(squad);
+  if (!ranks) {
+    const sorted = [...squad].sort((a, b) => b.strength - a.strength || (a.id < b.id ? -1 : 1));
+    ranks = new Map(sorted.map((player, index) => [player.id, index + 1]));
+    RANKS.set(squad, ranks);
+  }
+  return ranks.get(playerId) ?? 0;
 }
+
+/** Posição por força de cada jogador, memorizada por elenco. */
+const RANKS = new WeakMap<readonly CompletedPlayer[], Map<string, number>>();

@@ -25,6 +25,16 @@ function indexOf(players: readonly CompletedPlayer[]): Index {
 const NONE: readonly CompletedPlayer[] = [];
 
 /**
+ * Elencos de todos os clubes, na ordem do mundo, do mesmo índice de `squadOf` (compartilhado e
+ * memorizado por lista de jogadores: somente leitura).
+ */
+export function squadsIndex(world: {
+  players: readonly CompletedPlayer[];
+}): ReadonlyMap<string, readonly CompletedPlayer[]> {
+  return indexOf(world.players).byClub;
+}
+
+/**
  * Elenco do clube (incluídos os emprestados que ele recebeu), na ordem do mundo. O índice é
  * construído uma vez por lista de jogadores: consultar o elenco de um clube custa o tamanho dele,
  * não o do mundo (020 R12, mundo de ~11 000 jogadores).
@@ -46,12 +56,16 @@ export function playerById(
   world: { players: readonly CompletedPlayer[] },
   playerId: string,
 ): CompletedPlayer | undefined {
-  let hit = BY_ID.get(world.players);
-  if (!hit || hit.length !== world.players.length) {
-    hit = { length: world.players.length, map: new Map(world.players.map((p) => [p.id, p])) };
-    BY_ID.set(world.players, hit);
+  return idMapOf(world.players).get(playerId);
+}
+
+function idMapOf(players: readonly CompletedPlayer[]): Map<string, CompletedPlayer> {
+  let hit = BY_ID.get(players);
+  if (!hit || hit.length !== players.length) {
+    hit = { length: players.length, map: new Map(players.map((p) => [p.id, p])) };
+    BY_ID.set(players, hit);
   }
-  return hit.map.get(playerId);
+  return hit.map;
 }
 
 const BY_POSITION = new WeakMap<
@@ -66,17 +80,54 @@ export function playersAt(
 ): readonly CompletedPlayer[] {
   let hit = BY_POSITION.get(world.players);
   if (!hit || hit.length !== world.players.length) {
-    const map = new Map<string, CompletedPlayer[]>();
-    for (const player of world.players) {
-      const list = map.get(player.position);
-      if (list) list.push(player);
-      else map.set(player.position, [player]);
-    }
-    for (const list of map.values()) {
-      list.sort((a, b) => b.strength - a.strength || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-    }
+    const map = reusedOrder(world.players) ?? sortedByPosition(world.players);
     hit = { length: world.players.length, map };
     BY_POSITION.set(world.players, hit);
+    LAST_ORDER = { players: world.players, map };
   }
   return hit.map.get(position) ?? NONE;
+}
+
+/** Último índice por posição montado: a lista seguinte quase sempre só troca o clube de alguém. */
+let LAST_ORDER: {
+  players: readonly CompletedPlayer[];
+  map: Map<string, CompletedPlayer[]>;
+} | null = null;
+
+function sortedByPosition(players: readonly CompletedPlayer[]): Map<string, CompletedPlayer[]> {
+  const map = new Map<string, CompletedPlayer[]>();
+  for (const player of players) {
+    const list = map.get(player.position);
+    if (list) list.push(player);
+    else map.set(player.position, [player]);
+  }
+  for (const list of map.values()) {
+    list.sort((a, b) => b.strength - a.strength || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  }
+  return map;
+}
+
+/**
+ * A ordem do último índice vale para a lista nova se ela tem exatamente os mesmos jogadores, cada um
+ * com a mesma força e posição (o caso de uma transferência ou empréstimo, que só troca clube e
+ * contrato): a chave de ordem (força, id) não mudou. Custa uma passada em vez de uma ordenação; sem
+ * isso, devolve nada e o índice é montado do zero.
+ */
+function reusedOrder(players: readonly CompletedPlayer[]): Map<string, CompletedPlayer[]> | null {
+  const last = LAST_ORDER;
+  if (!last || last.players.length !== players.length) return null;
+  const byId = idMapOf(players);
+  if (byId.size !== players.length) return null;
+  const map = new Map<string, CompletedPlayer[]>();
+  for (const [position, list] of last.map) {
+    const next: CompletedPlayer[] = new Array(list.length);
+    for (let index = 0; index < list.length; index++) {
+      const before = list[index] as CompletedPlayer;
+      const now = byId.get(before.id);
+      if (!now || now.strength !== before.strength || now.position !== before.position) return null;
+      next[index] = now;
+    }
+    map.set(position, next);
+  }
+  return map;
 }
