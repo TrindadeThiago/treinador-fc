@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.1.0",
+    "date": "2026-11-05",
+    "changes": [
+      "Nos mata-matas de ida e volta, o jogo de volta mostra o placar agregado: no placar da partida ao vivo, na lista dos outros jogos, nos resultados da rodada e, na véspera, no card do próximo jogo da tela inicial (o agregado da ida, com os nomes dos clubes).",
+      "Na escalação, o volante aparece numa linha própria, entre os meias e a defesa, como no campo de verdade. As características dos jogadores (artilheiro, muralha, cobrador de falta, cabeceio, velocidade e armador) aparecem em ícones nos titulares e nas listas de reservas e fora da relação; passe o mouse para ver o nome.",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.0.10",
     "date": "2026-11-05",
     "changes": [
