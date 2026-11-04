@@ -1,0 +1,20 @@
+/* Durante o arraste a página não seleciona texto e o cursor diz o que está acontecendo. */
+.dragging {
+  user-select: none;
+  cursor: grabbing;
+}
+
+.ghost {
+  position: fixed;
+  z-index: 50;
+  transform: translate(14px, 14px);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-accent);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}

@@ -35,9 +35,14 @@
   color: var(--color-muted);
 }
 
-.note {
+.note,
+.hint {
   margin: 0;
   color: var(--color-muted);
+}
+
+.hint {
+  font-size: var(--text-sm);
 }
 
 /* Aviso de titulares cansados (026): atenção, com texto e borda. */

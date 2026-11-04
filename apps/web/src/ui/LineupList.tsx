@@ -14,6 +14,23 @@ import { FitnessMeter } from "./FitnessMeter";
 import styles from "./LineupList.module.css";
 import { Condition, HangingBadge } from "./PlayerCondition";
 import { TraitIcons } from "./TraitIcons";
+import type { LineupDrag } from "./useLineupDrag";
+
+/** Alça de arraste (Tabler Icons `grip-vertical`, MIT): no toque, é por ela que se arrasta. */
+function Grip() {
+  return (
+    <span data-drag-handle className={styles.grip} aria-hidden="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      </svg>
+    </span>
+  );
+}
 
 interface LineupListProps {
   lineup: Lineup;
@@ -27,6 +44,8 @@ interface LineupListProps {
   selected?: Place | undefined;
   onSelect(place: Place): void;
   onFocusPlayer(playerId: string | undefined): void;
+  /** Arrastar e soltar entre os lugares; sem ele, só o clique em dois lugares. */
+  drag?: LineupDrag | undefined;
 }
 
 const samePlace = (a: Place | undefined, b: Place) => (a ? same(a, b) : false);
@@ -42,6 +61,7 @@ export function LineupList({
   selected,
   onSelect,
   onFocusPlayer,
+  drag,
 }: LineupListProps) {
   const t = useT();
   const used = new Set([...Object.values(lineup.starters), ...lineup.bench]);
@@ -77,7 +97,9 @@ export function LineupList({
           className={`${styles.row} ${isSelected ? styles.selected : ""}`}
           onClick={() => onSelect(place)}
           onFocus={() => onFocusPlayer(player.id)}
+          {...drag?.source(place, player.displayName)}
         >
+          <Grip />
           <span className={styles.position}>{label(`position.${player.position}`)}</span>
           <span className={styles.name}>
             {player.displayName}
@@ -110,6 +132,7 @@ export function LineupList({
                 }`}
                 onClick={() => onSelect(free)}
                 onFocus={() => onFocusPlayer(undefined)}
+                {...drag?.target(free)}
               >
                 {t("lineup.benchFree")}
               </button>

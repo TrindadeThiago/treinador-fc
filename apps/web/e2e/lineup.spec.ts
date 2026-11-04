@@ -44,7 +44,14 @@ test("escalar, simular e recarregar mantém a escalação usada na partida (SC-0
   const nameOf = (id: string) => before.bank.players.find((p) => p.id === id)?.displayName ?? id;
   const outside = page.getByRole("region", { name: t("lineup.outside") });
   const candidate = outside.getByRole("button").first();
-  const inName = (await candidate.locator("span").nth(1).textContent()) ?? "";
+  // O jogador da linha pelo nome no texto dela (o mais longo, se um nome contiver outro), sem
+  // depender da ordem dos elementos (a alça de arraste vem antes da posição).
+  const rowText = (await candidate.textContent()) ?? "";
+  const inName =
+    squad
+      .map((p) => p.displayName)
+      .filter((name) => rowText.includes(name))
+      .sort((a, b) => b.length - a.length)[0] ?? "";
   const inId = squad.find((p) => p.displayName === inName)?.id ?? "";
 
   await pitch.getByRole("button", { name: new RegExp(nameOf(outId)) }).click();
