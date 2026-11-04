@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.5.0",
+    "date": "2026-11-05",
+    "changes": [
+      "Cinco esquemas táticos novos para o seu time, na escalação e durante a partida: 3-4-3, 4-1-4-1, 4-4-2 losango, 5-4-1 e 4-2-2-2 (o \"quadrado\"). Agora são 11 no total, cada um desenhado no campo da escalação.",
+      "Os esquemas novos foram medidos em milhares de partidas: gols, finalizações e posse ficam nas mesmas faixas dos esquemas de antes, e nenhum deles vence o mesmo elenco num 4-4-2 com folga. Escolher o esquema certo é encaixar cada jogador na sua posição.",
+      "Os clubes do computador continuam escolhendo entre os seis esquemas de sempre, então a mesma seed dá exatamente a mesma carreira de antes. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "2026-11-05",
     "changes": [

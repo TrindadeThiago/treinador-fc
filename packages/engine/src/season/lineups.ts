@@ -1,5 +1,5 @@
 import { autoLineup } from "../match/auto-lineup";
-import { FORMATION_IDS, type FormationId, slotPosition } from "../match/formations";
+import { type FormationId, PREFERRED_FORMATION_IDS, slotPosition } from "../match/formations";
 import { effectiveStrength } from "../match/strength";
 import type { Lineup } from "../match/types";
 import type { CompletedPlayer } from "../model/types";
@@ -19,13 +19,13 @@ function lineupValue(lineup: Lineup, squad: readonly CompletedPlayer[]): number 
 }
 
 /**
- * Esquema preferido do clube: o do catálogo cuja escalação automática (elenco completo) tem a
- * maior força efetiva; empate fica com o primeiro do catálogo (research.md R8).
+ * Esquema preferido do clube: o de `PREFERRED_FORMATION_IDS` cuja escalação automática (elenco
+ * completo) tem a maior força efetiva; empate fica com o primeiro da lista (research.md R8).
  */
 export function preferredFormation(squad: readonly CompletedPlayer[]): FormationId {
-  let best: FormationId = FORMATION_IDS[0];
+  let best: FormationId = PREFERRED_FORMATION_IDS[0] as FormationId;
   let bestValue = Number.NEGATIVE_INFINITY;
-  for (const formation of FORMATION_IDS) {
+  for (const formation of PREFERRED_FORMATION_IDS) {
     const result = autoLineup({ squad, formation });
     if (!result.ok) continue;
     const value = lineupValue(result.lineup, squad);
