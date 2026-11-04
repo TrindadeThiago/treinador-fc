@@ -9,8 +9,12 @@ Motor do jogo em TypeScript puro: sem React, sem DOM, sem Node e sem I/O
 - **PRNG determinístico** — `createRng(seed)`, `restoreRng(state)`, `rng.fork(label)`.
 - **Modelo de dados e validação** — `validateBank(input)` devolve todos os erros e avisos, como
   código + parâmetros; o texto vem de `@brasfoot-like/i18n`.
-- **Gerador do mundo padrão** — `generateDefaultBank({ seed })`; o resultado versionado fica em
-  `mods/default/` (`pnpm gen:default-bank`).
+- **Mundo padrão do jogo** — `generateFootballWorld(DEFAULT_PROFILE, seed)` (feature 024): 15 países
+  em 5 confederações, 440 clubes, gerado na hora pela tela de nova carreira. Ver
+  [`docs/mundo-completo.md`](../../docs/mundo-completo.md).
+- **Banco de um país só** — `generateDefaultBank({ seed })`, versionado em `mods/default/`
+  (`pnpm gen:default-bank`). Era o mundo padrão até a 1.10; hoje serve de banco de testes e de base
+  dos mods de exemplo.
 - **Atributos ocultos** — `completeHiddenAttributes(bank, careerSeed)`.
 - **Valores derivados** — `deriveWage`, `deriveMarketValue`, `ageOn`.
 - **Serialização** — `toCanonicalJson`, `splitBankFiles`, `joinBankFiles`.
@@ -32,7 +36,10 @@ e `test/architecture.test.ts`.
 
 ## Testes
 
-`pnpm test` na raiz. O gerador é verificado com 20 seeds contra `DISTRIBUTION_LIMITS`
+`pnpm test` na raiz. Regras que dependem de vários países (finanças, mercado, diretoria por liga)
+devem ser testadas no mundo padrão (`generateFootballWorld`), como em
+`test/finance/world-scope.test.ts` e `test/worldgen/football-world/long-run.test.ts`; o banco de um
+país só não mostra esses erros. O gerador do banco de um país é verificado com 20 seeds contra `DISTRIBUTION_LIMITS`
 (`src/worldgen/limits.ts`); para recalibrar, ajuste `GENERATOR_TUNING` (`src/worldgen/tuning.ts`)
 e regenere `mods/default/`.
 

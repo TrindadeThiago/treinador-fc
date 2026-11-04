@@ -107,7 +107,18 @@ computador: o projeto não os distribui.
 - `pnpm sim:world --football-world --seasons n` mede dia de jogos, virada, memória e tamanho do save contra
   as metas da 020 (`SCALE_LIMITS`). O mundo padrão foi simulado por temporadas seguidas (divisões estáveis,
   elencos válidos, vagas continentais, economia dentro de faixas).
+  Também confere a economia de todos os clubes no fim de cada temporada: caixa médio acima de -8 milhões
+  e até 3 folhas anuais, e no máximo 8% dos clubes em crise nas 10 primeiras temporadas (15% depois).
+  O `pnpm sim:gates` roda 10 temporadas; 30 levam uns 22 minutos.
 - Ligas mais curtas rendem menos bilheteria: a folha de salários do país acompanha o número de rodadas
   (38 = liga de 20 clubes).
+- A folha dos países de uma divisão acompanha a força (`oneDivisionWagePct`: 115% da escala com força
+  0,8 a 98% com força 1,5), porque o ingresso não escala com o país e os salários crescem com a força dos
+  jogadores. A do Brasil é 8% maior que a de um país de duas divisões, e a Série D recebe do patrocínio
+  uma parte maior da folha (90%).
+- Os clubes que só jogam o estadual pagam a folha o ano inteiro, com o fator do estadual
+  (`economy.wageFactorPct` = 36%), e recebem patrocínio toda temporada pelas regras do estadual.
+- Calibragem (1.0.6, duas seeds, 30 temporadas): caixa médio de 3,6 para 10 milhões (0,3 a 0,85 folha
+  anual), todas as ligas entre 0,4 e 1,5 folha na 30ª temporada e menos de 1% dos clubes em crise.
 - O limite por arquivo JSON do pacote passou de 10 para 16 MB (`docs/mod-format.md`, seção "Limites"), para
   caber perfis grandes.

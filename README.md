@@ -46,7 +46,7 @@ navegador, e é determinística: a mesma seed dá sempre o mesmo resultado.
 | `packages/modkit` | Pacotes de mod (`.zip`), CSV e imagens de escudo |
 | `packages/i18n` | Textos da interface (pt-BR), mensagens de erro e notas de versão |
 | `apps/web` | Interface em Next.js (static export) com service worker para jogar offline |
-| `mods/default`, `mods/exemplo` | Banco fictício padrão e mod de exemplo |
+| `mods/default`, `mods/exemplo` | Banco de um país só (testes e base dos exemplos) e mod de exemplo; o mundo padrão do jogo é gerado por `generateFootballWorld` ([`docs/mundo-completo.md`](docs/mundo-completo.md)) |
 | `tools` | Scripts: geração do banco, validação de mods, simulações de balanceamento e release |
 
 Os saves ficam no IndexedDB do navegador; não há servidor.
@@ -67,8 +67,7 @@ pnpm preview:web      # serve o build em http://localhost:4173
 ```bash
 pnpm typecheck && pnpm lint && pnpm test   # tipos, Biome e testes unitários (Vitest)
 pnpm build:web && pnpm test:e2e            # e2e com Playwright (inclui acessibilidade e offline)
-pnpm sim:world --seasons 30                # balanceamento do mundo em 30 temporadas
-pnpm sim:economy --seasons 30              # balanceamento da economia em 30 temporadas
+pnpm sim:world --football-world --seasons 10   # mundo padrão: escala, estrutura e economia (30 antes de versões maiores, ~22 min)
 ```
 
 Para o e2e, instale o Chromium uma vez: `pnpm --filter @brasfoot-like/web exec playwright install chromium`.
@@ -78,11 +77,12 @@ Para o e2e, instale o Chromium uma vez: `pnpm --filter @brasfoot-like/web exec p
 | Script | Faz |
 |---|---|
 | `pnpm validate-bank <pasta ou .zip>` | Valida um banco de dados ou mod e lista todos os erros |
-| `pnpm gen:default-bank` | Gera o banco fictício padrão (`mods/default`) |
+| `pnpm gen:default-bank` | Gera o banco de um país só (`mods/default`), usado nos testes |
+| `pnpm gen:football-world` | Gera o mundo padrão como mod (`dist/mundo-completo`) |
 | `pnpm gen:example-mod` | Gera o mod de exemplo e o pacote para download no jogo |
 | `pnpm screenshots` | Gera as capturas da página Sobre e deste README (tema escuro) e os ícones do aplicativo, a partir do build |
 | `pnpm check-release` | Verificações antes de publicar (versão, notas, capturas, textos e tamanho do pacote) |
-| `pnpm sim:gates` | As três simulações de 30 temporadas (mundo, economia e mundo grande), antes de publicar |
+| `pnpm sim:gates` | As simulações antes de publicar: o mundo padrão em 10 temporadas (escala, estrutura e economia) e o mundo grande sintético com vagas entre competições em 30 |
 | `pnpm hooks:install` | Liga o gancho de pré-push, que roda `pnpm sim:gates` quando o push mexe no motor, no save, no modkit ou nas ferramentas (`SKIP_SIMS=1 git push` pula) |
 
 ## Publicação
