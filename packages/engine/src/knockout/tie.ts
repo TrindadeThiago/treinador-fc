@@ -154,3 +154,26 @@ export function deciderFor(
     extraTime: phase.tiebreakers.includes("extra-time"),
   };
 }
+
+/**
+ * Placar agregado de um confronto de ida e volta na perna de volta, do ponto de vista dos lados
+ * dela: gols da ida mais `score` (o placar da volta até agora). Fora da volta, `undefined`.
+ */
+export function legAggregate(
+  world: Pick<CompletedBank, "competitions">,
+  season: Season,
+  fixture: Fixture,
+  score: Record<Side, number>,
+): Record<Side, number> | undefined {
+  if (fixture.tie?.legs !== 2 || fixture.tie.leg !== 2) return undefined;
+  const decider = deciderFor(world, season, fixture);
+  return decider ? aggregateWith(decider, score) : undefined;
+}
+
+/** Gols das pernas anteriores do `decider` somados ao placar desta. */
+export function aggregateWith(decider: Decider, score: Record<Side, number>): Record<Side, number> {
+  return {
+    home: decider.before.home.goals + score.home,
+    away: decider.before.away.goals + score.away,
+  };
+}

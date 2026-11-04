@@ -12,6 +12,7 @@ import {
 } from "@brasfoot-like/save";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { aggregateOf } from "../../game/aggregate";
 import { GameLayout } from "../../game/GameLayout";
 import { clubPosition, lastResults } from "../../game/selectors";
 import { formatMoney, useT } from "../../i18n";
@@ -103,6 +104,7 @@ function Unemployed({
             clubs={save.bank.clubs}
             clubId={managedClubId(save)}
             rivalries={save.bank.rivalries}
+            aggregate={(record) => aggregateOf(save, record, record.score)}
           />
         </div>
       ) : null}
@@ -254,6 +256,7 @@ export default function HomePage() {
                   clubs={save.bank.clubs}
                   clubId={save.clubId}
                   rivalries={save.bank.rivalries}
+                  aggregate={(record) => aggregateOf(save, record, record.score)}
                 />
               </div>
             ) : null}

@@ -77,3 +77,9 @@
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.aggregate {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}

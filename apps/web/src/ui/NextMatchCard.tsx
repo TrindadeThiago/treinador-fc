@@ -10,6 +10,7 @@ import {
   userSeason,
 } from "@brasfoot-like/save";
 import Link from "next/link";
+import { aggregateOf } from "../game/aggregate";
 import type { useGame } from "../game/GameProvider";
 import { clubPosition } from "../game/selectors";
 import { formatDate, formatWeekday, useT } from "../i18n";
@@ -51,6 +52,9 @@ export function NextMatchCard({
   const competition = next
     ? save.bank.competitions.find((entry) => entry.id === next.competitionId)
     : undefined;
+  const firstLeg = next
+    ? aggregateOf(save, next, { home: 0, away: 0 }, next.competitionId)
+    : undefined;
   const position = clubPosition(userSeason(save), save.bank, save.clubId);
   return (
     <Card aria-label={t("home.nextMatch")} className={styles.card}>
@@ -88,6 +92,16 @@ export function NextMatchCard({
                 phaseLabel(save, next.competitionId, next.round) ??
                 t("home.roundLabel", { round: next.round })}
             </span>
+            {next && firstLeg ? (
+              <span>
+                {t("cup.firstLeg", {
+                  home: clubs.get(next.home)?.shortName ?? next.home,
+                  homeGoals: firstLeg.home,
+                  awayGoals: firstLeg.away,
+                  away: clubs.get(next.away)?.shortName ?? next.away,
+                })}
+              </span>
+            ) : null}
             {form.length > 0 ? <FormChips form={form} /> : null}
           </div>
         </div>

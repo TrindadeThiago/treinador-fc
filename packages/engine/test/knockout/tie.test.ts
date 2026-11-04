@@ -4,6 +4,7 @@ import {
   cupChampion,
   cupReached,
   deciderFor,
+  legAggregate,
   phaseWinners,
   tieState,
 } from "../../src/knockout/tie";
@@ -96,6 +97,32 @@ describe("deciderFor", () => {
     expect(volta?.before.home.goals).toBe(record?.score.away);
     expect(volta?.before.away.awayGoals).toBe(0);
     expect(volta?.before.home.awayGoals).toBe(record?.score.away);
+  });
+});
+
+describe("legAggregate", () => {
+  it("só existe na volta: soma a ida, vista pelos lados da volta, ao placar da volta", () => {
+    const { world, season: initial } = start();
+    let season = initial;
+    const single = ensurePhaseDrawn(season, world, 0);
+    const first = single.calendar[0]?.fixtures[0];
+    if (!first) throw new Error("sem jogo");
+    expect(legAggregate(world, single, first, { home: 1, away: 0 })).toBeUndefined();
+
+    while (season.nextRound < 3) season = playNextRound(world, season);
+    const drawn = ensurePhaseDrawn(season, world, 2);
+    const leg1 = drawn.calendar[2]?.fixtures[0];
+    const leg2 = drawn.calendar[3]?.fixtures.find((fixture) => fixture.tie?.id === leg1?.tie?.id);
+    if (!leg1 || !leg2) throw new Error("sem pernas");
+    expect(legAggregate(world, drawn, leg1, { home: 0, away: 0 })).toBeUndefined();
+
+    const afterLeg1 = playNextRound(world, drawn);
+    const record = afterLeg1.records.find((entry) => entry.round === 3 && entry.home === leg1.home);
+    if (!record) throw new Error("ida sem registro");
+    expect(legAggregate(world, afterLeg1, leg2, { home: 2, away: 1 })).toEqual({
+      home: record.score.away + 2,
+      away: record.score.home + 1,
+    });
   });
 });
 

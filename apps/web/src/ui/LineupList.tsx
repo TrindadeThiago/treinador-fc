@@ -13,6 +13,7 @@ import { label, useT } from "../i18n";
 import { FitnessMeter } from "./FitnessMeter";
 import styles from "./LineupList.module.css";
 import { Condition, HangingBadge } from "./PlayerCondition";
+import { TraitIcons } from "./TraitIcons";
 
 interface LineupListProps {
   lineup: Lineup;
@@ -78,7 +79,10 @@ export function LineupList({
           onFocus={() => onFocusPlayer(player.id)}
         >
           <span className={styles.position}>{label(`position.${player.position}`)}</span>
-          <span className={styles.name}>{player.displayName}</span>
+          <span className={styles.name}>
+            {player.displayName}
+            <TraitIcons traits={player.traits} />
+          </span>
           <span className={styles.strength}>{player.strength}</span>
           {fitness ? <FitnessMeter value={fitness(player.id)} /> : null}
           <Condition entry={unavailable.get(player.id)} hideAvailable />

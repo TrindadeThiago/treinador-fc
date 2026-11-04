@@ -3,6 +3,7 @@
 import type { LiveMatch, Side } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
 import { memo } from "react";
+import { liveAggregate } from "../../game/aggregate";
 import { type MatchContext, phaseOf, sentOffOf } from "../../game/live-view";
 import { useT } from "../../i18n";
 import { Badge, type BadgeTone } from "../Badge";
@@ -85,6 +86,7 @@ export const MatchScoreboard = memo(function MatchScoreboard({
       : phase === "extraTime"
         ? t("live.state.extraTime")
         : clockText(match.state);
+  const aggregate = liveAggregate(match);
   const side = context.neutral
     ? t("live.side.neutral")
     : t(mine === "home" ? "live.side.home" : "live.side.away");
@@ -106,6 +108,11 @@ export const MatchScoreboard = memo(function MatchScoreboard({
           <strong className={styles.score}>
             {match.state.score.home} × {match.state.score.away}
           </strong>
+          {aggregate ? (
+            <span className={styles.aggregate}>
+              {t("cup.aggregate", { home: aggregate.home, away: aggregate.away })}
+            </span>
+          ) : null}
           <Badge tone={TONE[phase]}>
             <span aria-hidden="true">{SYMBOL[phase]} </span>
             {stateText}

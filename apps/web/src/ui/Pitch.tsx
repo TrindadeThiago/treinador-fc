@@ -13,8 +13,10 @@ import { label, useT } from "../i18n";
 import { FitnessMeter } from "./FitnessMeter";
 import styles from "./Pitch.module.css";
 import { Condition, HangingBadge } from "./PlayerCondition";
+import { TraitIcons } from "./TraitIcons";
 
-const LINES: readonly (readonly Position[])[] = [["FW"], ["DM", "MF"], ["FB", "CB"], ["GK"]];
+/** Linhas do campo, do ataque ao gol: o volante fica numa linha própria, atrás dos meias. */
+const LINES: readonly (readonly Position[])[] = [["FW"], ["MF"], ["DM"], ["FB", "CB"], ["GK"]];
 
 interface PitchProps {
   lineup: Lineup;
@@ -29,7 +31,7 @@ interface PitchProps {
   onFocusPlayer(playerId: string | undefined): void;
 }
 
-/** As 11 vagas do esquema, por linha (ataque no alto, gol embaixo). */
+/** As 11 vagas do esquema, por linha (ataque no alto, volantes atrás dos meias, gol embaixo). */
 export function Pitch({
   lineup,
   players,
@@ -83,6 +85,7 @@ export function Pitch({
                       {t("lineup.effective", { value: Math.round(player.strength * factor) })}
                     </span>
                   ) : null}
+                  {player ? <TraitIcons traits={player.traits} /> : null}
                   {player && factor < 1 ? (
                     <span className={styles.warning}>
                       {t("lineup.outOfPosition", { percent: Math.round(factor * 100) })}
