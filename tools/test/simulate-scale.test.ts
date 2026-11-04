@@ -24,3 +24,22 @@ describe("metas de escala do mundo grande (020 FR-019)", () => {
     expect(report.lines.filter((line) => line.startsWith("✗"))).toEqual([]);
   });
 }, 300_000);
+
+// Mundo padrão (024): uma temporada no CI, com a economia de todos os clubes conferida contra as
+// faixas do teste longo do motor. As 30 temporadas rodam em `pnpm sim:gates` (pré-push).
+describe("mundo padrão: escala e economia em uma temporada", () => {
+  const report = runSimulateScale({
+    seed: "mundo-padrao-1",
+    countries: 0,
+    seasons: 1,
+    footballWorld: {},
+  });
+
+  it("confere a economia e a estrutura (o tempo fica com o gate, que roda sem carga)", () => {
+    expect(report.lines.some((line) => line.includes("clubes em crise nas 10 primeiras"))).toBe(
+      true,
+    );
+    const timing = /dia de jogos|virada|pico de heap|temporadas: .* min/;
+    expect(report.lines.filter((line) => line.startsWith("✗") && !timing.test(line))).toEqual([]);
+  });
+}, 300_000);

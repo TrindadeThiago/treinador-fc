@@ -3,6 +3,7 @@
 // Uso: pnpm sim:world --scale [--countries 10] [--seasons 30] [--seed mundo-grande]
 import { gzipSync } from "node:zlib";
 import {
+  annualWageBill,
   CONTINENTAL_LIMITS,
   type ContinentalSnapshot,
   completeCareerDay,
@@ -37,6 +38,21 @@ export const COUNTRY_LIMITS = {
   max: [78, 99],
   meanAge: [24, 27.5],
   minHealthyShare: 0.8,
+} as const;
+
+/**
+ * Economia do mundo padrão (024), no fim de cada temporada, sobre todos os clubes: as faixas do
+ * teste longo do motor (`packages/engine/test/worldgen/football-world/long-run.test.ts`). As faixas
+ * de força por país (`COUNTRY_LIMITS`) não valem aqui: a força dos países vai de 0,5 a 1,5.
+ */
+export const FOOTBALL_WORLD_ECONOMY = {
+  minMeanCash: -8_000_000,
+  /** Teto do caixa médio em folhas anuais médias: sem ele, a inflação do A12 passava despercebida. */
+  maxMeanCashInWageBills: 3,
+  maxCrisisShare: 0.15,
+  /** Nas primeiras temporadas o mundo ainda é saudável. */
+  earlyMaxCrisisShare: 0.08,
+  earlySeasons: 10,
 } as const;
 
 export interface SimulateScaleOptions {
@@ -158,6 +174,8 @@ export function runSimulateScale(options: SimulateScaleOptions): ScaleReport {
   const continentalSnapshots = new Map<string, ContinentalSnapshot[]>();
   let finalReputation: Record<string, number> = {};
   const international = bank.competitions.filter((entry) => entry.countryId === undefined);
+  /** Caixa médio e parcela de clubes em crise no fim de cada temporada (mundo padrão). */
+  const economy: { meanCash: number; crisisShare: number; inWageBills: number }[] = [];
   for (let season = 1; season <= options.seasons; season++) {
     if (options.continental) continentalStart = seasonStateOf(save);
     const startSize = JSON.stringify(save).length;
@@ -236,6 +254,28 @@ export function runSimulateScale(options: SimulateScaleOptions): ScaleReport {
           problems.push(`${label}: ${crisis} clubes em crise`);
         }
       }
+    }
+    if (options.footballWorld) {
+      const clubs = Object.values(save.finances.clubs);
+      const meanCash = clubs.reduce((sum, club) => sum + club.cash, 0) / clubs.length;
+      const crisisShare = clubs.filter((club) => club.inCrisis).length / clubs.length;
+      const date = `${save.league.year}-12-31`;
+      const ids = Object.keys(save.finances.clubs);
+      const meanWages =
+        ids.reduce((sum, id) => sum + annualWageBill(save.bank, id, date), 0) / ids.length;
+      const inWageBills = meanWages > 0 ? meanCash / meanWages : 0;
+      economy.push({ meanCash, crisisShare, inWageBills });
+      if (inWageBills > FOOTBALL_WORLD_ECONOMY.maxMeanCashInWageBills) {
+        problems.push(`caixa médio de ${inWageBills.toFixed(2)} folhas`);
+      }
+      const limits = FOOTBALL_WORLD_ECONOMY;
+      const cap =
+        season <= limits.earlySeasons ? limits.earlyMaxCrisisShare : limits.maxCrisisShare;
+      if (meanCash <= limits.minMeanCash) {
+        problems.push(`caixa médio ${(meanCash / 1e6).toFixed(1)} mi`);
+      }
+      if (crisisShare > cap)
+        problems.push(`${(100 * crisisShare).toFixed(1)}% dos clubes em crise`);
     }
     if (options.detail) {
       const state = seasonStateOf(save);
@@ -325,6 +365,41 @@ export function runSimulateScale(options: SimulateScaleOptions): ScaleReport {
       [
         totalMs <= scaleLimits.thirtySeasonsMs,
         `30 temporadas: ${(totalMs / 60000).toFixed(1)} min (≤ ${scaleLimits.thirtySeasonsMs / 60000})`,
+      ],
+    );
+  }
+  if (options.footballWorld && economy.length > 0) {
+    const limits = FOOTBALL_WORLD_ECONOMY;
+    const lowest = Math.min(...economy.map((entry) => entry.meanCash));
+    const early = Math.max(
+      ...economy.slice(0, limits.earlySeasons).map((entry) => entry.crisisShare),
+    );
+    const worst = Math.max(...economy.map((entry) => entry.crisisShare));
+    const richest = Math.max(...economy.map((entry) => entry.inWageBills));
+    lines.push(
+      "",
+      `Economia por temporada (caixa médio em mi / % em crise): ${economy
+        .map(
+          (entry) => `${(entry.meanCash / 1e6).toFixed(1)}/${(100 * entry.crisisShare).toFixed(0)}`,
+        )
+        .join(" ")}`,
+    );
+    checks.push(
+      [
+        lowest > limits.minMeanCash,
+        `menor caixa médio: ${(lowest / 1e6).toFixed(1)} mi (> ${limits.minMeanCash / 1e6} mi)`,
+      ],
+      [
+        richest <= limits.maxMeanCashInWageBills,
+        `maior caixa médio: ${richest.toFixed(2)} folhas anuais (≤ ${limits.maxMeanCashInWageBills})`,
+      ],
+      [
+        early <= limits.earlyMaxCrisisShare,
+        `clubes em crise nas ${limits.earlySeasons} primeiras temporadas: até ${(100 * early).toFixed(1)}% (≤ ${100 * limits.earlyMaxCrisisShare}%)`,
+      ],
+      [
+        worst <= limits.maxCrisisShare,
+        `clubes em crise: até ${(100 * worst).toFixed(1)}% (≤ ${100 * limits.maxCrisisShare}%)`,
       ],
     );
   }
