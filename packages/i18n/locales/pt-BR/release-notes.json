@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.4.0",
+    "date": "2026-11-05",
+    "changes": [
+      "A escalação ganhou um campo de futebol de verdade: gramado com linhas e áreas, e cada titular no seu lugar do esquema (pontas abertas, volantes atrás dos meias, laterais na linha da defesa). Cada jogador aparece num círculo com a força efetiva, com o nome e a condição física embaixo, a posição da vaga no canto e as características em ícones. Quem joga fora de posição ganha o círculo em destaque e a posição natural com o rendimento.",
+      "Agora dá para arrastar os jogadores: solte um sobre outro para trocar os dois de lugar, entre o campo, o banco e os de fora da relação. No celular, arraste pelo próprio card no campo e pela alça nas listas, e a página continua rolando com o dedo. Clicar em dois jogadores e usar o teclado continuam funcionando como antes.",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.3.0",
     "date": "2026-11-05",
     "changes": [
