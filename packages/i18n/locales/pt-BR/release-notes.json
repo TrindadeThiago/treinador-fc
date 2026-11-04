@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.9",
+    "date": "2026-11-05",
+    "changes": [
+      "Corrigido: os jogadores dos clubes que só disputam o estadual nunca evoluíam, não se aposentavam e os clubes não recebiam jovens. Com as temporadas, esses elencos envelheciam sem parar (no mundo padrão, quase 300 jogadores com 35 anos ou mais em cinco temporadas) e encolhiam.",
+      "Agora esses clubes renovam o elenco como os demais: os jogadores evoluem com os minutos do estadual, os veteranos se aposentam, chegam jovens e o elenco fica com pelo menos 22 jogadores. Saves existentes continuam abrindo e passam a renovar esses elencos na próxima virada; nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.0.8",
     "date": "2026-11-05",
     "changes": [
