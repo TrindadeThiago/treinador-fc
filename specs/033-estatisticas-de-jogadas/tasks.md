@@ -24,7 +24,7 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 **Purpose**: preparar o terreno sem mudar comportamento.
 
-- [ ] T001 Mover `expNegative` e `poisson` de `packages/engine/src/match/summary.ts` para o novo `packages/engine/src/match/poisson.ts` (exportados, com o mesmo comentário do Princípio II) e importar de lá em `summary.ts`; rodar `packages/engine/test/match/summary-equivalence.test.ts` e `packages/engine/test/match/summary.test.ts` e confirmar que nada mudou (research R3)
+- [X] T001 Mover `expNegative` e `poisson` de `packages/engine/src/match/summary.ts` para o novo `packages/engine/src/match/poisson.ts` (exportados, com o mesmo comentário do Princípio II) e importar de lá em `summary.ts`; rodar `packages/engine/test/match/summary-equivalence.test.ts` e `packages/engine/test/match/summary.test.ts` e confirmar que nada mudou (research R3)
 
 ---
 
@@ -36,8 +36,8 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 ### Testes primeiro
 
-- [ ] T002 [P] Escrever `packages/engine/test/match/plays-isolation.test.ts` (FR-006, FR-007, research R5). Para 200 partidas (mesmo gerador de entradas de `test/match/baseline.test.ts`), o `MatchResult` com jogadas, sem o campo `plays` das linhas, é igual ao de antes. Comparar placar, eventos, `stats`, `decision` e as demais linhas contra uma simulação em que `playMinutePlays` é trocado por uma função vazia com `vi.mock`. Também conferir que `pressure` é idêntica com e sem jogadas. O teste deve falhar até T006.
-- [ ] T003 [P] Escrever `packages/engine/test/match/plays.test.ts` (FR-001 a FR-005, FR-008, FR-009, SC-001, contrato `engine-plays.md`). Casos:
+- [X] T002 [P] Escrever `packages/engine/test/match/plays-isolation.test.ts` (FR-006, FR-007, research R5). Para 200 partidas (mesmo gerador de entradas de `test/match/baseline.test.ts`), o `MatchResult` com jogadas, sem o campo `plays` das linhas, é igual ao de antes. Comparar placar, eventos, `stats`, `decision` e as demais linhas contra uma simulação em que `playMinutePlays` é trocado por uma função vazia com `vi.mock`. Também conferir que `pressure` é idêntica com e sem jogadas. O teste deve falhar até T006.
+- [X] T003 [P] Escrever `packages/engine/test/match/plays.test.ts` (FR-001 a FR-005, FR-008, FR-009, SC-001, contrato `engine-plays.md`). Casos:
   - todo jogador que entrou em campo numa partida completa tem `plays`;
   - `passesCompleted ≤ passes`, `tacklesWon ≤ tackles` e `keyPasses ≥ assists`;
   - Σ `keyPasses` do time ≤ finalizações do time;
@@ -49,8 +49,8 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 ### Implementação
 
-- [ ] T004 Acrescentar os tipos `PlayStats`, `PlayTuple` e `PlayTotals` em `packages/engine/src/match/plays.ts`, e `plays?: PlayStats` em `PlayerMatchState` (`packages/engine/src/match/types.ts`), conforme `data-model.md`.
-- [ ] T005 Acrescentar `PLAYS_TUNING` em `packages/engine/src/match/tuning.ts` (research R2), com um comentário por constante:
+- [X] T004 Acrescentar os tipos `PlayStats`, `PlayTuple` e `PlayTotals` em `packages/engine/src/match/plays.ts`, e `plays?: PlayStats` em `PlayerMatchState` (`packages/engine/src/match/types.ts`), conforme `data-model.md`.
+- [X] T005 Acrescentar `PLAYS_TUNING` em `packages/engine/src/match/tuning.ts` (research R2), com um comentário por constante:
   - taxa de passes por minuto e de desarmes por minuto;
   - pesos por posição da vaga para passe, desarme, interceptação e passe decisivo;
   - aproveitamento base e ajuste por posição;
@@ -59,7 +59,7 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
   - chance de passe decisivo sem assistência, por tipo de finalização.
 
   Valores iniciais: os do R2, calibrados depois em T019.
-- [ ] T006 Implementar `playMinutePlays(state, context, clock, homeShare, eventsBefore)` em `packages/engine/src/match/plays.ts` (research R1 e R2):
+- [X] T006 Implementar `playMinutePlays(state, context, clock, homeShare, eventsBefore)` em `packages/engine/src/match/plays.ts` (research R1 e R2):
   - gerador `minuteRng(context.root, clock, "plays")`;
   - jogadores de `fieldPlayers(state, side, context)`, na ordem das vagas;
   - força efetiva = força já com cansaço × `adequacy`;
@@ -68,8 +68,8 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
   - cria `plays` zerado no `PlayerMatchState` quando falta.
 
   Chamar no fim de `playMinute` em `packages/engine/src/match/minute.ts`, guardando `state.events.length` no início do minuto. Não mexer em nenhum sorteio existente.
-- [ ] T007 Garantir que `cloneState` (`packages/engine/src/match/engine.ts`) e `cloneTeam` copiem `plays` de cada jogador, para que o estado antigo não seja alterado. Acrescentar o caso em `packages/engine/test/match/plays.test.ts` (o estado antes de `advanceMatch` continua com as contagens antigas).
-- [ ] T008 Exportar `PlayStats`, `PlayTuple`, `PlayTotals`, `playTuple`, `playStatsOf`, `playTotals`, `livePlayTotals` e `PLAY_REALISM_LIMITS` (este em T018) em `packages/engine/src/index.ts`. Implementar em `packages/engine/src/match/plays.ts` as funções `playTuple`, `playStatsOf`, `playTotals(lines, side)` e `livePlayTotals(state, side)` do contrato `contracts/engine-plays.md`. Rodar T002 e T003 até ficarem verdes, junto com `test/match/baseline.test.ts`, `test/career/composition-baseline.test.ts`, `test/career/continental-baseline.test.ts`, `test/career/locale-determinism.test.ts` e `test/match/performance.test.ts`, sem regravar nada.
+- [X] T007 Garantir que `cloneState` (`packages/engine/src/match/engine.ts`) e `cloneTeam` copiem `plays` de cada jogador, para que o estado antigo não seja alterado. Acrescentar o caso em `packages/engine/test/match/plays.test.ts` (o estado antes de `advanceMatch` continua com as contagens antigas).
+- [X] T008 Exportar `PlayStats`, `PlayTuple`, `PlayTotals`, `playTuple`, `playStatsOf`, `playTotals`, `livePlayTotals` e `PLAY_REALISM_LIMITS` (este em T018) em `packages/engine/src/index.ts`. Implementar em `packages/engine/src/match/plays.ts` as funções `playTuple`, `playStatsOf`, `playTotals(lines, side)` e `livePlayTotals(state, side)` do contrato `contracts/engine-plays.md`. Rodar T002 e T003 até ficarem verdes, junto com `test/match/baseline.test.ts`, `test/career/composition-baseline.test.ts`, `test/career/continental-baseline.test.ts`, `test/career/locale-determinism.test.ts` e `test/match/performance.test.ts`, sem regravar nada.
 
 **Checkpoint**: o motor gera as jogadas, prova que nada mais mudou, e o desempenho fica no orçamento.
 

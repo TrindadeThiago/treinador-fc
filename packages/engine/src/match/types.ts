@@ -1,6 +1,8 @@
 import type { CompletedPlayer } from "../model/types";
 import type { FormationId, Posture } from "./formations";
 
+import type { PlayStats } from "./plays";
+
 export type Side = "home" | "away";
 export const SIDES: readonly Side[] = ["home", "away"];
 
@@ -89,6 +91,11 @@ export type InjurySeverity = "minor" | "moderate" | "severe";
 
 export interface PlayerMatchState {
   minutesPlayed: number;
+  /**
+   * Jogadas descritivas (033): só nas partidas completas, criadas no primeiro minuto em campo. A
+   * simulação resumida não as tem.
+   */
+  plays?: PlayStats;
   goals: number;
   assists: number;
   yellowCards: number;

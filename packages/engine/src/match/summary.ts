@@ -6,6 +6,7 @@ import { slotValue } from "./auto-lineup";
 import { FORMATIONS, type FormationId } from "./formations";
 import { fatiguedStrength, ratio } from "./minute";
 import { type FieldPlayer, pickAssister, pickFouler, pickInjured, pickShooter } from "./picker";
+import { poisson } from "./poisson";
 import { computeStrength, type TeamStrength } from "./strength";
 import { SUMMARY_TUNING } from "./summary-tuning";
 import { MATCH_TUNING } from "./tuning";
@@ -109,31 +110,6 @@ function conversion(attackers: readonly FieldPlayer[], keeper: CompletedPlayer |
     onTarget += (kindWeight[kind] / sum) * open;
   }
   return { goal, onTarget, perKind };
-}
-
-/**
- * `e^-x` só com multiplicações ((1 − x/2^16)^(2^16)): as funções transcendentais variam entre
- * motores de JavaScript e o resultado do jogo tem de ser o mesmo em qualquer um (Princípio II).
- */
-function expNegative(x: number): number {
-  let value = 1 - x / 65536;
-  for (let step = 0; step < 16; step++) value *= value;
-  return value;
-}
-
-/** Poisson por inversão: um sorteio, sem laço longo para as médias do futebol. */
-function poisson(rng: Rng, mean: number): number {
-  if (mean <= 0) return 0;
-  const roll = rng.float();
-  let probability = expNegative(mean);
-  let cumulative = probability;
-  let count = 0;
-  while (roll > cumulative && count < 30) {
-    count += 1;
-    probability *= mean / count;
-    cumulative += probability;
-  }
-  return count;
 }
 
 /** Minutos de eventos de uma lista de contagem, em ordem crescente (1 a 90). */

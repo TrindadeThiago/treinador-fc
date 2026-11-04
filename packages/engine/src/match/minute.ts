@@ -5,6 +5,7 @@ import type { Rng } from "../rng/xoshiro";
 import { adequacy } from "./adequacy";
 import { FORMATIONS } from "./formations";
 import { type FieldPlayer, pickAssister, pickFouler, pickInjured, pickShooter } from "./picker";
+import { emptyPlays, playMinutePlays } from "./plays";
 import { type ClockKey, minuteRng } from "./rng";
 import { computeStrength, type TeamStrength } from "./strength";
 import { FATIGUE_TUNING, MATCH_TUNING } from "./tuning";
@@ -447,6 +448,8 @@ export function playMinute(
       if (!playerId) continue;
       const played = playerState(state, side, playerId);
       played.minutesPlayed += 1;
+      // Jogadas (033): quem pisou em campo tem contagens, mesmo saindo neste minuto.
+      if (!played.plays) played.plays = emptyPlays();
       // Ao completar um bloco a força do jogador muda: a escalação em cache deixa de valer.
       if (state.input.fatigue && played.minutesPlayed % FATIGUE_TUNING.blockMinutes === 0) {
         delete context.lineups[side];
@@ -454,6 +457,7 @@ export function playMinute(
     }
   }
 
+  const eventsBefore = state.events.length;
   const strength = {
     home: strengthOf(state, "home", context),
     away: strengthOf(state, "away", context),
@@ -478,4 +482,6 @@ export function playMinute(
   playDiscipline(state, context, clock, "away", onRemoval, rng);
   playInjury(state, context, clock, "home", onRemoval, rng);
   playInjury(state, context, clock, "away", onRemoval, rng);
+  // Por último e com gerador próprio: as jogadas não mudam nada do que veio antes (033 R1).
+  playMinutePlays(state, context, clock, homeShare, eventsBefore);
 }

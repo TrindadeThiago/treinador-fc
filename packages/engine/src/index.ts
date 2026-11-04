@@ -416,6 +416,16 @@ export { MATCH_REALISM_LIMITS } from "./match/limits";
 export type { MatchMetrics, MetricCheck } from "./match/metrics";
 export { checkRealism, createMetricsAccumulator } from "./match/metrics";
 export { fatiguedStrength, matchDrain, substitutionCap } from "./match/minute";
+export {
+  emptyPlays,
+  livePlayTotals,
+  type PlayStats,
+  type PlayTotals,
+  type PlayTuple,
+  playStatsOf,
+  playTotals,
+  playTuple,
+} from "./match/plays";
 export { liveStats, matchResult } from "./match/result";
 export { penaltyChance, shootoutOrder, shootoutProgress } from "./match/shootout";
 export type { TeamStrength } from "./match/strength";
