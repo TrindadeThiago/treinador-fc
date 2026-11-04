@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.10",
+    "date": "2026-11-05",
+    "changes": [
+      "Corrigida uma brecha no mercado: comprar um jogador barato de um clube pequeno e esperar uma proposta de outro clube podia render até 60% de lucro sem o jogador melhorar, porque o valor dele sobe quando ele chega a um clube de reputação maior. Agora quem você contrata (comprado ou livre) não recebe propostas de outros clubes até a próxima temporada.",
+      "Você continua podendo vender esses jogadores pela venda imediata, e os jogadores que já estavam no elenco recebem propostas como antes. Os saves existentes continuam abrindo, nenhum formato de save ou de mod mudou, e o motor ganhou testes que conferem com casos aleatórios as regras de dinheiro, de escalação, das partidas e da classificação."
+    ]
+  },
+  {
     "version": "1.0.9",
     "date": "2026-11-05",
     "changes": [
