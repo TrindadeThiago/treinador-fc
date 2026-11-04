@@ -187,7 +187,7 @@ export function buildBrazil(input: {
       relegationSlots: d === 3 ? 0 : slots,
       ...(d === 3 ? { stages: divisionDStages(perDivision) } : {}),
     })),
-    economy: countryEconomy(spec.strength, 2, perDivision),
+    economy: brazilEconomy(spec.strength, perDivision),
     schedule: { weekday: 7, startWeek: input.leagueStartWeek, everyWeeks: 1 },
   };
   // Uma divisão aceita no máximo 40 clubes: a copa leva a Série A, depois a B e a C, por reputação.
@@ -245,4 +245,25 @@ export function buildBrazil(input: {
     players: [...players, ...built.players],
     rivalries: built.rivalries,
   };
+}
+
+/** Folha do Brasil sobre a do país de duas divisões (A12): a receita de longo prazo passava dela. */
+const BRAZIL_WAGE_PCT = 108;
+
+/**
+ * Economia do Brasil: a do país com duas divisões e a Série D com a parte do patrocínio ligada à
+ * folha maior (90%): em grupos regionais e mata-mata, ela tem poucos jogos em casa e público pequeno,
+ * e perdia uns 28% da folha por temporada.
+ */
+function brazilEconomy(strength: number, perDivision: number): NonNullable<Competition["economy"]> {
+  const economy = countryEconomy(strength, 2, perDivision);
+  economy.wageFactorPct = Math.round(((economy.wageFactorPct ?? 100) * BRAZIL_WAGE_PCT) / 100);
+  const second = economy.divisions?.find((division) => division.level === 2);
+  if (second?.sponsorship) {
+    economy.divisions = [
+      ...(economy.divisions ?? []),
+      { ...second, level: 4, sponsorship: { ...second.sponsorship, wageSharePct: 90 } },
+    ];
+  }
+  return economy;
 }

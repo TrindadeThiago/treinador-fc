@@ -109,9 +109,12 @@ describe(`30 temporadas com estaduais (${STATES} estados)`, () => {
     expect(stats.squadProblems).toEqual([]);
   });
 
-  it("a economia dos clubes regionais fica dentro da faixa: caixa médio entre 0,5 e 30 milhões e menos de 20% em crise", () => {
+  // Desde a A12 os clubes só regionais pagam a folha (com o fator do estadual) e recebem patrocínio
+  // toda temporada; antes recebiam só o primeiro patrocínio e nunca pagavam salário, e o piso era de
+  // 0,5 milhão. Medido com 4 estados: caixa médio de 0,1 a 0,64 milhão, no máximo 1 clube em crise.
+  it("a economia dos clubes regionais fica dentro da faixa: caixa médio positivo, até 30 milhões, e menos de 20% em crise", () => {
     for (const cash of stats.regionalCash) {
-      expect(cash).toBeGreaterThanOrEqual(500_000);
+      expect(cash).toBeGreaterThan(0);
       expect(cash).toBeLessThanOrEqual(30_000_000);
     }
     for (const crisis of stats.inCrisis) expect(crisis).toBeLessThanOrEqual(STATES * 18 * 0.2);
