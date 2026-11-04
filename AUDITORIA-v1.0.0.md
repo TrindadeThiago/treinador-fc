@@ -1,6 +1,6 @@
 # Auditoria pós-1.0.0 — Treinador FC
 
-Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues depois estão na seção "Status de execução". O estado abaixo vale até a **1.0.9**.
+Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues depois estão na seção "Status de execução". O estado abaixo vale até a **1.0.10**.
 
 ## Status de execução
 
@@ -17,8 +17,11 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 | A13 (novo): elencos dos clubes só de estadual não se renovam | **Feito** no PR #72, publicado na **1.0.9** (ver nota). |
 | A15 (novo): e2e `update.spec.ts` instável no CI | **Feito** no PR #71, publicado na **1.0.9** (ver nota). Causa provável, não reproduzida localmente. |
 | A5 (economia sem pressão) | **Mantido** por decisão de design (2026-11-04), ver nota. |
+| A2b (comprar barato e revender) | **Feito** na **1.0.10** com carência de propostas (ver nota). |
+| T2 (testes de propriedade) | **Feito** na **1.0.10**, sem dependência nova (ver nota). |
+| A4 (ondas de craques) | Pendente: duas tentativas medidas e descartadas (ver nota); pede calibragem com meta definida. |
 | Constantes de partida (`directRedRate`, `injuryRate`) | **Abandonado**: a mudança quebra 11 testes de baseline e os valores já estão dentro das faixas do projeto. |
-| A2b, A4, T2 | Pendentes. |
+| A4 | Pendente. |
 
 **Nota sobre o A2.** A estimativa original (+25% de lucro geral) era exagerada. Medido no mundo de teste, o lucro existia só para quem tinha 1 ano de contrato (cerca de 12% dos jogadores): 58% desses ciclos davam lucro, no máximo +35% e mediana +4%. Com 2 anos, 0,4%; com 3 ou mais, 0%. A severidade desceu de Alta para **Média**. A correção foi um piso na pedida de compra do usuário (`buyAskingPrice`, `market/club-response.ts`), igual ao que a venda imediata pagaria depois de renovado. Valores como `lastYearValuePct` e `QUICK_SALE_PCT` ficaram como estavam: mexer neles muda a IA e quebra os baselines de seed. **Limite conhecido:** comprar no último ano, renovar e esperar uma proposta recebida (85% a 110% do valor) ainda rende; é aleatório e limitado.
 
@@ -39,6 +42,12 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 **Nota sobre o A10.** Medido com profiler no mundo padrão (seed `mundo-padrao-1`, uma temporada e a virada), o gargalo era a IA de mercado (`purchaseTarget`, 34% do tempo), não as buscas lineares. Feito sem mudar resultado (hash do save idêntico depois da temporada, da virada e de 6 dias da seguinte): memória de `marketValue`, `windowDeals` e `strengthRank`; `respondToContract` redundante tirado de `purchaseTarget` e vendedor checado antes da pedida; `playersAt` reaproveita a ordem quando a lista nova só troca clube ou contrato; `squadsByClub` usa o índice memorizado; `balanceSquads` com listas por clube em vez de filtrar o mundo a cada contagem; mundo cansado uma vez por dia; `cloneData` no lugar do clone por JSON em diretoria, torcida e notícias; memória de `standings`. Temporada de 27,2 s para ~16 s, virada de 4,0 s para ~1,5 s. Descartado: limpar o status disciplinar uma vez por rodada (os valores ficavam iguais, mas a ordem das chaves e o save mudavam).
 
 **Nota sobre o A15.** O `update.spec.ts` falhava às vezes no CI (PR #68): depois de Recarregar, `caches.keys()` tinha o cache antigo e o novo, e a espera de 30 s acabava. Causa provável: o handler de `fetch` do `sw.js` fazia `caches.open(CACHE)`, que cria o cache se ele não existe; um pedido ainda atendido pelo worker antigo quando a versão nova assumia recriava o cache que o `activate` acabara de apagar, que ficava órfão até a versão seguinte. Corrigido com `caches.has` antes de usar o cache. A falha não se reproduziu localmente (0 em 100 rodadas sequenciais, com e sem carga); depois da correção, e2e completo 61/61 e o spec 30/30. Se voltar a falhar, a hipótese estava errada.
+
+**Nota sobre o A2b.** Medido no mundo padrão: para um clube de reputação 95, o lance máximo que a IA pagaria depois da compra dividido pela pedida de compra tinha mediana 1,32 (1,51 comprando de clubes de reputação até 30), com teto de 1,60 imposto pelo piso do A2. São dois efeitos: a contraproposta (até 120% do valor contra uma pedida de 95% a 110%, cerca de +16% mesmo entre reputações iguais) e a reputação do dono no valor (até +30%). Correção: quem o usuário contratou na temporada (comprado ou livre) não recebe proposta da IA até a temporada seguinte (`signedThisSeason`, `market/ai/offers.ts`). O modelo de valor não mudou; a IA não é afetada.
+
+**Nota sobre o T2.** Testes de propriedade com um gerador de casos por PRNG com seed (`test/properties/`), sem `fast-check`: classificação (posições como permutação, pontos e jogos fechando), escalação automática (válida para elencos aleatórios), partida (placar igual aos gols dos eventos e dos jogadores; avançar em passos igual a de uma vez) e dinheiro (transferências e empréstimos aleatórios sem criar dinheiro e com elencos nos limites; caixa igual ao livro-caixa numa temporada inteira e nos 440 clubes do mundo padrão). Todas passam no código atual.
+
+**Nota sobre o A4.** Medido no mundo padrão em 30 temporadas: a onda forte do mundo antigo não aparece (os craques oscilam entre 293 e 411 depois de dobrar nas 5 primeiras temporadas, de 179 para 346), mas o bônus de potencial do regulador satura em +5 a +9 nas ligas de 20 clubes, porque a faixa de promessas (15 a 35) é absoluta e foi calibrada para 40 clubes. Duas correções foram medidas e descartadas: (1) alvos relativos à primeira medição de cada país: os craques foram a 562 no pico, porque o alvo de força 59 era o que segurava países que nascem em 61 a 64; (2) faixa de promessas por clube: os craques caem sem parar até 249 na 30ª temporada e o bônus continua saturado em todos os países, porque o mundo padrão tem menos promessas por clube que o antigo. A diferença entre países já é pequena na geração (força média de 61,3 a 63,5 entre a Costa Rica e a Inglaterra; correlação força × craques por clube de 0,27 na primeira temporada). Próximo passo: definir a meta (quantos craques no mundo, se os países fortes devem ter mais) e recalibrar o regulador, de preferência por coorte de idade.
 
 ## Resumo executivo
 
