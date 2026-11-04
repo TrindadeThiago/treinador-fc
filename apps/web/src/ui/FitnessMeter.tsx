@@ -5,8 +5,11 @@ import styles from "./FitnessMeter.module.css";
 export const TIRED_BELOW = 75;
 const EXHAUSTED_BELOW = 50;
 
-/** Condição física de um jogador (0–100): barra e percentual, acessível como medidor. */
-export function FitnessMeter({ value }: { value: number }) {
+/**
+ * Condição física de um jogador (0–100): barra e percentual, acessível como medidor. `compact`
+ * mostra só o percentual (o card do campo), com a mesma cor de cansaço.
+ */
+export function FitnessMeter({ value, compact = false }: { value: number; compact?: boolean }) {
   const t = useT();
   const text = t("fitness.value", { value });
   const tone = value < EXHAUSTED_BELOW ? styles.exhausted : value < TIRED_BELOW ? styles.tired : "";
@@ -21,9 +24,11 @@ export function FitnessMeter({ value }: { value: number }) {
       aria-valuetext={text}
       className={`${styles.meter} ${tone}`}
     >
-      <span className={styles.bar} aria-hidden="true">
-        <span className={styles.fill} style={{ width: `${value}%` }} />
-      </span>
+      {compact ? null : (
+        <span className={styles.bar} aria-hidden="true">
+          <span className={styles.fill} style={{ width: `${value}%` }} />
+        </span>
+      )}
       {text}
     </span>
   );

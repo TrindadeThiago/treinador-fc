@@ -5,85 +5,243 @@
   --color-accent: var(--pitch-accent);
   --color-border: var(--pitch-border);
   color: var(--color-text);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-4);
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, var(--pitch-grass-1) 0%, var(--pitch-grass-2) 100%);
+  container-type: inline-size;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--pitch-grass-2);
   border: 1px solid var(--pitch-line);
 }
 
-.line {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+/* O gramado em faixas, na proporção de um campo visto de cima (mais alto que largo). */
+.field {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+  background: repeating-linear-gradient(
+    180deg,
+    var(--pitch-grass-1) 0,
+    var(--pitch-grass-1) 10%,
+    var(--pitch-grass-2) 10%,
+    var(--pitch-grass-2) 20%
+  );
 }
 
+.markings {
+  position: absolute;
+  inset: 3%;
+  border: 2px solid var(--pitch-line);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.halfway {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 2px solid var(--pitch-line);
+}
+
+.circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--pitch-line);
+  border-radius: 50%;
+}
+
+.box,
+.goalArea {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid var(--pitch-line);
+}
+
+.box {
+  width: 54%;
+  height: 16%;
+}
+
+.goalArea {
+  width: 26%;
+  height: 6%;
+}
+
+.boxTop,
+.goalTop {
+  top: -2px;
+}
+
+.boxBottom,
+.goalBottom {
+  bottom: -2px;
+}
+
+/* Cada vaga fica centrada no seu ponto do campo. */
 .slot {
-  font: inherit;
-  width: 122px;
-  min-height: 92px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 2px;
-  padding: var(--space-2);
-  border-radius: var(--radius);
-  border: 2px solid transparent;
-  background: var(--pitch-card-bg);
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--color-text);
-  cursor: pointer;
+  font: inherit;
   text-align: center;
+  cursor: pointer;
+  touch-action: none;
 }
 
-.slot:hover {
-  border-color: var(--color-border);
+.slot:focus-visible {
+  outline: none;
 }
 
-.selected,
-.selected:hover {
-  border-color: var(--color-accent);
-  background: var(--pitch-card-selected);
+.badge {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
-.empty {
+/* O círculo com a força efetiva, como na referência. */
+.ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  background: var(--pitch-card-bg);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.position {
+  position: absolute;
+  top: -6px;
+  right: -20px;
+  padding: 0 var(--space-1);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--pitch-card-bg);
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.name {
+  max-width: 100%;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--pitch-card-bg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.traits {
+  display: flex;
+}
+
+.fitness {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--pitch-card-bg);
+}
+
+.warning {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--pitch-card-bg);
+  color: var(--color-warning);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.off .ring {
+  border-color: var(--color-warning);
+}
+
+.empty .ring {
   border-style: dashed;
   border-color: var(--color-muted);
   color: var(--color-muted);
 }
 
-.position {
-  font-size: 11px;
-  font-weight: 700;
+.empty .name {
   color: var(--color-muted);
 }
 
-.name {
-  font-weight: 600;
-  font-size: var(--text-sm);
+.selected .ring,
+.slot[data-drop-over] .ring {
+  background: var(--pitch-card-selected);
+  box-shadow: 0 0 0 4px var(--pitch-card-selected);
+  border-color: var(--color-accent);
 }
 
-/* Posição natural do jogador; em destaque quando ele está fora dela. */
-.natural {
-  font-size: 11px;
-  color: var(--color-muted);
+/* Destino do arraste: contorno tracejado, além do fundo (não depende só da cor). */
+.slot[data-drop-over] .ring {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 5px;
 }
 
-.naturalOther {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-warning);
+.slot:hover .ring {
+  background: var(--pitch-card-selected);
 }
 
-.meta {
-  font-size: 12px;
-  color: var(--color-muted);
+.slot:focus-visible .ring {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 2px;
 }
 
-.warning {
-  font-size: 11px;
-  color: var(--color-warning);
+.slot[data-dragging] {
+  opacity: 0.45;
+}
+
+/* Campo estreito (celular, ou a coluna sem a lateral): cards menores para os cinco zagueiros caberem. */
+@container (max-width: 440px) {
+  /* Mais alto que largo, para as linhas não se encostarem; as características ficam na lista. */
+  .field {
+    aspect-ratio: 3 / 5;
+  }
+
+  .traits {
+    display: none;
+  }
+
+  .slot {
+    width: 72px;
+  }
+
+  .ring {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-sm);
+  }
+
+  .position {
+    right: -16px;
+    font-size: 9px;
+  }
+
+  .name {
+    font-size: 11px;
+  }
 }
