@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.0.7",
+    "date": "2026-11-04",
+    "changes": [
+      "Corrigido: a mesma seed podia dar resultados diferentes conforme o idioma do navegador. Em alguns idiomas, como tcheco, eslovaco, dinamarquês e norueguês, a ordem alfabética muda (em tcheco, \"ch\" vem depois do \"h\"), e o jogo usava essa ordem para desempatar a escalação automática, as substituições e a tabela. No mundo padrão, os clubes e jogadores da China mudavam de lugar, e uma temporada podia terminar com outra classificação.",
+      "Agora o desempate usa sempre a mesma ordem, em qualquer navegador e idioma. Em português e inglês nada muda, os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.0.6",
     "date": "2026-11-03",
     "changes": [
