@@ -28,18 +28,30 @@ const STATS: readonly (keyof TeamStats)[] = [
   "penalties",
 ];
 
+/** Linha a mais na tabela, já formatada (jogadas ao vivo, 033); `bar` é o par da barra comparativa. */
+export interface ExtraStatRow {
+  key: string;
+  label: string;
+  home: string;
+  away: string;
+  bar?: readonly [number, number];
+}
+
 /** Estatísticas dos dois times lado a lado (resumo da partida e acompanhamento ao vivo). */
 export function StatsTable({
   home,
   away,
   stats,
   bars = false,
+  extra = [],
 }: {
   home: string | undefined;
   away: string | undefined;
   stats: { home: TeamStats; away: TeamStats };
   /** Barras comparativas entre os dois times, sob cada rótulo (030); os números continuam na tabela. */
   bars?: boolean;
+  /** Linhas depois das de sempre, na ordem dada. */
+  extra?: readonly ExtraStatRow[];
 }) {
   const t = useT();
   const value = (team: TeamStats, key: keyof TeamStats) => {
@@ -67,6 +79,16 @@ export function StatsTable({
               {bars ? <Bar home={stats.home[key]} away={stats.away[key]} /> : null}
             </th>
             <td>{value(stats.away, key)}</td>
+          </tr>
+        ))}
+        {extra.map((entry) => (
+          <tr key={entry.key}>
+            <td>{entry.home}</td>
+            <th scope="row">
+              {entry.label}
+              {bars && entry.bar ? <Bar home={entry.bar[0]} away={entry.bar[1]} /> : null}
+            </th>
+            <td>{entry.away}</td>
           </tr>
         ))}
       </tbody>

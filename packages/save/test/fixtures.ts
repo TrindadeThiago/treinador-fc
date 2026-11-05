@@ -546,6 +546,27 @@ export function saveV17(step: SaveV11Step = { rounds: 0 }): SaveV17 {
   return JSON.parse(JSON.stringify(save)) as SaveV17;
 }
 
+export type SaveV18 = Omit<SaveFile, "formatVersion"> & { formatVersion: 18 };
+
+const v18Cache = new Map<string, SaveV18>();
+
+/** Tira as jogadas (033) de todos os registros: um save v18 não as tinha. */
+function withoutPlays<T>(save: T): T {
+  return JSON.parse(JSON.stringify(save), (key, value) => (key === "plays" ? undefined : value));
+}
+
+/** Carreira atual no formato v18: igual, sem as jogadas nos registros de partida (033). */
+export function saveV18(step: SaveV11Step = { rounds: 0 }): SaveV18 {
+  const key = JSON.stringify(step);
+  let save = v18Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, ...rest } = withoutPlays(playedCurrentSave(step));
+    save = { ...rest, formatVersion: 18 };
+    v18Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV18;
+}
+
 /** Banco padrão com uma copa de 16 clubes (8 de cada divisão), quartas a cada 2 semanas (018). */
 export function bankWithCup(): ModPackage {
   const bank = JSON.parse(JSON.stringify(defaultBank())) as ModPackage;

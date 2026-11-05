@@ -138,3 +138,42 @@ export const SHOOTOUT_TUNING = {
   /** Bônus de aptidão na ordem dos cobradores (o goleiro cobra por último). */
   aptitude: { FW: 6, MF: 4, DM: 2, FB: 1, CB: 0, GK: -100 },
 } as const;
+
+/**
+ * Jogadas descritivas da partida completa (033 research R2): taxas por minuto, perfis por posição da
+ * vaga e efeito da força. Não entram em nenhum outro sorteio; calibradas por `realism/plays.test.ts`
+ * contra `PLAY_REALISM_LIMITS`. Medido (3.000 jogos de liga, 2026-11-04): por time, 511 passes,
+ * 82,7% de aproveitamento, 17,3 desarmes certos, 12,4 interceptações e 9,1 passes decisivos; ZAG e
+ * VOL fazem 2,6× as ações defensivas por minuto de MEI e ATA; MEI passa 1,5× o ZAG.
+ */
+export const PLAYS_TUNING = {
+  /** Passes por minuto de um time com metade da posse e 11 em campo. */
+  passesPerMinute: 5.2,
+  /** Desarmes tentados por minuto de um time com o adversário em metade da posse. */
+  tacklesPerMinute: 0.3,
+  /** Parte dos passes errados que vira interceptação de um adversário. */
+  interceptionShare: 0.14,
+  /** Aproveitamento de passe com força efetiva e meio-campo adversário iguais a `pivot`. */
+  passBase: 0.82,
+  /** Ganho de aproveitamento por ponto de força efetiva do passador acima do `pivot`. */
+  passSlope: 0.004,
+  /** Perda de aproveitamento por ponto do meio-campo adversário acima do `pivot`. */
+  passPressure: 0.003,
+  passRange: [0.5, 0.96],
+  /** Desarme certo com força efetiva e ataque adversário iguais a `pivot`. */
+  tackleBase: 0.6,
+  tackleSlope: 0.005,
+  tacklePressure: 0.004,
+  tackleRange: [0.3, 0.9],
+  /** Força de referência das inclinações. */
+  pivot: 65,
+  /** Ajuste do aproveitamento de passe por posição da vaga (reposição longa do goleiro, pivô). */
+  passAdjust: { GK: -0.12, CB: 0.05, FB: -0.01, DM: 0.03, MF: 0, FW: -0.08 },
+  /** Peso de cada posição na escolha de quem passa, desarma, intercepta e dá o passe decisivo. */
+  passWeight: { GK: 0.35, CB: 0.95, FB: 1, DM: 1.25, MF: 1.45, FW: 0.6 },
+  tackleWeight: { GK: 0.03, CB: 1.4, FB: 1.3, DM: 1.6, MF: 0.8, FW: 0.35 },
+  interceptWeight: { GK: 0.2, CB: 1.6, FB: 1.1, DM: 1.5, MF: 0.7, FW: 0.25 },
+  keyPassWeight: { GK: 0.02, CB: 0.25, FB: 0.9, DM: 0.7, MF: 1.6, FW: 1.1 },
+  /** Chance de haver passe decisivo numa finalização sem assistência, por tipo de lance. */
+  keyPassChance: { open: 0.8, header: 0.85, counter: 0.7, free_kick: 0, penalty: 0 },
+} as const;

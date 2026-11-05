@@ -20,7 +20,11 @@ import { defaultBank, SERIE_A } from "./fixtures";
 const SEASONS = 30;
 const MAX_START_OF_SEASON_31 = 1.6 * 1024 * 1024;
 const MAX_GROWTH_PER_SEASON = 30 * 1024;
-const MAX_LAST_ROUND = 4.5 * 1024 * 1024;
+// 5,5 MB: eram 4,5 MB. As jogadas por jogador (033) somam ~11% neste mundo, em que todas as partidas
+// são completas (~400 KB por temporada, 24 bytes por linha): o maior medido foi 4,99 MB. Decisão do
+// usuário em 2026-11-04, para guardar as jogadas de todas as partidas completas (base da nota do
+// jogador); o teto do mundo grande (`SCALE_LIMITS`) não mudou.
+const MAX_LAST_ROUND = 5.5 * 1024 * 1024;
 // 016 R1: ~4–5× acima do medido, para tolerar máquinas mais lentas e o CI; mediana de 5 execuções.
 const RUNS = 5;
 const MAX_TURNOVER_MS = 400;

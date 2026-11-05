@@ -51,7 +51,10 @@ export function startMatch(input: MatchInput): StartResult {
 
 function cloneTeam(team: TeamState): TeamState {
   const players: TeamState["players"] = {};
-  for (const [id, player] of Object.entries(team.players)) players[id] = { ...player };
+  for (const [id, player] of Object.entries(team.players)) {
+    // As jogadas (033) são um objeto próprio: copiar, senão avançar mexe no estado anterior.
+    players[id] = player.plays ? { ...player, plays: { ...player.plays } } : { ...player };
+  }
   return {
     ...team,
     onField: { ...team.onField },

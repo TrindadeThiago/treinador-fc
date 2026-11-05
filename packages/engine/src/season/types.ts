@@ -1,5 +1,6 @@
 import type { Bracket } from "../knockout/types";
 import type { FormationId } from "../match/formations";
+import type { PlayTuple } from "../match/plays";
 import type { InjurySeverity, MatchDecision, MatchEvent, Side, TeamStats } from "../match/types";
 import type { CupViewInfo, FixtureStage, StageState } from "../stages/types";
 
@@ -64,6 +65,11 @@ export interface PlayerLine {
   yellows: number;
   red: boolean;
   injury?: InjurySeverity;
+  /**
+   * Jogadas (033) na forma compacta do save: só nas partidas completas jogadas a partir do save
+   * v19. Ausente: a partida não tem jogadas (simulação resumida ou partida antiga).
+   */
+  plays?: PlayTuple;
 }
 
 export interface Absence {

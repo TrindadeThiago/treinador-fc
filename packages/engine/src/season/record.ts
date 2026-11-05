@@ -1,3 +1,4 @@
+import { playTuple } from "../match/plays";
 import type { MatchEvent, MatchResult, Side } from "../match/types";
 import type { Absence, MatchRecord, PlayerLine } from "./types";
 
@@ -85,6 +86,7 @@ export function toMatchRecord(
       red: reds.has(playerId),
     };
     if (state.injury) line.injury = state.injury;
+    if (state.plays) line.plays = playTuple(state.plays);
     players[playerId] = line;
   }
   return {
