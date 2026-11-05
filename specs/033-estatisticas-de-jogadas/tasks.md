@@ -136,9 +136,9 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 **Independent Test**: numa rodada ao vivo, os totais aparecem e só crescem; no fim, batem com a soma das linhas do resumo.
 
-- [ ] T021 [P] [US2] Em `apps/web/test/ui/live-plays.test.tsx`, testar que `LiveStats` mostra passes certos/tentados, aproveitamento, desarmes certos e interceptações dos dois lados, que os números não diminuem ao avançar a partida (`advance` de `test/helpers/live-round.ts`) e que, no fim, são iguais aos totais do resumo (`playTotals` do registro).
-- [ ] T022 [US2] Acrescentar as quatro linhas a `apps/web/src/ui/LiveStats.tsx`, a partir de `livePlayTotals(match.state, side)`. Estender `apps/web/src/ui/StatsTable.tsx` para aceitar linhas extras já formatadas (rótulo e valor de cada lado), sem mudar as linhas atuais.
-- [ ] T023 [US2] Acrescentar os rótulos das quatro linhas em `packages/i18n/locales/pt-BR/ui.json`.
+- [X] T021 [P] [US2] Em `apps/web/test/ui/live-plays.test.tsx`, testar que `LiveStats` mostra passes certos/tentados, aproveitamento, desarmes certos e interceptações dos dois lados, que os números não diminuem ao avançar a partida (`advance` de `test/helpers/live-round.ts`) e que, no fim, são iguais aos totais do resumo (`playTotals` do registro).
+- [X] T022 [US2] Acrescentar as quatro linhas a `apps/web/src/ui/LiveStats.tsx`, a partir de `livePlayTotals(match.state, side)`. Estender `apps/web/src/ui/StatsTable.tsx` para aceitar linhas extras já formatadas (rótulo e valor de cada lado), sem mudar as linhas atuais.
+- [X] T023 [US2] Acrescentar os rótulos das quatro linhas em `packages/i18n/locales/pt-BR/ui.json`.
 
 **Checkpoint**: as três histórias funcionam.
 
