@@ -412,7 +412,7 @@ export {
   PREFERRED_FORMATION_IDS,
   slotPosition,
 } from "./match/formations";
-export { MATCH_REALISM_LIMITS } from "./match/limits";
+export { MATCH_REALISM_LIMITS, PLAY_REALISM_LIMITS } from "./match/limits";
 export type { MatchMetrics, MetricCheck } from "./match/metrics";
 export { checkRealism, createMetricsAccumulator } from "./match/metrics";
 export { fatiguedStrength, matchDrain, substitutionCap } from "./match/minute";

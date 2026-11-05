@@ -117,14 +117,14 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 > Vem antes da US2 porque calibra as constantes que a US2 mostra ao vivo. As duas são P2.
 
-- [ ] T017 [P] [US3] Escrever `packages/engine/test/match/realism/plays.test.ts` (FR-019, FR-020, SC-003, SC-004):
+- [X] T017 [P] [US3] Escrever `packages/engine/test/match/realism/plays.test.ts` (FR-019, FR-020, SC-003, SC-004):
   - amostra de liga com `runLeagueSample` (estender o acumulador ou somar a partir dos `MatchResult`): médias por time dentro de `PLAY_REALISM_LIMITS`;
   - perfis por posição da vaga, por minuto jogado: (desarmes + interceptações) de ZAG e VOL ≥ 1,5 × os de MEI e ATA; passes e decisivos de MEI ≥ 1,3 × os de ZAG;
   - nos jogos com diferença de posse ≥ 10 pontos, o time com mais posse passa mais em pelo menos 80%;
   - na mesma vaga, um elenco com força +10 (`withStrengthDelta`) tem aproveitamento de passe maior.
-- [ ] T018 [US3] Declarar `PLAY_REALISM_LIMITS` em `packages/engine/src/match/limits.ts`, conforme `data-model.md`, com o comentário de que afrouxar exige justificativa.
-- [ ] T019 [US3] Calibrar `PLAYS_TUNING` (`packages/engine/src/match/tuning.ts`) até T017 passar, com as médias perto do meio de cada faixa. Registrar os valores medidos num comentário curto ao lado das constantes. Se uma faixa da spec não for alcançável sem distorcer as outras, ajustar a faixa com justificativa na mesma alteração (Princípio V e Assumption 1 da spec).
-- [ ] T020 [US3] Acrescentar um bloco "jogadas" a `tools/src/simulate-matches.ts`, com as médias por time e os perfis por posição contra `PLAY_REALISM_LIMITS`, no mesmo formato ✓/✗ das métricas atuais.
+- [X] T018 [US3] Declarar `PLAY_REALISM_LIMITS` em `packages/engine/src/match/limits.ts`, conforme `data-model.md`, com o comentário de que afrouxar exige justificativa.
+- [X] T019 [US3] Calibrar `PLAYS_TUNING` (`packages/engine/src/match/tuning.ts`) até T017 passar, com as médias perto do meio de cada faixa. Registrar os valores medidos num comentário curto ao lado das constantes. Se uma faixa da spec não for alcançável sem distorcer as outras, ajustar a faixa com justificativa na mesma alteração (Princípio V e Assumption 1 da spec).
+- [X] T020 [US3] Acrescentar um bloco "jogadas" a `tools/src/simulate-matches.ts`, com as médias por time e os perfis por posição contra `PLAY_REALISM_LIMITS`, no mesmo formato ✓/✗ das métricas atuais.
 
 **Checkpoint**: números com cara de futebol e verificados.
 
