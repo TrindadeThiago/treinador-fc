@@ -40,3 +40,18 @@
   font-size: var(--text-sm);
   color: var(--color-muted);
 }
+
+/* Jogadas (033): uma tabela por time, uma embaixo da outra. */
+.plays {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  min-width: 0;
+}
+
+.plays h3 {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--color-muted);
+}

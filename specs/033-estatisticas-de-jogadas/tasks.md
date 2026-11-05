@@ -83,15 +83,15 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 ### Testes primeiro
 
-- [ ] T009 [P] [US1] Em `packages/engine/test/season/record.test.ts` (criar se não existir), testar que `toMatchRecord` grava `plays` como tupla (`playTuple`) em cada linha de partida completa, que o registro resumido (`toSummaryRecord`) não tem `plays`, e que `playerLines` preserva `plays`.
-- [ ] T010 [P] [US1] Criar `packages/save/test/migrate-v19.test.ts` (FR-012, FR-014, SC-005), com o fixture `saveV18(step)` em `packages/save/test/fixtures.ts`, no mesmo padrão de `saveV17`. Casos:
+- [X] T009 [P] [US1] Em `packages/engine/test/season/record.test.ts` (criar se não existir), testar que `toMatchRecord` grava `plays` como tupla (`playTuple`) em cada linha de partida completa, que o registro resumido (`toSummaryRecord`) não tem `plays`, e que `playerLines` preserva `plays`.
+- [X] T010 [P] [US1] Criar `packages/save/test/migrate-v19.test.ts` (FR-012, FR-014, SC-005), com o fixture `saveV18(step)` em `packages/save/test/fixtures.ts`, no mesmo padrão de `saveV17`. Casos:
   - v18 abre como v19 e nenhuma partida antiga tem `plays`;
   - a partida jogada depois da migração tem `plays`;
   - um save com `plays` de tamanho errado, valor negativo, não inteiro, certos > tentados ou desarmes certos > tentados é rejeitado, com o caminho do campo na mensagem;
   - exportar e importar preserva as tuplas.
 
   Ajustar `packages/save/test/migrate-v18.test.ts` para continuar verde com `SAVE_FORMAT_VERSION` = 19.
-- [ ] T011 [P] [US1] Criar `apps/web/test/ui/plays-table.test.tsx` (contrato `plays-screens.md`). Casos:
+- [X] T011 [P] [US1] Criar `apps/web/test/ui/plays-table.test.tsx` (contrato `plays-screens.md`). Casos:
   - o resumo de uma partida completa mostra duas tabelas (mandante e visitante) com legenda, cabeçalhos e uma linha por jogador que entrou em campo, na ordem de entrada, mais a linha de total igual a `playTotals`;
   - o aproveitamento aparece em percentual;
   - quem não entrou não aparece;
@@ -99,11 +99,11 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 ### Implementação
 
-- [ ] T012 [US1] Acrescentar `plays?: PlayTuple` em `PlayerLine` (`packages/engine/src/season/types.ts`) e gravar a tupla em `toMatchRecord` (`packages/engine/src/season/record.ts`) quando o `PlayerMatchState` tem `plays`. `playerLines` e `toSummaryRecord` não mudam de regra.
-- [ ] T013 [US1] Subir `SAVE_FORMAT_VERSION` para 19 em `packages/save/src/format.ts` e acrescentar a migração `addPlays` (v18 → v19, só a versão, com comentário no padrão das outras) em `packages/save/src/migrate.ts`. Acrescentar também a validação dos `plays` dos registros de `league`, `competitions` e do histórico guardado (`playTupleSchema`: 6 inteiros ≥ 0, `[1] ≤ [0]` e `[4] ≤ [3]`), olhando só `players[*].plays`, sem validar o registro inteiro (research R6).
-- [ ] T014 [US1] Criar `apps/web/src/ui/PlaysTable.tsx` e `PlaysTable.module.css`. Uma tabela por time: legenda, cabeçalhos, linhas por jogador e total. O quadro rola na horizontal dentro de si (`overflow-x: auto` num invólucro) e a página não. Só tokens de cor, espaçamento e fonte (`test/ui/style-audit.test.ts`).
-- [ ] T015 [US1] Usar `PlaysTable` em `apps/web/src/ui/MatchSummary.tsx`, numa seção "Jogadas", com os nomes dos jogadores do `save.bank` e a ordem de entrada a partir de `starters`/substituições do registro. Mostrar o texto de "sem jogadas" quando `playTotals` dos dois lados é `undefined`.
-- [ ] T016 [US1] Acrescentar em `packages/i18n/locales/pt-BR/ui.json` os textos do contrato `plays-screens.md`: título da seção, legendas das tabelas, cabeçalhos, linha de total, aproveitamento em percentual e o texto de "sem jogadas".
+- [X] T012 [US1] Acrescentar `plays?: PlayTuple` em `PlayerLine` (`packages/engine/src/season/types.ts`) e gravar a tupla em `toMatchRecord` (`packages/engine/src/season/record.ts`) quando o `PlayerMatchState` tem `plays`. `playerLines` e `toSummaryRecord` não mudam de regra.
+- [X] T013 [US1] Subir `SAVE_FORMAT_VERSION` para 19 em `packages/save/src/format.ts` e acrescentar a migração `addPlays` (v18 → v19, só a versão, com comentário no padrão das outras) em `packages/save/src/migrate.ts`. Acrescentar também a validação dos `plays` dos registros de `league`, `competitions` e do histórico guardado (`playTupleSchema`: 6 inteiros ≥ 0, `[1] ≤ [0]` e `[4] ≤ [3]`), olhando só `players[*].plays`, sem validar o registro inteiro (research R6).
+- [X] T014 [US1] Criar `apps/web/src/ui/PlaysTable.tsx` e `PlaysTable.module.css`. Uma tabela por time: legenda, cabeçalhos, linhas por jogador e total. O quadro rola na horizontal dentro de si (`overflow-x: auto` num invólucro) e a página não. Só tokens de cor, espaçamento e fonte (`test/ui/style-audit.test.ts`).
+- [X] T015 [US1] Usar `PlaysTable` em `apps/web/src/ui/MatchSummary.tsx`, numa seção "Jogadas", com os nomes dos jogadores do `save.bank` e a ordem de entrada a partir de `starters`/substituições do registro. Mostrar o texto de "sem jogadas" quando `playTotals` dos dois lados é `undefined`.
+- [X] T016 [US1] Acrescentar em `packages/i18n/locales/pt-BR/ui.json` os textos do contrato `plays-screens.md`: título da seção, legendas das tabelas, cabeçalhos, linha de total, aproveitamento em percentual e o texto de "sem jogadas".
 
 **Checkpoint**: US1 completa. O resumo mostra as jogadas e o save v19 abre os antigos.
 

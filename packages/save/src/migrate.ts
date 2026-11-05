@@ -308,6 +308,44 @@ const addRegional: Migration = {
   },
 };
 
+/**
+ * v18 → v19: jogadas por jogador (033). `PlayerLine.plays` é opcional e só existe nas partidas
+ * completas jogadas a partir da v19; as partidas de um save antigo ficam sem jogadas.
+ */
+const addPlays: Migration = {
+  from: 18,
+  migrate(raw) {
+    return { ...(raw as object), formatVersion: 19 };
+  },
+};
+
+/** Uma tupla de jogadas válida (033): seis inteiros ≥ 0, com certos ≤ tentados. */
+function validPlays(plays: unknown): boolean {
+  if (!Array.isArray(plays) || plays.length !== 6) return false;
+  if (!plays.every((value) => Number.isInteger(value) && value >= 0)) return false;
+  const [passes, completed, , tackles, won] = plays as number[];
+  return (completed as number) <= (passes as number) && (won as number) <= (tackles as number);
+}
+
+/**
+ * Jogadas inválidas num registro de partida (FR-014). Olha só `players[*].plays`, sem validar o
+ * registro inteiro (o save do fim da temporada tem milhares de partidas).
+ */
+function playsProblem(save: SaveFile): string | undefined {
+  for (const league of [save.league, ...save.competitions]) {
+    for (const season of league.divisions) {
+      for (const record of season.records) {
+        for (const [playerId, line] of Object.entries(record.players ?? {})) {
+          if (line.plays !== undefined && !validPlays(line.plays)) {
+            return `jogadas inválidas em ${league.competitionId}, divisão ${season.divisionLevel}, rodada ${record.round}, jogador ${playerId}`;
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -327,6 +365,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addQualification,
   addContinental,
   addRegional,
+  addPlays,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -766,7 +805,8 @@ export function migrateSave(
     calendarProblem(save) ??
     cupProblem(save) ??
     stagesProblem(save) ??
-    newsProblem(save);
+    newsProblem(save) ??
+    playsProblem(save);
   if (incoherence) return { status: "corrupt", reason: incoherence };
   const season = save.league.divisions.find((entry) => entry.clubIds.includes(save.clubId));
   if (!season) return { status: "corrupt", reason: "clube fora das divisões" };

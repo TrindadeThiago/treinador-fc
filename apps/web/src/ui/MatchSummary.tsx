@@ -1,12 +1,13 @@
 "use client";
 
-import type { MatchRecord } from "@brasfoot-like/engine";
+import { type MatchRecord, playTotals } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useT } from "../i18n";
 import { Crest } from "./Crest";
 import { ShootoutPanel } from "./cup/ShootoutPanel";
 import { minuteText } from "./event-text";
 import styles from "./MatchSummary.module.css";
+import { PlaysTable } from "./PlaysTable";
 import { StatsTable } from "./StatsTable";
 
 /** Resumo de uma partida a partir do registro da temporada (FR-015). */
@@ -96,6 +97,27 @@ export function MatchSummary({ record, save }: { record: MatchRecord; save: Save
         </div>
         <StatsTable home={home?.shortName} away={away?.shortName} stats={record.stats} />
       </div>
+      <section aria-label={t("summary.plays")} className={styles.plays}>
+        <h3>{t("summary.plays")}</h3>
+        {playTotals(record.players, "home") || playTotals(record.players, "away") ? (
+          <>
+            <PlaysTable
+              record={record}
+              side="home"
+              club={home?.shortName ?? record.home}
+              names={players}
+            />
+            <PlaysTable
+              record={record}
+              side="away"
+              club={away?.shortName ?? record.away}
+              names={players}
+            />
+          </>
+        ) : (
+          <p className={styles.none}>{t("summary.plays.none")}</p>
+        )}
+      </section>
       {record.summary ? <p className={styles.none}>{t("summary.simplified")}</p> : null}
       {record.decision?.extraTimeScore ? (
         <p className={styles.none}>
