@@ -146,10 +146,10 @@ description: "Tarefas da feature 033: estatísticas de jogadas"
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 Rodar os testes de escala do save (`packages/save/test/football-world-scale.test.ts`, `continental-scale.test.ts`, `regional-scale.test.ts`) e conferir os limites de `SCALE_LIMITS` (SC-006, SC-007). Se algum passar do limite, reduzir antes de pensar em mudar o limite: por exemplo, não gravar `plays` de quem jogou menos de um minuto (FR-013).
-- [ ] T025 [P] Atualizar o documento de formato do save (`apps/web/public/docs` ou `docs/`, onde estiver o formato do save) com a tupla `plays` e a versão 19, se o formato estiver documentado lá.
-- [ ] T026 Rodar o quickstart inteiro (`specs/033-estatisticas-de-jogadas/quickstart.md`): `pnpm lint`, `pnpm typecheck`, a suíte completa, `pnpm build:web` e `pnpm test:e2e` (inclui o layout em 768 px e a acessibilidade nos dois temas). Conferir em prints o resumo e as estatísticas ao vivo, em 1440 e 390 px.
-- [ ] T027 Bump de release no mesmo PR: `package.json` em 1.6.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de hoje no horário de Brasília (`TZ=America/Sao_Paulo date +%F`). O PR inclui a correção das datas das notas que já está na branch de origem.
+- [X] T024 *(Mundo compacto: 30,58 → 31,55 MB na última rodada, exportado 2,61 → 2,90 MB, dentro de `SCALE_LIMITS`. A carreira longa de um país só, `long-career.test.ts`, foi a 4,99 MB contra o teto de 4,5 MB; compactar mais não bastava, e o teto subiu para 5,5 MB com justificativa, por decisão do usuário.)* Rodar os testes de escala do save (`packages/save/test/football-world-scale.test.ts`, `continental-scale.test.ts`, `regional-scale.test.ts`) e conferir os limites de `SCALE_LIMITS` (SC-006, SC-007). Se algum passar do limite, reduzir antes de pensar em mudar o limite: por exemplo, não gravar `plays` de quem jogou menos de um minuto (FR-013).
+- [X] T025 [P] Atualizar o documento de formato do save (`apps/web/public/docs` ou `docs/`, onde estiver o formato do save) com a tupla `plays` e a versão 19, se o formato estiver documentado lá. *(Sem mudança: o formato do save não é documentado em `docs/` nem no README; ele vive nas specs, e o desta feature está em `data-model.md`. O `formatVersion` de `mod-format.md` é o do formato de mod, que não muda.)*
+- [X] T026 Rodar o quickstart inteiro (`specs/033-estatisticas-de-jogadas/quickstart.md`): `pnpm lint`, `pnpm typecheck`, a suíte completa, `pnpm build:web` e `pnpm test:e2e` (inclui o layout em 768 px e a acessibilidade nos dois temas). Conferir em prints o resumo e as estatísticas ao vivo, em 1440 e 390 px.
+- [X] T027 Bump de release no mesmo PR: `package.json` em 1.6.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de hoje no horário de Brasília (`TZ=America/Sao_Paulo date +%F`). O PR inclui a correção das datas das notas que já está na branch de origem.
 
 ---
 

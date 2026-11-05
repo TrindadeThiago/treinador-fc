@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.6.0",
+    "date": "2026-11-04",
+    "changes": [
+      "As partidas ganharam estatísticas de jogadas para cada jogador: passes certos e tentados, com o aproveitamento, passes decisivos (os que viraram finalização), desarmes certos e tentados e interceptações. O resumo da partida mostra uma tabela por time, com cada jogador que entrou em campo e o total, e as estatísticas ao vivo mostram os passes, o aproveitamento, os desarmes e as interceptações dos dois times.",
+      "Os números seguem o que acontece em campo: quem tem mais posse passa mais, zagueiros e volantes desarmam e interceptam mais, meias passam mais e dão mais passes decisivos, e jogadores mais fortes, descansados e na posição certa acertam mais. Foram medidos em milhares de partidas: um time troca por volta de 500 passes por jogo, com cerca de 83% de acerto.",
+      "As estatísticas só descrevem a partida: gols, cartões, lesões e todo o resto continuam iguais, e a mesma seed dá exatamente a mesma carreira. Elas existem nas partidas jogadas minuto a minuto (as do seu país e as competições que você disputa) a partir desta versão; as partidas antigas mostram que não têm jogadas.",
+      "Os saves existentes continuam abrindo (o formato passa para a versão 19) e nenhum formato de mod mudou. As datas das notas da 1.0.8 à 1.5.0 foram corrigidas para 04/11/2026, o dia em que saíram."
+    ]
+  },
+  {
     "version": "1.5.0",
     "date": "2026-11-04",
     "changes": [

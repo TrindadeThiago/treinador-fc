@@ -99,7 +99,7 @@ export function MatchSummary({ record, save }: { record: MatchRecord; save: Save
       </div>
       <section aria-label={t("summary.plays")} className={styles.plays}>
         <h3>{t("summary.plays")}</h3>
-        {playTotals(record.players, "home") || playTotals(record.players, "away") ? (
+        {playTotals(record.players ?? {}, "home") || playTotals(record.players ?? {}, "away") ? (
           <>
             <PlaysTable
               record={record}

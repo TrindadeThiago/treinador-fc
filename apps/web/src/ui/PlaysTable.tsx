@@ -26,9 +26,10 @@ export function PlaysTable({
   names: ReadonlyMap<string, string>;
 }) {
   const t = useT();
-  const totals = playTotals(record.players, side);
+  const lines = record.players ?? {};
+  const totals = playTotals(lines, side);
   if (!totals) return null;
-  const rows = Object.entries(record.players).flatMap(([playerId, line]) =>
+  const rows = Object.entries(lines).flatMap(([playerId, line]) =>
     line.side === side && line.plays && line.minutes > 0
       ? [{ playerId, plays: playStatsOf(line.plays) }]
       : [],

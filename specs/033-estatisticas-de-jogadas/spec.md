@@ -109,7 +109,7 @@ Como jogador do jogo, quero que os números façam sentido: um time troca centen
 **Save**
 
 - **FR-012**: O formato do save DEVE ganhar uma nova versão com migração da anterior; um save da versão anterior DEVE abrir, e as partidas já jogadas ficam sem estatísticas de jogadas.
-- **FR-013**: O crescimento do save causado pelas estatísticas DEVE respeitar os limites declarados do mundo grande (save no fim da temporada, no início da 31ª temporada e o arquivo exportado), sem afrouxar os limites.
+- **FR-013**: O crescimento do save causado pelas estatísticas DEVE respeitar os limites declarados do mundo grande (save no fim da temporada, no início da 31ª temporada e o arquivo exportado), sem afrouxar os limites. *(Revisão de 2026-11-04, decidida com o usuário: o teto da carreira longa de um país só, em que todas as partidas são completas, sobe de 4,5 para 5,5 MB na última rodada, com a justificativa no próprio teste; as jogadas somam ~11% nesse mundo. Os limites do mundo grande não mudam.)*
 - **FR-014**: Um save importado com estatísticas de jogadas inválidas (certos acima dos tentados, valores negativos ou não inteiros) DEVE ser rejeitado com mensagem clara, como os outros dados inválidos.
 
 **Interface**
