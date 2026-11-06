@@ -75,7 +75,7 @@
   grid-template-columns: 40px auto 1fr auto 32px;
   grid-template-areas:
     "position name cards energy strength"
-    ". natural natural . .";
+    ". natural natural rating .";
   align-items: center;
   gap: 0 var(--space-2);
   padding: var(--space-1) var(--space-2);
@@ -111,14 +111,16 @@
 
 .energy {
   grid-area: energy;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
-/* Nota parcial (034), ao lado da condição física. */
+/* Nota parcial (034): embaixo da condição física, sem alargar a linha. */
 .rating {
-  font-size: var(--text-sm);
+  grid-area: rating;
+  font-size: 12px;
+}
+
+.left .rating {
+  margin-left: var(--space-2);
 }
 
 .strength {

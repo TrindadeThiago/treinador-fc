@@ -257,8 +257,8 @@ export function SubstitutionPanel({ match, side, save, onChange }: PanelProps) {
                     ) : null}
                     <span className={styles.energy}>
                       <FitnessMeter value={energy(id)} />
-                      {rating(id)}
                     </span>
+                    {rating(id)}
                     <span className={styles.strength}>{Math.round(strengthNow(id) * factor)}</span>
                   </button>
                 </li>

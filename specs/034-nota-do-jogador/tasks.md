@@ -170,9 +170,9 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T027 Medir o tamanho do save com a tupla de 9: `packages/save/test/long-career.test.ts` (teto de 5,5 MB) e `football-world-scale.test.ts` (`SCALE_LIMITS`). Registrar no PR os valores antes e depois.
-- [ ] T028 Rodar o quickstart inteiro (`specs/034-nota-do-jogador/quickstart.md`): `pnpm lint`, `pnpm typecheck`, suíte completa, `pnpm build:web` e `pnpm test:e2e` (layout em 768 px e acessibilidade nos dois temas). Conferir em prints o resumo, o painel ao vivo, o elenco e o detalhe, em 1440 e 768 px.
-- [ ] T029 Bump de release no mesmo PR: `package.json` em 1.7.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de `TZ=America/Sao_Paulo date +%F`.
+- [X] T027 Medir o tamanho do save com a tupla de 9: `packages/save/test/long-career.test.ts` (teto de 5,5 MB) e `football-world-scale.test.ts` (`SCALE_LIMITS`). Registrar no PR os valores antes e depois.
+- [X] T028 Rodar o quickstart inteiro (`specs/034-nota-do-jogador/quickstart.md`): `pnpm lint`, `pnpm typecheck`, suíte completa, `pnpm build:web` e `pnpm test:e2e` (layout em 768 px e acessibilidade nos dois temas). Conferir em prints o resumo, o painel ao vivo, o elenco e o detalhe, em 1440 e 768 px.
+- [X] T029 Bump de release no mesmo PR: `package.json` em 1.7.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de `TZ=America/Sao_Paulo date +%F`.
 
 ---
 
