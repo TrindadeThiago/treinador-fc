@@ -1,5 +1,18 @@
 [
   {
+    "version": "1.8.0",
+    "date": "2026-11-06",
+    "changes": [
+      "A Início foi reformulada: virou um painel em grade que cabe numa tela, em vez de uma página longa. O próximo jogo e a posição na tabela ficam lado a lado, e a torcida, a diretoria e as manchetes, embaixo. Em telas estreitas, os blocos ficam um embaixo do outro.",
+      "O próximo jogo mostra os dois times frente a frente, com o escudo e a forma recente de cada um, e três indicadores: a força do seu time comparada com a do adversário, a condição física média dos titulares e o número de desfalques, com o caminho para a escalação.",
+      "Os avisos de antes do jogo ficaram compactos e lado a lado, cada um com uma ação. As listas longas (trocas na escalação, mudanças no elenco) abrem em \"Ver detalhes\".",
+      "O cartão da posição mostra os últimos cinco resultados com o adversário, o mando, a rodada e o placar colorido, com a letra V, E ou D em texto, e o link para a tabela. O saldo do caixa fica nas Finanças.",
+      "Torcida e diretoria ficaram num cartão só, com o valor, a barra, a tendência, a reputação do técnico e o estado das metas numa linha. Os motivos de cada mudança continuam na Carreira.",
+      "As manchetes da Início são as três mais relevantes da rodada, cada uma com uma etiqueta de categoria (Resultado, Clássico, Copa e outras). A lista completa de resultados da rodada saiu da Início e continua na Competição e no fim da rodada ao vivo.",
+      "Nada mudou nas partidas: a mesma seed dá a mesma carreira. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.7.4",
     "date": "2026-11-06",
     "changes": [
