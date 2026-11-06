@@ -9,4 +9,5 @@ export {
   type RatingKind,
   rate,
 } from "./rate";
+export { type SeasonRating, seasonRatings } from "./season";
 export { RATING_TUNING } from "./tuning";

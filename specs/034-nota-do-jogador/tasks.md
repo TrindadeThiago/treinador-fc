@@ -153,18 +153,18 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 **Independent Test**: depois de algumas rodadas, ver a média no elenco, ordenar por ela e ver a mesma média no detalhe.
 
-- [ ] T022 [P] [US3] Em `packages/engine/test/rating/season.test.ts`, testar `seasonRatings(seasons, clubId, bank)`:
+- [X] T022 [P] [US3] Em `packages/engine/test/rating/season.test.ts`, testar `seasonRatings(seasons, clubId, bank)`:
   - média de uma casa, partidas com nota e simplificadas, de todas as competições da temporada atual;
   - só os registros do clube;
   - quem não tem nota fica de fora;
   - igual à média calculada à mão com `matchRatings` das mesmas partidas.
-- [ ] T023 [P] [US3] Em `apps/web/test/ui/squad-ratings.test.tsx`, testar:
+- [X] T023 [P] [US3] Em `apps/web/test/ui/squad-ratings.test.tsx`, testar:
   - a coluna Nota do elenco mostra "média (partidas)" ou "sem nota";
   - ordenar pela coluna põe "sem nota" por último nos dois sentidos;
   - o detalhe do jogador (`PlayerStats`) mostra a mesma média, as partidas e, quando houver, as simplificadas.
-- [ ] T024 [US3] Implementar `seasonRatings` em `packages/engine/src/rating/index.ts` (research R7). Criar o seletor `clubSeasonRatings(save, clubId)` em `apps/web/src/game/selectors.ts`, usando todas as temporadas de `seasonStateOf(save)` (liga e competições).
-- [ ] T025 [US3] Acrescentar a coluna Nota em `apps/web/src/app/jogo/elenco/page.tsx` (`DataTable`). Se o `DataTable` (`apps/web/src/ui/DataTable.tsx`) não puder pôr os valores ausentes por último nos dois sentidos, estendê-lo com uma opção `missingLast`. Em `apps/web/src/ui/PlayerDetails.tsx` (`PlayerStats`), acrescentar as linhas de nota média, partidas com nota e simplificadas.
-- [ ] T026 [US3] Acrescentar os textos do elenco e do detalhe em `packages/i18n/locales/pt-BR/ui.json`.
+- [X] T024 [US3] Implementar `seasonRatings` em `packages/engine/src/rating/index.ts` (research R7). Criar o seletor `clubSeasonRatings(save, clubId)` em `apps/web/src/game/selectors.ts`, usando todas as temporadas de `seasonStateOf(save)` (liga e competições).
+- [X] T025 [US3] Acrescentar a coluna Nota em `apps/web/src/app/jogo/elenco/page.tsx` (`DataTable`). Se o `DataTable` (`apps/web/src/ui/DataTable.tsx`) não puder pôr os valores ausentes por último nos dois sentidos, estendê-lo com uma opção `missingLast`. Em `apps/web/src/ui/PlayerDetails.tsx` (`PlayerStats`), acrescentar as linhas de nota média, partidas com nota e simplificadas.
+- [X] T026 [US3] Acrescentar os textos do elenco e do detalhe em `packages/i18n/locales/pt-BR/ui.json`.
 
 ---
 

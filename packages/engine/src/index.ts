@@ -573,6 +573,8 @@ export {
   RATING_REALISM_LIMITS,
   RATING_TUNING,
   type RatingKind,
+  type SeasonRating,
+  seasonRatings,
 } from "./rating";
 export { regionalEdition, regionalEditions } from "./regional/history";
 export {

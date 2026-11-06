@@ -16,6 +16,8 @@ import {
   nextComposition,
   prizeFor,
   type Season,
+  type SeasonRating,
+  seasonRatings,
   standings,
 } from "@brasfoot-like/engine";
 import {
@@ -263,4 +265,15 @@ export function hangingPlayers(save: SaveFile, competitionId: string): ReadonlyS
     }
   }
   return hanging;
+}
+
+/**
+ * Média das notas da temporada atual (034) dos jogadores de um clube, em todas as competições da
+ * carreira no ano (liga e as demais).
+ */
+export function clubSeasonRatings(save: SaveFile, clubId: string): Map<string, SeasonRating> {
+  const state = seasonStateOf(save);
+  const seasons = [state.league, ...state.competitions].flatMap((league) => league.divisions);
+  const players = new Map(save.bank.players.map((player) => [player.id, player]));
+  return seasonRatings(seasons, clubId, players);
 }

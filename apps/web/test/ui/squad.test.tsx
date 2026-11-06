@@ -31,6 +31,7 @@ describe("Elenco (FR-017)", () => {
       t("col.fitness"),
       t("col.evolution"),
       t("col.contractUntil"),
+      t("col.rating"),
     ]);
     // 026: sem coluna de ações; as ações ficam no modal do jogador.
     expect(headers).not.toContain("Ações");

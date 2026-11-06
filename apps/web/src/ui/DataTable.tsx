@@ -9,7 +9,8 @@ export interface Column<Row> {
   header: string;
   render: (row: Row) => ReactNode;
   /** Valor para ordenar; sem ele, a coluna não é ordenável. */
-  sortValue?: (row: Row) => string | number;
+  /** Valor de ordenação; `undefined` (ex.: jogador sem nota) fica sempre por último, nos dois sentidos. */
+  sortValue?: (row: Row) => string | number | undefined;
   align?: "left" | "right" | "center";
 }
 
@@ -64,6 +65,10 @@ export function DataTable<Row>({
       .sort((a, b) => {
         const left = value(a.row);
         const right = value(b.row);
+        if (left === undefined || right === undefined) {
+          if (left === right) return a.index - b.index;
+          return left === undefined ? 1 : -1;
+        }
         const compared =
           typeof left === "number" && typeof right === "number"
             ? left - right
