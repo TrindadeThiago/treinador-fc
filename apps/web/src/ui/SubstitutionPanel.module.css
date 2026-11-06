@@ -111,6 +111,14 @@
 
 .energy {
   grid-area: energy;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Nota parcial (034), ao lado da condição física. */
+.rating {
+  font-size: var(--text-sm);
 }
 
 .strength {

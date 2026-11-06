@@ -345,6 +345,7 @@
   "summary.substitutions": "Substituições",
   "rating.column": "Nota",
   "rating.none": "sem nota",
+  "rating.live": "Nota parcial:",
   "rating.best": "Melhor em campo: {player} ({club}),",
   "rating.caption": "Notas do {club}",
   "rating.minutes": "Minutos",

@@ -138,12 +138,12 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 **Independent Test**: pausar no meio do jogo e ver as notas parciais; no fim, elas são iguais às do resumo.
 
-- [ ] T018 [P] [US2] Em `packages/engine/test/rating/live.test.ts`, testar (SC-006):
+- [X] T018 [P] [US2] Em `packages/engine/test/rating/live.test.ts`, testar (SC-006):
   - `liveRatings(estadoFinal)` igual a `matchRatings(toMatchRecord(resultado))` em 50 partidas;
   - a nota parcial sobe depois de um gol do jogador e desce depois de um vermelho, numa partida avançada minuto a minuto.
-- [ ] T019 [P] [US2] Em `apps/web/test/ui/live-ratings.test.tsx`, testar que o painel Meu time (`SubstitutionPanel`) mostra a nota parcial de `liveRatings` (ou "sem nota") nas listas "Em campo" e "Já saíram".
-- [ ] T020 [US2] Implementar `liveRatings(state, players)` em `packages/engine/src/rating/rate.ts`, a partir de `liveRatingInputs`, e mostrar a nota (`RatingValue`) em cada linha de "Em campo" e "Já saíram" de `apps/web/src/ui/SubstitutionPanel.tsx`.
-- [ ] T021 [US2] Acrescentar o rótulo da coluna de nota parcial em `packages/i18n/locales/pt-BR/ui.json`.
+- [X] T019 [P] [US2] Em `apps/web/test/ui/live-ratings.test.tsx`, testar que o painel Meu time (`SubstitutionPanel`) mostra a nota parcial de `liveRatings` (ou "sem nota") nas listas "Em campo" e "Já saíram".
+- [X] T020 [US2] Implementar `liveRatings(state, players)` em `packages/engine/src/rating/rate.ts`, a partir de `liveRatingInputs`, e mostrar a nota (`RatingValue`) em cada linha de "Em campo" e "Já saíram" de `apps/web/src/ui/SubstitutionPanel.tsx`.
+- [X] T021 [US2] Acrescentar o rótulo da coluna de nota parcial em `packages/i18n/locales/pt-BR/ui.json`.
 
 ---
 

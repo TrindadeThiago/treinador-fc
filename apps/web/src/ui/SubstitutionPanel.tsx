@@ -7,6 +7,7 @@ import {
   type FormationId,
   fatiguedStrength,
   type LiveMatch,
+  liveRatings,
   type MatchChange,
   matchDrain,
   type PlayerMatchState,
@@ -22,6 +23,7 @@ import { fitnessAt } from "../game/selectors";
 import { label, useT } from "../i18n";
 import { FitnessMeter } from "./FitnessMeter";
 import { Notice } from "./Notice";
+import { RatingValue } from "./RatingValue";
 import styles from "./SubstitutionPanel.module.css";
 
 interface PanelProps {
@@ -67,6 +69,14 @@ export function SubstitutionPanel({ match, side, save, onChange }: PanelProps) {
   const pendingRef = useRef<HTMLButtonElement | null>(null);
   const team = match.state.teams[side];
   const players = new Map(save.bank.players.map((player) => [player.id, player]));
+  // Nota parcial de cada jogador (034), do estado da partida.
+  const ratings = liveRatings(match.state, players).players;
+  const rating = (id: string) => (
+    <span className={styles.rating}>
+      <span className="visually-hidden">{t("rating.live")} </span>
+      <RatingValue rating={ratings[id]?.rating} />
+    </span>
+  );
   const name = (id: string) => players.get(id)?.displayName ?? id;
   // Energia ao vivo: a condição de saída menos o desgaste dos minutos em campo (e a força cai junto).
   const { fatigue } = match.state.input;
@@ -247,6 +257,7 @@ export function SubstitutionPanel({ match, side, save, onChange }: PanelProps) {
                     ) : null}
                     <span className={styles.energy}>
                       <FitnessMeter value={energy(id)} />
+                      {rating(id)}
                     </span>
                     <span className={styles.strength}>{Math.round(strengthNow(id) * factor)}</span>
                   </button>
@@ -286,6 +297,7 @@ export function SubstitutionPanel({ match, side, save, onChange }: PanelProps) {
               <li key={id}>
                 <span>{name(id)}</span>
                 <Cards state={team.players[id]} />
+                {rating(id)}
               </li>
             ))}
           </ul>
