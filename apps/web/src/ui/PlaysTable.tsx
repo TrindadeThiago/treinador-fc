@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type MatchRatings,
   type MatchRecord,
   type PlayStats,
   playStatsOf,
@@ -9,6 +10,7 @@ import {
 } from "@brasfoot-like/engine";
 import { formatNumber, useT } from "../i18n";
 import styles from "./PlaysTable.module.css";
+import { RatingValue } from "./RatingValue";
 
 /**
  * Jogadas de um time numa partida (033): uma linha por jogador que entrou em campo, na ordem de
@@ -19,11 +21,14 @@ export function PlaysTable({
   side,
   club,
   names,
+  ratings,
 }: {
   record: MatchRecord;
   side: Side;
   club: string;
   names: ReadonlyMap<string, string>;
+  /** Notas da partida (034): coluna Nota em cada jogador. */
+  ratings?: MatchRatings | undefined;
 }) {
   const t = useT();
   const lines = record.players ?? {};
@@ -62,6 +67,7 @@ export function PlaysTable({
             <th scope="col">{t("summary.plays.keyPasses")}</th>
             <th scope="col">{t("summary.plays.tackles")}</th>
             <th scope="col">{t("summary.plays.interceptions")}</th>
+            {ratings ? <th scope="col">{t("rating.column")}</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -69,11 +75,17 @@ export function PlaysTable({
             <tr key={playerId}>
               <th scope="row">{names.get(playerId) ?? playerId}</th>
               {cells(plays)}
+              {ratings ? (
+                <td>
+                  <RatingValue rating={ratings.players[playerId]?.rating} />
+                </td>
+              ) : null}
             </tr>
           ))}
           <tr className={styles.total}>
             <th scope="row">{t("summary.plays.total")}</th>
             {cells(totals)}
+            {ratings ? <td /> : null}
           </tr>
         </tbody>
       </table>

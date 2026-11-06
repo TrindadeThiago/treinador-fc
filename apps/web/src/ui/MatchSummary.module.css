@@ -55,3 +55,9 @@
   font-size: var(--text-md);
   color: var(--color-muted);
 }
+
+/* Melhor em campo (034): nome, time e nota em texto. */
+.best {
+  margin: 0;
+  font-weight: 600;
+}

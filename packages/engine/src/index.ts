@@ -565,6 +565,14 @@ export type {
   QualificationResult,
 } from "./qualification/types";
 export { berthZones } from "./qualification/zones";
+export {
+  liveRatings,
+  type MatchRatings,
+  matchRatings,
+  type PlayerRating,
+  RATING_TUNING,
+  type RatingKind,
+} from "./rating";
 export { regionalEdition, regionalEditions } from "./regional/history";
 export {
   isRegional,

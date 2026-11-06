@@ -1,0 +1,16 @@
+.rating {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.good {
+  color: var(--color-win);
+}
+
+.bad {
+  color: var(--color-loss);
+}
+
+.none {
+  color: var(--color-muted);
+}

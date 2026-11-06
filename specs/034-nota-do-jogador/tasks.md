@@ -79,7 +79,7 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 ### Testes primeiro
 
-- [ ] T008 [P] [US1] Criar `packages/engine/test/rating/rate.test.ts` (FR-001 a FR-006, SC-001):
+- [X] T008 [P] [US1] Criar `packages/engine/test/rating/rate.test.ts` (FR-001 a FR-006, SC-001):
   - nota sempre entre 0 e 10 com uma casa;
   - sem nota abaixo de `minMinutes`;
   - com os mesmos números, mais minutos afasta a nota de 6,0 (encolhimento);
@@ -89,21 +89,21 @@ description: "Tarefas da feature 034: nota do jogador por partida"
   - a lesão não muda a nota;
   - o melhor em campo é o de maior nota, com o desempate fixo (gols, assistências, vencedor e id), independente da ordem das linhas;
   - a linha sem `plays` dá nota `"simplified"`, e as tuplas de 6 e de 9 dão `"full"`.
-- [ ] T009 [P] [US1] Criar `apps/web/test/ui/match-ratings.test.tsx` (contrato `rating-screens.md`):
+- [X] T009 [P] [US1] Criar `apps/web/test/ui/match-ratings.test.tsx` (contrato `rating-screens.md`):
   - o resumo de uma partida completa mostra a coluna Nota com o valor de `matchRatings` para cada jogador, "sem nota" para quem ficou abaixo do mínimo e o destaque do melhor em campo com nome, time e nota;
   - num registro sem `plays`, mostra a tabela simplificada (Jogador · Minutos · Nota) e o aviso de notas simplificadas.
 
 ### Implementação
 
-- [ ] T010 [US1] Implementar em `packages/engine/src/rating/rate.ts` (research R3 e R4):
+- [X] T010 [US1] Implementar em `packages/engine/src/rating/rate.ts` (research R3 e R4):
   - a fórmula completa e a simplificada;
   - o arredondamento determinístico para uma casa (em inteiros);
   - `matchRatings(record, bank)`, com o melhor em campo.
 
   Acrescentar `RATING_TUNING` em `packages/engine/src/rating/tuning.ts`, com valores iniciais e um comentário por constante. Exportar em `packages/engine/src/index.ts` `matchRatings`, `liveRatings`, `seasonRatings`, os tipos e `RATING_TUNING`.
-- [ ] T011 [US1] Criar `apps/web/src/ui/RatingValue.tsx` e `RatingValue.module.css`: a nota formatada com `formatNumber` e uma casa, com o tom (bom ≥ 7,0, médio, ruim < 5,5), ou "sem nota". Só tokens de cor (`test/ui/style-audit.test.ts`).
-- [ ] T012 [US1] Em `apps/web/src/ui/PlaysTable.tsx`, acrescentar a coluna Nota (`RatingValue`); a linha de total fica sem nota. Em `apps/web/src/ui/MatchSummary.tsx`, mostrar o destaque "Melhor em campo" acima das tabelas e, em partida sem jogadas, uma tabela simplificada por time (Jogador · Minutos · Nota) com o aviso de notas simplificadas, no lugar do texto de "sem jogadas".
-- [ ] T013 [US1] Acrescentar os textos em `packages/i18n/locales/pt-BR/ui.json`: título e frase do melhor em campo, coluna Nota, "sem nota", minutos e aviso de notas simplificadas.
+- [X] T011 [US1] Criar `apps/web/src/ui/RatingValue.tsx` e `RatingValue.module.css`: a nota formatada com `formatNumber` e uma casa, com o tom (bom ≥ 7,0, médio, ruim < 5,5), ou "sem nota". Só tokens de cor (`test/ui/style-audit.test.ts`).
+- [X] T012 [US1] Em `apps/web/src/ui/PlaysTable.tsx`, acrescentar a coluna Nota (`RatingValue`); a linha de total fica sem nota. Em `apps/web/src/ui/MatchSummary.tsx`, mostrar o destaque "Melhor em campo" acima das tabelas e, em partida sem jogadas, uma tabela simplificada por time (Jogador · Minutos · Nota) com o aviso de notas simplificadas, no lugar do texto de "sem jogadas".
+- [X] T013 [US1] Acrescentar os textos em `packages/i18n/locales/pt-BR/ui.json`: título e frase do melhor em campo, coluna Nota, "sem nota", minutos e aviso de notas simplificadas.
 
 **Checkpoint**: US1 completa. O resumo mostra as notas e o melhor em campo.
 

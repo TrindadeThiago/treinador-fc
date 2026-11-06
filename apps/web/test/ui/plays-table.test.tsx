@@ -53,7 +53,7 @@ describe("jogadas no resumo da partida (033)", () => {
     });
   });
 
-  it("uma partida sem jogadas (save antigo ou resumida) diz isso, sem zeros", async () => {
+  it("uma partida sem jogadas (save antigo ou resumida) não mostra jogadas zeradas", async () => {
     const { save } = await storedCareer(3);
     const original = userSeason(save).records[0] as MatchRecord;
     const players = Object.fromEntries(
@@ -64,7 +64,8 @@ describe("jogadas no resumo da partida (033)", () => {
     );
     render(<MatchSummary record={{ ...original, players }} save={save} />);
     const section = screen.getByRole("region", { name: t("summary.plays") });
-    expect(within(section).queryAllByRole("table")).toHaveLength(0);
-    expect(within(section).getByText(t("summary.plays.none"))).toBeDefined();
+    // Sem jogadas: só as notas simplificadas (034), nenhuma tabela de passes.
+    expect(within(section).queryByText(t("summary.plays.passes"))).toBeNull();
+    expect(within(section).getByText(t("rating.simplified"))).toBeDefined();
   });
 });
