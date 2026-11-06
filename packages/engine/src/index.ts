@@ -570,6 +570,7 @@ export {
   type MatchRatings,
   matchRatings,
   type PlayerRating,
+  RATING_REALISM_LIMITS,
   RATING_TUNING,
   type RatingKind,
 } from "./rating";
@@ -641,7 +642,7 @@ export {
   matchTicks,
   startRound,
 } from "./season/live-round";
-export { playerLines, toSummaryRecord } from "./season/record";
+export { playerLines, toMatchRecord, toSummaryRecord } from "./season/record";
 export type { AdvanceSeasonResult, CreateSeasonResult } from "./season/season";
 export { advanceSeason, createSeason, isSeasonOver, unavailablePlayers } from "./season/season";
 export { standings } from "./season/standings";

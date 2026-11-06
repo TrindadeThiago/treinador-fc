@@ -117,16 +117,16 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 > Vem antes da US2 e da US3 porque calibra as constantes que as duas mostram.
 
-- [ ] T014 [P] [US4] Criar `packages/engine/test/rating/realism.test.ts` (FR-016, SC-003 a SC-005), com uma amostra de liga de 3.000 partidas completas (mesmo gerador de `test/match/realism/plays.test.ts`), passando cada resultado por `toMatchRecord` e `matchRatings`. Conferir:
+- [X] T014 [P] [US4] Criar `packages/engine/test/rating/realism.test.ts` (FR-016, SC-003 a SC-005), com uma amostra de liga de 3.000 partidas completas (mesmo gerador de `test/match/realism/plays.test.ts`), passando cada resultado por `toMatchRecord` e `matchRatings`. Conferir:
   - média geral, parte abaixo de 4,0 e acima de 9,0;
   - desvio de cada posição da vaga em relação à média geral;
   - quem marcou contra quem não marcou;
   - vencedor contra perdedor;
   - parte das partidas com vencedor em que o melhor em campo é do time vencedor;
   - nas mesmas partidas, sem `plays` (simplificada), média a no máximo 0,3 da completa.
-- [ ] T015 [US4] Declarar `RATING_REALISM_LIMITS` em `packages/engine/src/rating/limits.ts`, conforme research R8, com o comentário de que afrouxar exige justificativa, e exportar em `packages/engine/src/index.ts`.
-- [ ] T016 [US4] Calibrar `RATING_TUNING`, incluindo os `offset` e `simplifiedOffset` por posição, até T014 passar com as médias perto do meio das faixas. Registrar os valores medidos num comentário junto das constantes. Uma faixa inalcançável sem distorcer as outras se ajusta com justificativa (Princípio V).
-- [ ] T017 [US4] Acrescentar o bloco "notas" em `tools/src/simulate-matches.ts`, com as médias e as faixas de `RATING_REALISM_LIMITS` no formato ✓/✗.
+- [X] T015 [US4] Declarar `RATING_REALISM_LIMITS` em `packages/engine/src/rating/limits.ts`, conforme research R8, com o comentário de que afrouxar exige justificativa, e exportar em `packages/engine/src/index.ts`.
+- [X] T016 [US4] Calibrar `RATING_TUNING`, incluindo os `offset` e `simplifiedOffset` por posição, até T014 passar com as médias perto do meio das faixas. Registrar os valores medidos num comentário junto das constantes. Uma faixa inalcançável sem distorcer as outras se ajusta com justificativa (Princípio V).
+- [X] T017 [US4] Acrescentar o bloco "notas" em `tools/src/simulate-matches.ts`, com as médias e as faixas de `RATING_REALISM_LIMITS` no formato ✓/✗.
 
 **Checkpoint**: notas com cara de jornal, verificadas.
 

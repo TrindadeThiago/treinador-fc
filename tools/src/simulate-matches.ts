@@ -13,9 +13,12 @@ import {
   generateDefaultBank,
   type Lineup,
   type MatchInput,
+  matchRatings,
   PLAY_REALISM_LIMITS,
   type Position,
+  RATING_REALISM_LIMITS,
   simulateMatch,
+  toMatchRecord,
 } from "@brasfoot-like/engine";
 import { DEFAULT_SEED } from "./default-seed";
 
@@ -54,6 +57,16 @@ const metrics = createMetricsAccumulator();
 // Jogadas (033): totais por time e por minuto em cada posição de vaga (titulares do jogo inteiro).
 const plays = { teams: 0, passes: 0, completed: 0, tacklesWon: 0, interceptions: 0, keyPasses: 0 };
 const byPosition = new Map<Position, { minutes: number; defensive: number; passes: number }>();
+// Notas (034): todas as notas, por posição da vaga, de quem marcou, do vencedor e do melhor em campo.
+const bank = new Map(world.players.map((player) => [player.id, player]));
+const ratings = { all: [] as number[], scorers: [] as number[], others: [] as number[] };
+const ratingResults = {
+  winners: [] as number[],
+  losers: [] as number[],
+  decided: 0,
+  bestFromWinner: 0,
+};
+const ratingByPosition = new Map<Position, number[]>();
 const started = performance.now();
 for (let index = 0; index < matches; index++) {
   const division = divisions[index % divisions.length];
@@ -75,6 +88,34 @@ for (let index = 0; index < matches; index++) {
   const outcome = simulateMatch(input);
   if (!outcome.ok) throw new Error(JSON.stringify(outcome.errors));
   metrics.add(input, outcome.result);
+  const sides = Object.fromEntries([
+    ...input.home.squad.map((player) => [player.id, "home" as const]),
+    ...input.away.squad.map((player) => [player.id, "away" as const]),
+  ]);
+  const record = toMatchRecord(1, home, away, outcome.result, sides, { home: [], away: [] });
+  const rated = matchRatings(record, bank);
+  const winner =
+    record.score.home > record.score.away
+      ? "home"
+      : record.score.away > record.score.home
+        ? "away"
+        : undefined;
+  for (const [playerId, entry] of Object.entries(rated.players)) {
+    const line = record.players[playerId];
+    if (entry.rating === undefined || !line) continue;
+    ratings.all.push(entry.rating);
+    (line.goals > 0 ? ratings.scorers : ratings.others).push(entry.rating);
+    if (winner)
+      (line.side === winner ? ratingResults.winners : ratingResults.losers).push(entry.rating);
+    ratingByPosition.set(entry.position, [
+      ...(ratingByPosition.get(entry.position) ?? []),
+      entry.rating,
+    ]);
+  }
+  if (winner) {
+    ratingResults.decided += 1;
+    if (rated.best?.side === winner) ratingResults.bestFromWinner += 1;
+  }
   for (const side of ["home", "away"] as const) {
     plays.teams += 1;
     const lineup = input[side].lineup;
@@ -183,7 +224,58 @@ for (const check of playChecks) {
     `${ok ? "✓" : "✗"} ${check.metric.padEnd(24)} ${format(check.value).padStart(8)}   ${bound}`,
   );
 }
+const R = RATING_REALISM_LIMITS;
+const average = (values: readonly number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+const ratingMean = average(ratings.all);
+const positionGap = Math.max(
+  ...[...ratingByPosition.values()].map((values) => Math.abs(average(values) - ratingMean)),
+);
+const ratingChecks: { metric: string; value: number; min?: number; max?: number }[] = [
+  { metric: "ratingMean", value: ratingMean, min: R.mean[0], max: R.mean[1] },
+  {
+    metric: "ratingBelow4",
+    value: ratings.all.filter((v) => v < 4).length / ratings.all.length,
+    max: R.maxBelow4,
+  },
+  {
+    metric: "ratingAbove9",
+    value: ratings.all.filter((v) => v > 9).length / ratings.all.length,
+    max: R.maxAbove9,
+  },
+  { metric: "positionGap", value: positionGap, max: R.maxPositionGap },
+  {
+    metric: "scorerGap",
+    value: average(ratings.scorers) - average(ratings.others),
+    min: R.minScorerGap,
+  },
+  {
+    metric: "winnerGap",
+    value: average(ratingResults.winners) - average(ratingResults.losers),
+    min: R.minWinnerGap,
+  },
+  {
+    metric: "bestFromWinner",
+    value: ratingResults.bestFromWinner / ratingResults.decided,
+    min: R.minBestFromWinner,
+  },
+];
+const within = (check: { value: number; min?: number; max?: number }) =>
+  (check.min === undefined || check.value >= check.min) &&
+  (check.max === undefined || check.value <= check.max);
+const ratingsOk = ratingChecks.every(within);
+console.log("\nnotas (034)");
+for (const check of ratingChecks) {
+  const bound =
+    check.max === undefined
+      ? `≥ ${check.min}`
+      : check.min === undefined
+        ? `≤ ${check.max}`
+        : `${check.min}–${check.max}`;
+  console.log(
+    `${within(check) ? "✓" : "✗"} ${check.metric.padEnd(24)} ${format(check.value).padStart(8)}   ${bound}`,
+  );
+}
 console.log(
   `\n  (informativo) vitórias do mandante ${format(summary.homeWinRate)}, do visitante ${format(summary.awayWinRate)}`,
 );
-process.exit(checks.every((check) => check.ok) && playsOk ? 0 : 1);
+process.exit(checks.every((check) => check.ok) && playsOk && ratingsOk ? 0 : 1);
