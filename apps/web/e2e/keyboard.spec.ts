@@ -72,9 +72,10 @@ for (const theme of ["dark", "light"] as const) {
     // Rodada direta pelo botão.
     await tabTo(page, page.getByRole("button", { name: t("home.simulate") }), "simular");
     await page.keyboard.press("Enter");
+    // 035: o primeiro resultado aparece entre os últimos do clube, no cartão da posição.
     await expect(
-      page.getByRole("region", { name: t("home.lastRound", { round: 1 }) }),
-    ).toBeVisible();
+      page.getByRole("region", { name: t("home.position") }).getByRole("listitem"),
+    ).toHaveCount(1);
 
     // Tabela e mercado.
     await tabTo(page, page.getByRole("link", { name: t("nav.competition") }), "competição");

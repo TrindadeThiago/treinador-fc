@@ -13,6 +13,7 @@ import { competitionClubs } from "../../src/game/selectors";
 import { t } from "../../src/i18n";
 import { freshStore, renderApp } from "../helpers/app";
 import { loadSaved } from "../helpers/live";
+import { roundPlayed } from "../helpers/round";
 import { memoryRouter } from "../helpers/router";
 import { careerSave, longCareer } from "../helpers/saves";
 
@@ -77,7 +78,7 @@ describe("desempenho (SC-005)", () => {
     const user = userEvent.setup();
     const start = performance.now();
     await user.click(button);
-    await screen.findByRole("region", { name: t("home.lastRound", { round: 1 }) });
+    await roundPlayed(1);
     expect(performance.now() - start).toBeLessThan(1000);
     expect(userSeason(await loadSaved(store)).nextRound).toBe(2);
   });
@@ -114,7 +115,7 @@ describe("desempenho numa carreira de 10 temporadas (016 R1)", () => {
     const user = userEvent.setup();
     const start = performance.now();
     await user.click(button);
-    await screen.findByRole("region", { name: t("home.lastRound", { round: 1 }) });
+    await roundPlayed(1);
     const time = performance.now() - start;
     console.log(`rodada direta pela interface (temporada 11): ${time.toFixed(0)} ms`);
     expect(time).toBeLessThan(1000);

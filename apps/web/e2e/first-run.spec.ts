@@ -25,7 +25,7 @@ test("primeiro acesso: boas-vindas, dicas uma vez cada, sem repetir ao recarrega
   const home = page.getByRole("complementary", { name: t("tips.home.title") });
   await expect(home).toBeVisible();
   await home.getByRole("button", { name: t("tips.ok") }).click();
-  await page.getByRole("link", { name: t("nav.lineup") }).click();
+  await page.getByRole("link", { name: t("nav.lineup"), exact: true }).click();
   const lineup = page.getByRole("complementary", { name: t("tips.lineup.title") });
   await expect(lineup).toBeVisible();
   await lineup.getByRole("button", { name: t("tips.ok") }).click();

@@ -56,6 +56,30 @@
   font-size: var(--text-sm);
 }
 
+.card.compactCard {
+  gap: var(--space-2);
+}
+
+/* Na Início (035): menos espaço e o título em até duas linhas; o texto inteiro fica nas Notícias. */
+.item.compact {
+  padding: var(--space-2) var(--space-3);
+}
+
+.compact .text {
+  font-size: var(--text-sm);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.compact .extra {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .empty {
   margin: 0;
   color: var(--color-muted);

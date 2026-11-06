@@ -10,12 +10,15 @@ import styles from "./news.module.css";
 import { RoundFeed } from "./RoundFeed";
 
 /** Cartão da Início: as manchetes mais relevantes da última rodada (014 FR-007). */
-export function NewsCard({ save }: { save: SaveFile }) {
+export function NewsCard({ save, compact }: { save: SaveFile; compact?: boolean | undefined }) {
   const t = useT();
   const feed = latestFeed(save.news);
   const { homeLimit } = newsRules(save.bank, save.league.competitionId);
   return (
-    <Card aria-label={t("news.title")} className={styles.card}>
+    <Card
+      aria-label={t("news.title")}
+      className={compact ? `${styles.card} ${styles.compactCard}` : styles.card}
+    >
       <h2>
         {feed
           ? feed.round === 0
@@ -27,7 +30,8 @@ export function NewsCard({ save }: { save: SaveFile }) {
         save={save}
         headlines={feed?.headlines ?? []}
         round={feed?.round ?? 0}
-        limit={homeLimit}
+        limit={compact ? Math.min(3, homeLimit) : homeLimit}
+        compact={compact}
       />
       <Link href={screenHref("/jogo/noticias", save.id)}>{t("news.seeAll")}</Link>
     </Card>

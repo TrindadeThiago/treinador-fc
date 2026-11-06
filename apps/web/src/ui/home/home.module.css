@@ -1,0 +1,295 @@
+/* Blocos da Início (035): cartões compactos para caber numa tela de 1440×900. */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.standing {
+  margin: 0;
+  font-weight: 600;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.card p {
+  margin: 0;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.subhead {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+/* Próximo jogo: os dois clubes frente a frente. */
+.versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+  min-width: 0;
+}
+
+.sideName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.vs {
+  align-self: center;
+  font-size: var(--text-xl);
+  color: var(--color-muted);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.kpis div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface-2);
+  min-width: 0;
+}
+
+.kpis dt {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.kpis dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.kpiLink {
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.actions button {
+  flex: 1 1 160px;
+}
+
+/* Posição na tabela e últimos resultados. */
+.position {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.results li {
+  display: grid;
+  grid-template-columns: 22px 18px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.opponent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.letter {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--color-on-accent);
+}
+
+.win {
+  background: var(--color-win);
+}
+
+.draw {
+  background: var(--color-draw);
+}
+
+.loss {
+  background: var(--color-loss);
+}
+
+.score {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.results li[data-result="win"] .score {
+  color: var(--color-win);
+}
+
+.results li[data-result="loss"] .score {
+  color: var(--color-loss);
+}
+
+/* Torcida e diretoria. */
+.moodRow {
+  display: grid;
+  grid-template-columns: 72px 36px minmax(80px, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.moodName {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.moodValue {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.up {
+  color: var(--color-success, var(--color-accent));
+  font-size: var(--text-sm);
+}
+
+.down {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+/* Faixa de avisos. */
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stripTitle {
+  margin: 0;
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.notices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.notices > li {
+  min-width: 0;
+  display: flex;
+}
+
+.notices > li > * {
+  flex: 1;
+}
+
+@media (max-width: 719px) {
+  .moodRow {
+    grid-template-columns: 64px 32px minmax(60px, 1fr);
+  }
+
+  .moodRow > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .results li {
+    grid-template-columns: 22px 18px minmax(0, 1fr) auto;
+  }
+
+  /* Mando e rodada descem para a segunda linha, sem sumir. */
+  .results li > :nth-child(4),
+  .results li > :nth-child(5) {
+    grid-row: 2;
+  }
+
+  .results li > :nth-child(4) {
+    grid-column: 3;
+  }
+
+  .results li > :nth-child(5) {
+    grid-column: 4;
+  }
+}

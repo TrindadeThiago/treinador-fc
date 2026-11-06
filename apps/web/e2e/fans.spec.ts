@@ -5,10 +5,11 @@ test("torcida: cartão na Início, clássicos no calendário e rivais na Carreir
   page,
 }) => {
   await createCareer(page, "Ana Souza", 3);
-  const card = page.getByRole("region", { name: t("fans.title") });
+  // Na Início, a torcida fica no cartão compacto com a diretoria (035); os motivos, na Carreira.
+  const card = page.getByRole("region", { name: t("home.mood.title") });
   await expect(card).toBeVisible();
   await simulate(page, 2);
-  await expect(card.getByText(t("fans.noReasons"))).toHaveCount(0);
+  await expect(card.getByText(t("home.mood.fans"), { exact: true })).toBeVisible();
 
   // O menu, e não a página: a Início também tem links e pode mostrar um clássico (próximo jogo).
   const menu = page.getByRole("navigation", { name: t("nav.menu") });
