@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
-import { elapse, loadSaved, useRoundClock } from "../helpers/live";
+import { elapseResuming, loadSaved, useRoundClock } from "../helpers/live";
 import { memoryRouter } from "../helpers/router";
 
 function bodyRows(table: HTMLElement): HTMLElement[] {
@@ -49,7 +49,7 @@ describe("duas divisões em paralelo (US1)", () => {
       const text = others.textContent ?? "";
       expect(names.some((name) => text.includes(name))).toBe(false);
 
-      await elapse(60_000);
+      await elapseResuming(60_000);
       await waitFor(async () => expect(userSeason(await loadSaved(store)).nextRound).toBe(2));
       const saved = await loadSaved(store);
       expect(saved.league).toEqual(directLeague(save));

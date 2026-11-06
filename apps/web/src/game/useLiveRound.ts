@@ -104,7 +104,22 @@ export function useLiveRound(
         Math.max(1, Math.floor((now - last) / TICK_MS[speed])),
       );
       last = now;
-      const items = update(advanceRound(liveRef.current, due));
+      // Um passo de cada vez: o meu jogo para no intervalo (o 2º tempo só começa ao retomar).
+      let next = liveRef.current;
+      let halftime = false;
+      for (let tick = 0; tick < due && !isRoundFinished(next); tick++) {
+        next = advanceRound(next, 1);
+        const status = matchOf(next, clubId)?.match.state.status;
+        if (status === "half_time" || status === "extra_half_time") {
+          halftime = true;
+          break;
+        }
+      }
+      const items = update(next);
+      if (halftime) {
+        setPaused(true);
+        return;
+      }
       if (
         autoPause &&
         side &&
@@ -120,7 +135,7 @@ export function useLiveRound(
     };
     timer = setTimeout(step, TICK_MS[speed]);
     return () => clearTimeout(timer);
-  }, [paused, finished, speed, autoPause, side, update]);
+  }, [paused, finished, speed, autoPause, side, update, clubId]);
 
   const setSpeed = useCallback((value: RoundSpeed) => {
     setSpeedState(value);

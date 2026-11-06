@@ -6,7 +6,7 @@ import { t } from "../../src/i18n";
 import { TIMELINE_LIMIT } from "../../src/ui/EventFeed";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
-import { elapse, useRoundClock } from "../helpers/live";
+import { elapseResuming, useRoundClock } from "../helpers/live";
 import { memoryRouter } from "../helpers/router";
 
 vi.setConfig({ testTimeout: 180000 });
@@ -39,7 +39,7 @@ describe("rodada de 10 jogos em velocidade rápida (030)", () => {
     let timeline = 0;
     for (let step = 0; step < 80; step++) {
       const start = Date.now();
-      await elapse(500);
+      await elapseResuming(500);
       times.push(Date.now() - start);
       if (screen.queryByRole("region", { name: t("home.lastRound", { round: 1 }) })) break;
       timeline = Math.max(

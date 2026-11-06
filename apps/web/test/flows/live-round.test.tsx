@@ -8,7 +8,7 @@ import { t } from "../../src/i18n";
 import { writePreferences } from "../../src/storage/preferences";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
-import { elapse, loadSaved, useRoundClock } from "../helpers/live";
+import { elapse, elapseResuming, loadSaved, useRoundClock } from "../helpers/live";
 import { memoryRouter } from "../helpers/router";
 
 beforeEach(() => {
@@ -58,7 +58,7 @@ describe("rodada ao vivo (US1, US3)", () => {
     await elapse(10_000);
     expect(within(mine).queryByText("0'")).toBeNull();
 
-    await elapse(29_000);
+    await elapseResuming(29_000);
     expect(results()).toBeNull();
     // Lances do meu jogo até aqui: todo gol (até os 80') aparece com o autor.
     const records = direct(save);
@@ -73,7 +73,7 @@ describe("rodada ao vivo (US1, US3)", () => {
       }
     }
 
-    await elapse(21_000);
+    await elapseResuming(21_000);
     expect(results()).not.toBeNull();
     await waitFor(async () => expect(userSeason(await loadSaved(store)).nextRound).toBe(2));
     const saved = await loadSaved(store);
@@ -84,9 +84,9 @@ describe("rodada ao vivo (US1, US3)", () => {
   it("na velocidade rápida termina em torno de 30 s", async () => {
     const { user } = await startLive();
     await user.selectOptions(screen.getByLabelText(t("round.speed")), "fast");
-    await elapse(24_000);
+    await elapseResuming(24_000);
     expect(results()).toBeNull();
-    await elapse(12_000);
+    await elapseResuming(12_000);
     expect(results()).not.toBeNull();
   });
 
