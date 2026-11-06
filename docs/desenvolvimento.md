@@ -166,6 +166,9 @@ oficial 1.0.0 (a interface nova). Ver [interface-nova.md](interface-nova.md), se
 
 ## 8. Checklist de um PR
 
+O mesmo checklist vem no [template de pull request](../.github/pull_request_template.md), que o
+GitHub preenche ao abrir um PR.
+
 - [ ] `pnpm typecheck`, `pnpm lint` e os testes da área mudada passam localmente.
 - [ ] Mudou a interface: e2e da área (e de layout, se mexeu em CSS) rodados sobre um build novo.
 - [ ] Mudou o motor, o save ou o modkit: `pnpm sim:gates` (ou o gancho de pré-push).
