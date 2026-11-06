@@ -17,16 +17,8 @@
 }
 
 .verdict,
-.caption,
-.values,
-.note {
+.values {
   margin: 0;
-}
-
-.caption,
-.note {
-  color: var(--color-muted);
-  font-size: var(--text-sm);
 }
 
 /* Duas partes com um respiro de 2px entre elas; os números ficam no texto abaixo. */

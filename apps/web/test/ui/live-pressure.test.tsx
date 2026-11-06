@@ -49,4 +49,15 @@ describe("painel de pressão (ao vivo)", () => {
     // Valores para leitor de tela: um a cada 5 minutos.
     expect(within(panel).getAllByRole("row").length).toBeGreaterThanOrEqual(6);
   });
+
+  it('sem os textos de explicação: o título do gráfico é só "Pressão ao longo do jogo"', async () => {
+    const { round, save } = await liveRoundOf();
+    const mine = mineOf(advance(round, 30), save.clubId);
+    render(<PressurePanel match={mine.match} side={mine.side} save={save} />);
+    const panel = screen.getByRole("region", { name: t("live.pressure.title") });
+    expect(within(panel).getByText("Pressão ao longo do jogo")).toBeDefined();
+    expect(panel.textContent).not.toMatch(
+      /últimos 10 minutos|média de 5 minutos|chance de cada time/,
+    );
+  });
 });

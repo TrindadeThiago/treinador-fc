@@ -3,7 +3,7 @@
 import type { LiveMatch, Side } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useId, useState } from "react";
-import { type PressureTick, pressureView, RECENT, SMOOTH } from "../../game/pressure-view";
+import { type PressureTick, pressureView, RECENT } from "../../game/pressure-view";
 import { useT } from "../../i18n";
 import { Card } from "../Card";
 import { ChartFigure } from "../charts/ChartFigure";
@@ -81,7 +81,6 @@ export function PressurePanel({
         <p className={styles.verdict}>
           <strong>{started ? verdict : t("live.pressure.waiting")}</strong>
         </p>
-        <p className={styles.caption}>{t("live.pressure.recent", { minutes: RECENT })}</p>
         <div className={styles.bar} aria-hidden="true">
           <span className={styles.mine} style={{ width: `${view.recent}%` }} />
           <span className={styles.theirs} style={{ width: `${100 - view.recent}%` }} />
@@ -92,7 +91,7 @@ export function PressurePanel({
         </p>
       </div>
       <ChartFigure
-        title={t("live.pressure.chart", { minutes: SMOOTH })}
+        title={t("live.pressure.chart")}
         summary={t("live.pressure.summary", {
           mine,
           theirs,
@@ -244,7 +243,6 @@ export function PressurePanel({
           ) : null}
         </div>
       </ChartFigure>
-      <p className={styles.note}>{t("live.pressure.note")}</p>
     </Card>
   );
 }
