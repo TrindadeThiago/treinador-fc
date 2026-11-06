@@ -12,11 +12,13 @@ export function RoundFeed({
   headlines,
   round,
   limit,
+  compact,
 }: {
   save: SaveFile;
   headlines: readonly Headline[];
   round: number;
   limit?: number;
+  compact?: boolean | undefined;
 }) {
   const t = useT();
   if (headlines.length === 0) return <p className={styles.empty}>{t("news.empty")}</p>;
@@ -24,7 +26,7 @@ export function RoundFeed({
     <ul className={styles.list}>
       {headlines.slice(0, limit ?? headlines.length).map((headline) => (
         <li key={headline.id}>
-          <HeadlineCard save={save} headline={headline} round={round} />
+          <HeadlineCard save={save} headline={headline} round={round} compact={compact} />
         </li>
       ))}
     </ul>

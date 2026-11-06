@@ -3,6 +3,7 @@
 import type { Headline } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useId } from "react";
+import { headlineCategory } from "../../game/home-view";
 import { headlineCompetition } from "../../game/news-view";
 import { useT } from "../../i18n";
 import { Badge } from "../Badge";
@@ -17,11 +18,14 @@ export function HeadlineCard({
   save,
   headline,
   round,
+  compact,
 }: {
   save: SaveFile;
   headline: Headline;
   /** Rodada do feed; 0 = resumo da temporada anterior. */
   round: number;
+  /** Na Início (035): etiqueta de categoria e só o primeiro fato complementar. */
+  compact?: boolean | undefined;
 }) {
   const t = useT();
   const titleId = useId();
@@ -34,9 +38,12 @@ export function HeadlineCard({
   return (
     <article
       aria-labelledby={titleId}
-      className={headline.mine ? `${styles.item} ${styles.mine}` : styles.item}
+      className={`${styles.item} ${headline.mine ? styles.mine : ""} ${compact ? styles.compact : ""}`}
     >
       <p className={styles.meta}>
+        {compact ? (
+          <Badge tone="info">{t(`home.newsCategory.${headlineCategory(headline.type)}`)}</Badge>
+        ) : null}
         <span>{competition}</span>
         <span aria-hidden="true"> · </span>
         <span>{round === 0 ? t("news.summaryRound") : t("news.round", { round })}</span>
@@ -46,7 +53,7 @@ export function HeadlineCard({
       <p id={titleId} className={styles.text}>
         {t(`news.${headline.type}.${headline.variant}`, vars)}
       </p>
-      {headline.extras?.map((extra) => (
+      {(compact ? headline.extras?.slice(0, 1) : headline.extras)?.map((extra) => (
         <p key={extra.type} className={styles.extra}>
           {t(`news.extra.${extra.type}`, headlineVars(save, extra.vars))}
         </p>

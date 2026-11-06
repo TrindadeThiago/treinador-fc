@@ -164,7 +164,7 @@ describe("tela de finanças (US4)", () => {
     expect(await screen.findByText(t("finance.history.empty"))).toBeDefined();
   });
 
-  it("depois de uma virada, o histórico mostra a temporada encerrada; saldo na Início", async () => {
+  it("depois de uma virada, o histórico mostra a temporada encerrada", async () => {
     const { store, save } = await storedCareer(1, (career) => {
       const played = advanceCareer(
         career.league,
@@ -192,14 +192,6 @@ describe("tela de finanças (US4)", () => {
     expect(rows).toHaveLength(1);
     const summary = save.finances.seasons.find((item) => item.clubId === save.clubId);
     expect(rows[0]?.textContent).toContain(formatMoney(summary?.endCash ?? 0));
-    memoryRouter.push("/jogo?c=tela");
-    expect(
-      await screen.findByText(
-        visible(
-          t("home.cash", { amount: formatMoney(save.finances.clubs[save.clubId]?.cash ?? 0) }),
-        ),
-      ),
-    ).toBeDefined();
   }, 60000);
 });
 

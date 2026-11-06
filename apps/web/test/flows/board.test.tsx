@@ -87,24 +87,25 @@ describe("diretoria no app (012)", () => {
     expect(GOAL_TIERS.indexOf(tierOf(big.save))).toBeLessThan(
       GOAL_TIERS.indexOf(tierOf(small.save)),
     );
-    renderApp("/jogo?c=tela", big.store);
-    const card = await screen.findByRole("region", { name: t("board.title") });
+    renderApp("/jogo/carreira?c=tela", big.store);
+    const card = await screen.findByRole("region", { name: t("board.goals") });
     expect(within(card).getByText(t(`board.goal.tier.${tierOf(big.save)}`))).toBeDefined();
   });
 
-  it("depois de rodadas, a confiança e os motivos aparecem na Início e na Carreira", async () => {
+  it("depois de rodadas, a confiança aparece na Início e os motivos na Carreira (035)", async () => {
     const user = userEvent.setup();
     const { store, save } = await storedCareer(4);
     const club = save.board.clubs[save.clubId];
     if (!club) throw new Error("sem diretoria");
     expect(club.recent).toHaveLength(3);
     renderApp("/jogo?c=tela", store);
-    const card = await screen.findByRole("region", { name: t("board.title") });
+    const card = await screen.findByRole("region", { name: t("home.mood.title") });
     expect(within(card).getByText(String(club.confidence))).toBeDefined();
-    expect(within(card).getByText(t("board.reasons"))).toBeDefined();
+    expect(within(card).queryByText(t("board.reasons"))).toBeNull();
     await user.click(within(card).getByRole("link", { name: t("nav.career") }));
     await waitFor(() => expect(memoryRouter.pathname()).toBe("/jogo/carreira"));
     expect(await screen.findByText(t("board.history"))).toBeDefined();
+    expect(await screen.findByText(t("board.reasons"))).toBeDefined();
   });
 
   it("fim de temporada mostra a avaliação da diretoria", async () => {
@@ -158,6 +159,12 @@ describe("diretoria no app (012)", () => {
     expect(within(nav).queryByRole("link", { name: t("nav.squad") })).toBeNull();
     expect(within(nav).queryByRole("link", { name: t("nav.market") })).toBeNull();
     expect(screen.getByText(t("board.notice.fired", { club: ownName }))).toBeDefined();
+    // 035 US6: reputação no topo, propostas, ações e manchetes compactas, sem a posição do clube.
+    expect(
+      screen.getByText(t("career.reputation", { value: prepared.save.board.manager.reputation })),
+    ).toBeDefined();
+    expect(screen.getByRole("region", { name: t("news.title") })).toBeDefined();
+    expect(screen.queryByRole("region", { name: t("home.position") })).toBeNull();
 
     const offer = screen.getByRole("article", { name: targetName });
     await user.click(within(offer).getByRole("button", { name: t("career.offers.accept") }));
@@ -180,6 +187,8 @@ describe("diretoria no app (012)", () => {
       const saved = await loadSaved(prepared.store);
       expect(saved.league.divisions[0]?.nextRound).toBe(2);
     });
+    // 035: a lista completa da rodada não aparece mais na Início.
+    expect(screen.queryByRole("region", { name: t("home.lastRound", { round: 1 }) })).toBeNull();
   });
 
   it("Carreira › Técnicos e Histórico", async () => {

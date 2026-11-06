@@ -11,15 +11,18 @@ import { storedCareer } from "../helpers/career";
 vi.setConfig({ testTimeout: 60000 });
 
 describe("torcida e clássicos no app (013)", () => {
-  it("Início mostra o cartão Torcida com faixa, valor e motivos", async () => {
+  it("Início mostra a torcida com valor e tendência; os motivos ficam na Carreira (035)", async () => {
     const { store, save } = await storedCareer(4);
     const club = save.fans.clubs[save.clubId];
     if (!club) throw new Error("sem torcida");
     expect(club.recent).toHaveLength(3);
     renderApp("/jogo?c=tela", store);
-    const card = await screen.findByRole("region", { name: t("fans.title") });
+    const card = await screen.findByRole("region", { name: t("home.mood.title") });
     expect(within(card).getByText(String(club.mood))).toBeDefined();
-    expect(within(card).getByText(t("fans.reasons"))).toBeDefined();
+    expect(
+      within(card).getByRole("meter", { name: t("fans.mood", { value: club.mood }) }),
+    ).toBeDefined();
+    expect(within(card).queryByText(t("fans.reasons"))).toBeNull();
   });
 
   it("o calendário marca os clássicos do clube", async () => {

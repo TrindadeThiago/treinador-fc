@@ -1,11 +1,12 @@
 import { advanceLeague } from "@brasfoot-like/engine";
 import { migrateSave, type SaveFile, userSeason } from "@brasfoot-like/save";
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { t } from "../../src/i18n";
 import { createIndexedDbStore, type SaveStore } from "../../src/storage/indexeddb";
 import { renderApp } from "../helpers/app";
+import { roundPlayed } from "../helpers/round";
 import { careerSave } from "../helpers/saves";
 
 let counter = 0;
@@ -25,13 +26,8 @@ describe("salvamento automático (US3)", () => {
     const first = renderApp("/jogo?c=auto", store);
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: t("home.simulate") }));
-    const results = await screen.findByRole("region", { name: t("home.lastRound", { round: 3 }) });
-    expect(within(results).getAllByRole("listitem")).toHaveLength(10);
-    expect(
-      within(results)
-        .getAllByRole("listitem")
-        .filter((item) => item.getAttribute("aria-current") === "true"),
-    ).toHaveLength(1);
+    // O resultado da rodada aparece entre os últimos do clube (035).
+    await roundPlayed(3);
     expect(await screen.findByText(t("saving.saved"))).toBeDefined();
     first.unmount();
     renderApp("/jogo?c=auto", store);

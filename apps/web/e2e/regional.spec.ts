@@ -74,7 +74,8 @@ test("estadual: o resultado aparece em últimos resultados na Início", async ({
   await page.locator("table tbody tr").first().click();
   await page.getByRole("button", { name: t("newCareer.confirm") }).click();
 
-  const results = page.getByRole("region", { name: t("home.lastResults") });
+  // 035: os últimos resultados ficam no cartão da posição.
+  const results = page.getByRole("region", { name: t("home.position") });
   await expect(results.getByText(t("home.noResults"))).toBeVisible();
   const button = page.getByRole("button", { name: t("home.simulate") });
   await button.click();

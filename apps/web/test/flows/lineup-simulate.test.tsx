@@ -6,6 +6,7 @@ import { label, t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
 import { nameOf, outside, outsideOf, pitch, playerButton } from "../helpers/lineup";
+import { roundPlayed } from "../helpers/round";
 import { memoryRouter } from "../helpers/router";
 
 async function loadStored(
@@ -40,7 +41,7 @@ describe("escalação do jogador nas partidas (US1, US3)", () => {
 
     const home = renderApp("/jogo?c=tela", store);
     await user.click(await screen.findByRole("button", { name: t("home.simulate") }));
-    await screen.findByRole("region", { name: t("home.lastRound", { round: 1 }) });
+    await roundPlayed(1);
     await waitFor(async () => expect(userSeason(await loadStored(store)).nextRound).toBe(2));
     const stored = await loadStored(store);
     const record = userSeason(stored).records.find(
