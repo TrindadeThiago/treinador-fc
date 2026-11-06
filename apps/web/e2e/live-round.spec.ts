@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { createCareer, t } from "./helpers";
+import { createCareer, resumeWhenPaused, t } from "./helpers";
 
 const FIRST_CUP_PHASE = "Fase de 32";
 
@@ -86,6 +86,7 @@ test("rodada ao vivo: pênaltis do jogo da copa, cobrança a cobrança, e o resu
   await expect(page.getByRole("region", { name: t("round.myMatch") })).toBeVisible();
   await page.getByLabel(t("round.autoPause")).uncheck();
   await page.getByLabel(t("round.speed")).selectOption("fast");
+  await resumeWhenPaused(page);
   const shootout = page.getByRole("region", { name: t("cup.shootout.title") });
   await expect(shootout).toBeVisible({ timeout: 60_000 });
   await expect(shootout.getByRole("listitem").first()).toBeVisible();
@@ -115,6 +116,7 @@ test("rodada de 10 jogos em velocidade rápida termina sem tarefa longa de inter
   ).toHaveCount(9);
   await page.getByLabel(t("round.autoPause")).uncheck();
   await page.getByLabel(t("round.speed")).selectOption("fast");
+  await resumeWhenPaused(page);
   await page.evaluate(() => {
     const store: number[] = [];
     (window as unknown as { __long: number[] }).__long = store;

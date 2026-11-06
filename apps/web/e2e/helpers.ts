@@ -195,3 +195,16 @@ export async function expectNoClippedText(page: Page, label: string): Promise<vo
   );
   expect(clipped, `${label}: texto cortado`).toEqual([]);
 }
+
+/**
+ * Retoma sozinho a rodada sempre que ela pausar (o intervalo do meu jogo pausa e espera o técnico):
+ * para os testes que deixam a rodada correr até o fim sem mexer no time.
+ */
+export async function resumeWhenPaused(page: Page): Promise<void> {
+  await page.addLocatorHandler(
+    page.getByRole("button", { name: t("round.resume") }),
+    async (button) => {
+      await button.click();
+    },
+  );
+}

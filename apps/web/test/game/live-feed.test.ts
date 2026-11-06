@@ -51,6 +51,8 @@ describe("feed da rodada ao vivo (030)", () => {
     // Pelo relógio da interface, passo a passo, até acabar.
     for (let index = 0; index < 120 && !isRoundFinished(result.current.live); index++) {
       await elapse(2_000);
+      // O intervalo do meu jogo pausa a rodada: retomar, como o técnico faria.
+      if (result.current.paused) act(() => result.current.resume());
     }
     expect(isRoundFinished(result.current.live)).toBe(true);
     expect(result.current.live.matches.map((match) => match.state.score)).toEqual(

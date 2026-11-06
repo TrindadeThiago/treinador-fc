@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatMoney, formatNumber, t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
-import { elapse, loadSaved, useRoundClock } from "../helpers/live";
+import { elapseResuming, loadSaved, useRoundClock } from "../helpers/live";
 import { memoryRouter } from "../helpers/router";
 
 afterEach(() => vi.useRealTimers());
@@ -62,7 +62,7 @@ describe("finanças por rodada (US1)", () => {
     const user = userEvent.setup({ delay: null });
     await user.click(await screen.findByRole("button", { name: t("home.playLive") }));
     await waitFor(() => expect(memoryRouter.pathname()).toBe("/jogo/rodada"));
-    await elapse(60_000);
+    await elapseResuming(60_000);
     await waitFor(async () => expect(userSeason(await loadSaved(store)).nextRound).toBe(2));
     const expected = advanceCareer(
       save.league,

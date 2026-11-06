@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
-import { elapse, useRoundClock } from "../helpers/live";
+import { elapseResuming, useRoundClock } from "../helpers/live";
 import { memoryRouter } from "../helpers/router";
 
 vi.setConfig({ testTimeout: 120000 });
@@ -54,7 +54,7 @@ describe("anúncios da rodada ao vivo (030)", () => {
 
     let last = "";
     for (let step = 0; step < 40; step++) {
-      await elapse(1_000);
+      await elapseResuming(1_000);
       if (!screen.queryByRole("region", { name: t("round.myMatch") })) break;
       last = announcements() || last;
     }
