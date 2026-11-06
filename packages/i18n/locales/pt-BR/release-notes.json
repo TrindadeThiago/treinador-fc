@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.7.1",
+    "date": "2026-11-06",
+    "changes": [
+      "Na partida ao vivo, a rodada agora para sozinha no intervalo do seu jogo (e no intervalo da prorrogação), e o segundo tempo só começa quando você retoma. Assim dá para olhar as estatísticas, a pressão e as notas e fazer as substituições com calma, mesmo com a pausa por lesão ou expulsão desligada.",
+      "Nada mudou nas partidas: a mesma seed dá a mesma carreira. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.7.0",
     "date": "2026-11-06",
     "changes": [
