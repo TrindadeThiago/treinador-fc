@@ -18,9 +18,16 @@
 
 .columns {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: var(--space-5);
   align-items: start;
+}
+
+/* Tela estreita (celular): os lances e as estatísticas um embaixo do outro. */
+@media (max-width: 640px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .section h3 {

@@ -204,9 +204,13 @@ function SquadScreen({ save, game }: { save: SaveFile; game: Game }) {
       header: t("col.rating"),
       render: (player) => {
         const entry = ratings.get(player.id);
-        return entry
-          ? t("rating.average", { rating: formatRating(entry.average), matches: entry.matches })
-          : t("rating.none");
+        return (
+          <span className={styles.rating}>
+            {entry
+              ? t("rating.average", { rating: formatRating(entry.average), matches: entry.matches })
+              : t("rating.none")}
+          </span>
+        );
       },
       sortValue: (player) => ratings.get(player.id)?.average,
       align: "right",

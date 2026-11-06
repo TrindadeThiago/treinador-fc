@@ -14,7 +14,7 @@
 
 .list li {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: var(--space-3);
   align-items: center;
   padding: var(--space-1) var(--space-2);
@@ -31,6 +31,10 @@
   align-items: center;
   gap: var(--space-2);
   justify-content: flex-end;
+  min-width: 0;
+  /* Em tela estreita o selo de clássico desce para a linha de baixo, e o nome quebra entre palavras. */
+  flex-wrap: wrap;
+  overflow-wrap: break-word;
 }
 
 .away {
