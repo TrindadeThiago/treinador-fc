@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.3",
+    "date": "2026-11-06",
+    "changes": [
+      "O gráfico de pressão da partida ao vivo ficou mais vivo: além da chance de cada time finalizar, ele agora soma as finalizações que de fato aconteceram (mais para as que vão no gol e para os gols). A linha sobe quando um time ataca e volta quando a pressão passa, em vez de ficar quase reta nos jogos desequilibrados.",
+      "O painel de pressão ficou mais enxuto: o gráfico se chama só \"Pressão ao longo do jogo\", e saíram os textos de explicação.",
+      "Nada mudou nas partidas: a mesma seed dá a mesma carreira. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.7.2",
     "date": "2026-11-06",
     "changes": [
