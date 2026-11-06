@@ -18,6 +18,7 @@ cadastro, funciona offline e roda sobre um motor determinístico em TypeScript.
 | Conhecer a visão e as regras de projeto do jogo | [Documento de design](design.md) |
 | Escrever textos da interface no tom certo | [Glossário de textos](glossario.md) |
 | Ver a origem visual da interface | [Nova interface](interface-nova.md) e os [mockups](interface-nova/README.md) |
+| Comparar o calendário do jogo com o real | [Calendário do futebol brasileiro](calendario-futebol-brasileiro.md) |
 
 ## Todos os documentos
 
@@ -55,6 +56,11 @@ cadastro, funciona offline e roda sobre um motor determinístico em TypeScript.
 - [Nova interface](interface-nova.md): a origem e a linguagem visual da interface do lançamento
   1.0.0 e a paridade com os mockups ([`interface-nova/`](interface-nova/README.md)).
 - [Auditoria da v1.0.0](../AUDITORIA-v1.0.0.md): a revisão feita antes do lançamento oficial.
+
+### Pesquisa
+- [Calendário do futebol brasileiro](calendario-futebol-brasileiro.md): a temporada real de 2026, do
+  início ao fim, com as fases que cada clube pode ou não disputar (mata-mata continental, Copa
+  Intercontinental, Mundial de Clubes), a cascata de vagas e a comparação com o calendário do jogo.
 
 ## Mapa rápido do repositório
 
