@@ -6,7 +6,7 @@ import {
   competitionSeason,
   type MatchRecord,
 } from "@brasfoot-like/engine";
-import { currentDate, nextFixture, type SaveFile, seasonStateOf } from "@brasfoot-like/save";
+import { careerToday, nextFixture, type SaveFile, seasonStateOf } from "@brasfoot-like/save";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { calendarMonths, monthOfNext } from "../../../game/calendar-month";
@@ -49,11 +49,11 @@ function Calendar({ save }: { save: SaveFile }) {
     // Os meses seguem a temporada inteira; o filtro só esconde os jogos de outras competições.
     const allMonths = calendarMonths(
       filtered,
-      currentDate(save),
+      careerToday(save),
       next?.date,
       all.map((fixture) => fixture.date),
     );
-    const openKey = monthOfNext(calendarMonths(all, currentDate(save), next?.date), next?.date);
+    const openKey = monthOfNext(calendarMonths(all, careerToday(save), next?.date), next?.date);
     const monthKey =
       month !== undefined && allMonths.some((entry) => entry.key === month) ? month : openKey;
     const view = allMonths.find((entry) => entry.key === monthKey);

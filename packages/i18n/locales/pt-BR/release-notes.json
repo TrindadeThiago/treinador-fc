@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.7.4",
+    "date": "2026-11-06",
+    "changes": [
+      "Corrigido: o calendário marcava \"hoje\" sempre no primeiro dia da temporada (1º de janeiro), mesmo com a carreira já em junho. Agora \"hoje\" é o dia do último jogo disputado, e o próximo jogo continua marcado no dia dele.",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.7.3",
     "date": "2026-11-06",
     "changes": [

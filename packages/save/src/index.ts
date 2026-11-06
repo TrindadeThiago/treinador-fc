@@ -9,6 +9,7 @@ export {
 } from "./board";
 export {
   advanceCareerSeason,
+  careerToday,
   currentDate,
   currentDayOf,
   dismissSquadNotice,

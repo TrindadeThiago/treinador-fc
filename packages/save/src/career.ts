@@ -4,6 +4,7 @@ import {
   type CareerRoundResult,
   type CareerSeasonState,
   type ClubFixture,
+  calendarNext,
   clubDivision,
   competitionSeason,
   currentDay,
@@ -37,6 +38,16 @@ export function userDivisionLevel(save: SaveFile): number {
 /** Data do jogo na temporada atual: idades são calculadas nela (research.md R6). */
 export function currentDate(save: SaveFile): string {
   return seasonDate(save.bank.manifest.referenceDate, save.league.year);
+}
+
+/**
+ * "Hoje" da carreira, para o calendário: o último dia de jogos já disputado; antes do primeiro, o
+ * início da temporada. Diferente de `currentDate`, que é a data de referência das idades.
+ */
+export function careerToday(save: SaveFile): string {
+  const state = seasonStateOf(save);
+  const next = calendarNext(state);
+  return state.calendar.days[next - 1]?.date ?? state.calendar.start;
 }
 
 /** Esquema do clube do jogador na temporada da sua divisão = o da escalação. */
