@@ -1,0 +1,47 @@
+name: Sugestão de melhoria
+description: Uma ideia para deixar o jogo melhor.
+title: "[Melhoria] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Descreva o **problema** antes da solução: o que hoje é difícil, confuso ou falta no jogo.
+        O jogo é gratuito, offline e usa só nomes fictícios; ideias que dependem de servidor ou de
+        conteúdo real (clubes, jogadores, escudos) ficam de fora, mas podem virar um mod.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual é o problema ou a necessidade?
+      placeholder: "Na Início, não dá para saber quem chega melhor para o próximo jogo..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: O que você sugere?
+      description: Como deveria funcionar. Imagens e rascunhos ajudam.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas que você considerou (opcional)
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área do jogo
+      options:
+        - Partidas e rodada ao vivo
+        - Escalação e tática
+        - Elenco e jogadores
+        - Mercado de transferências
+        - Finanças e estádio
+        - Diretoria, torcida e carreira
+        - Competições e calendário
+        - Notícias e histórico
+        - Interface e navegação
+        - Mods e banco de dados
+        - Outro
+    validations:
+      required: true

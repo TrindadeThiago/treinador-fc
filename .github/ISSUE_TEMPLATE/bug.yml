@@ -1,0 +1,92 @@
+name: Bug
+description: Algo no jogo não funciona como deveria.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por avisar! Quanto mais detalhes, mais rápido dá para reproduzir e corrigir.
+        A versão aparece em **Menu inicial › Sobre o jogo** ou em https://treinador-fc.vercel.app/version.json.
+  - type: input
+    id: version
+    attributes:
+      label: Versão do jogo
+      placeholder: "1.8.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Onde aconteceu
+      options:
+        - Início
+        - Elenco
+        - Escalação
+        - Rodada ao vivo
+        - Simular direto
+        - Competição
+        - Calendário
+        - Finanças
+        - Mercado
+        - Carreira (diretoria, propostas, técnicos, torcida)
+        - Notícias
+        - Histórico
+        - Fim de temporada / virada
+        - Nova carreira
+        - Carreiras salvas / exportar e importar
+        - Mods
+        - Configurações
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: O que você fez, na ordem, até o problema aparecer.
+      placeholder: |
+        1. Abri a carreira na rodada 15
+        2. Fui em Calendário
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: O que aconteceu
+      description: Se puder, cole uma captura de tela ou a mensagem de erro.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Navegador e sistema
+      placeholder: "Chrome 140 no Windows 11, Safari no iPhone..."
+    validations:
+      required: true
+  - type: input
+    id: seed
+    attributes:
+      label: Seed da carreira (opcional)
+      description: A mesma seed com as mesmas decisões reproduz a carreira. Fica em Nova carreira › Avançado.
+  - type: textarea
+    id: save
+    attributes:
+      label: Save da carreira (opcional)
+      description: |
+        Em **Carreiras**, use **Exportar** e arraste o arquivo `.blsave` para cá
+        (compacte em `.zip` se o GitHub não aceitar a extensão). Ajuda muito a reproduzir.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Procurei nas issues abertas e não achei esta.
+          required: true
