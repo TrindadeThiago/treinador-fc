@@ -32,7 +32,7 @@ function Side({ save, side }: { save: SaveFile; side: PreviewSide }) {
   if (!club) return null;
   return (
     <div className={styles.side}>
-      <Crest crest={club.crest} label={club.name} size={44} />
+      <Crest crest={club.crest} label={club.name} size={64} />
       <strong className={styles.sideName}>{club.name}</strong>
       <span>
         {side.form.length > 0 ? (
@@ -137,7 +137,7 @@ export function MatchPreview({
             <div>
               <dt>{t("home.preview.absences")}</dt>
               <dd>
-                {preview.absences}{" "}
+                <span>{preview.absences}</span>
                 <Link className={styles.kpiLink} href={screenHref("/jogo/escalacao", save.id)}>
                   {t("home.preview.toLineup")}
                 </Link>

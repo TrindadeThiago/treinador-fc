@@ -4,12 +4,13 @@
  */
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  /* Cinco trilhas: em cima, o próximo jogo pesa mais (3 × 2); embaixo, as manchetes (2 × 3). */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-areas:
-    "header header"
-    "next table"
-    "notices notices"
-    "mood news";
+    "header header header header header"
+    "next next next table table"
+    "notices notices notices notices notices"
+    "mood mood news news news";
   gap: var(--space-3) var(--space-4);
   align-items: stretch;
 }
@@ -56,6 +57,11 @@
 @media (max-width: 1199px) {
   .grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "header header"
+      "next table"
+      "notices notices"
+      "mood news";
   }
 }
 
