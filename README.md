@@ -118,6 +118,11 @@ completo) rodam sobre a branch. Ver [`docs/interface-nova.md`](docs/interface-no
 
 ## Documentação
 
+O índice completo fica em [`docs/README.md`](docs/README.md).
+
+- [Guia do jogador](docs/guia-do-jogador.md): como jogar, tela por tela
+- [Arquitetura](docs/arquitetura.md): pacotes, motor, determinismo, save, interface e modo offline
+- [Desenvolvimento](docs/desenvolvimento.md): testes, Spec Kit, convenções, CI e release
 - [Documento de design](docs/design.md): visão, regras do jogo e roadmap
 - [Formato de mods](docs/mod-format.md): estrutura dos pacotes, campos, CSV, imagens e erros
 - [Glossário de textos](docs/glossario.md): termos e tom usados na interface
