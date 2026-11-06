@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.7.2",
+    "date": "2026-11-06",
+    "changes": [
+      "No celular, o fim da rodada cabe na tela: o resumo da partida põe os lances e as estatísticas um embaixo do outro, e os resultados da rodada quebram o nome dos clubes em vez de fazer a página rolar para o lado.",
+      "No elenco, a nota da temporada aparece numa linha só, como \"6,6 (4 jogos)\".",
+      "Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.7.1",
     "date": "2026-11-06",
     "changes": [

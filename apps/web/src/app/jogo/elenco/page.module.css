@@ -49,3 +49,8 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Nota da temporada (034): "6,6 (4 jogos)" numa linha só. */
+.rating {
+  white-space: nowrap;
+}
