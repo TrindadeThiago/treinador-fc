@@ -1,6 +1,6 @@
 "use client";
 
-import { type MatchRecord, playTotals } from "@brasfoot-like/engine";
+import { type MatchRecord, matchRatings, playTotals } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useT } from "../i18n";
 import { Crest } from "./Crest";
@@ -8,6 +8,8 @@ import { ShootoutPanel } from "./cup/ShootoutPanel";
 import { minuteText } from "./event-text";
 import styles from "./MatchSummary.module.css";
 import { PlaysTable } from "./PlaysTable";
+import { RatingsTable } from "./RatingsTable";
+import { RatingValue } from "./RatingValue";
 import { StatsTable } from "./StatsTable";
 
 /** Resumo de uma partida a partir do registro da temporada (FR-015). */
@@ -16,6 +18,16 @@ export function MatchSummary({ record, save }: { record: MatchRecord; save: Save
   const players = new Map(save.bank.players.map((player) => [player.id, player.displayName]));
   const clubs = new Map(save.bank.clubs.map((club) => [club.id, club]));
   const name = (id: string | undefined) => (id ? (players.get(id) ?? id) : "");
+  // Registro tolerante a campos ausentes (registros montados à mão, saves muito antigos).
+  const safe: MatchRecord = {
+    ...record,
+    players: record.players ?? {},
+    events: record.events ?? [],
+  };
+  const ratings = matchRatings(
+    safe,
+    new Map(save.bank.players.map((player) => [player.id, player])),
+  );
   const home = clubs.get(record.home);
   const away = clubs.get(record.away);
   const sideName = (side: "home" | "away") => (side === "home" ? home?.shortName : away?.shortName);
@@ -99,6 +111,15 @@ export function MatchSummary({ record, save }: { record: MatchRecord; save: Save
       </div>
       <section aria-label={t("summary.plays")} className={styles.plays}>
         <h3>{t("summary.plays")}</h3>
+        {ratings.best ? (
+          <p className={styles.best}>
+            {t("rating.best", {
+              player: name(ratings.best.playerId),
+              club: sideName(ratings.best.side) ?? "",
+            })}{" "}
+            <RatingValue rating={ratings.best.rating} />
+          </p>
+        ) : null}
         {playTotals(record.players ?? {}, "home") || playTotals(record.players ?? {}, "away") ? (
           <>
             <PlaysTable
@@ -106,16 +127,34 @@ export function MatchSummary({ record, save }: { record: MatchRecord; save: Save
               side="home"
               club={home?.shortName ?? record.home}
               names={players}
+              ratings={ratings}
             />
             <PlaysTable
               record={record}
               side="away"
               club={away?.shortName ?? record.away}
               names={players}
+              ratings={ratings}
             />
           </>
         ) : (
-          <p className={styles.none}>{t("summary.plays.none")}</p>
+          <>
+            <p className={styles.none}>{t("rating.simplified")}</p>
+            <RatingsTable
+              record={safe}
+              side="home"
+              club={home?.shortName ?? record.home}
+              names={players}
+              ratings={ratings}
+            />
+            <RatingsTable
+              record={safe}
+              side="away"
+              club={away?.shortName ?? record.away}
+              names={players}
+              ratings={ratings}
+            />
+          </>
         )}
       </section>
       {record.summary ? <p className={styles.none}>{t("summary.simplified")}</p> : null}

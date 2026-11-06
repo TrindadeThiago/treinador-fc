@@ -87,6 +87,16 @@ export function formatNumber(value: number): string {
   return number.format(value);
 }
 
+const ratingFormat = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+/** Nota do jogador (034): sempre uma casa decimal ("6,0", "7,4"). */
+export function formatRating(value: number): string {
+  return ratingFormat.format(value);
+}
+
 /** Valor na moeda fictícia do jogo (inteiro), com o formato numérico do idioma. */
 export function formatMoney(value: number): string {
   return t("money", { negative: value < 0 ? "yes" : "no", amount: number.format(Math.abs(value)) });

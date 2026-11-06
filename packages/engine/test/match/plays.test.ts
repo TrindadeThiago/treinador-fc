@@ -60,6 +60,7 @@ describe("jogadas por jogador (033 FR-001 a FR-005, SC-001)", () => {
         expect(plays.keyPasses).toBeGreaterThanOrEqual(line.assists);
         expect(plays.keyPasses).toBeLessThanOrEqual(plays.passesCompleted);
         for (const value of Object.values(plays)) {
+          if (typeof value !== "number") continue;
           expect(Number.isInteger(value)).toBe(true);
           expect(value).toBeGreaterThanOrEqual(0);
         }
@@ -208,35 +209,32 @@ describe("tupla e totais (contrato engine-plays)", () => {
       tackles: 4,
       tacklesWon: 3,
       interceptions: 1,
+      shots: 3,
+      saves: 0,
+      slotMinutes: { MF: 30, DM: 60 },
     };
-    expect(playTuple(stats)).toEqual([52, 44, 2, 4, 3, 1]);
-    expect(playStatsOf(playTuple(stats))).toEqual(stats);
+    // A vaga com mais minutos vira o índice em POSITIONS (VOL = 3).
+    expect(playTuple(stats)).toEqual([52, 44, 2, 4, 3, 1, 3, 0, 3]);
+    const { slotMinutes: _slots, ...counts } = stats;
+    expect(playStatsOf(playTuple(stats))).toEqual({ ...counts, position: "DM" });
+    // A tupla de 6 (v19) fica sem finalizações, defesas e posição.
+    expect(playStatsOf([52, 44, 2, 4, 3, 1])).toEqual({
+      passes: 52,
+      passesCompleted: 44,
+      keyPasses: 2,
+      tackles: 4,
+      tacklesWon: 3,
+      interceptions: 1,
+      shots: 0,
+      saves: 0,
+    });
   });
 
   it("os totais somam as linhas do lado, com o aproveitamento; sem jogadas, nada", () => {
     const lines = {
-      a: {
-        side: "home" as const,
-        plays: playTuple({
-          passes: 10,
-          passesCompleted: 8,
-          keyPasses: 1,
-          tackles: 2,
-          tacklesWon: 1,
-          interceptions: 0,
-        }),
-      },
-      b: {
-        side: "home" as const,
-        plays: playTuple({
-          passes: 30,
-          passesCompleted: 24,
-          keyPasses: 0,
-          tackles: 0,
-          tacklesWon: 0,
-          interceptions: 3,
-        }),
-      },
+      a: { side: "home" as const, plays: [10, 8, 1, 2, 1, 0, 2, 0, 4] },
+      // Tupla de 6 (v19): sem finalizações nem defesas.
+      b: { side: "home" as const, plays: [30, 24, 0, 0, 0, 3] },
       c: { side: "away" as const },
     };
     expect(playTotals(lines, "home")).toEqual({
@@ -246,8 +244,69 @@ describe("tupla e totais (contrato engine-plays)", () => {
       tackles: 2,
       tacklesWon: 1,
       interceptions: 3,
+      shots: 2,
+      saves: 0,
       passAccuracy: 0.8,
     });
     expect(playTotals(lines, "away")).toBeUndefined();
+  });
+});
+
+describe("finalizações, defesas e vaga (034 research R1)", () => {
+  const input = inputAt(11, "extras");
+  const result = simulate(input);
+  const shotsBy = new Map<string, number>();
+  const savesBy = new Map<string, number>();
+  for (const event of result.events) {
+    if (event.type !== "shot") continue;
+    shotsBy.set(event.playerId, (shotsBy.get(event.playerId) ?? 0) + 1);
+    if (event.outcome === "saved" && event.goalkeeperId) {
+      savesBy.set(event.goalkeeperId, (savesBy.get(event.goalkeeperId) ?? 0) + 1);
+    }
+  }
+
+  it("finalizações e defesas de cada jogador são as dos eventos", () => {
+    for (const [playerId, line] of Object.entries(result.players)) {
+      if (!line.plays) continue;
+      expect(line.plays.shots).toBe(shotsBy.get(playerId) ?? 0);
+      expect(line.plays.saves).toBe(savesBy.get(playerId) ?? 0);
+    }
+    expect([...savesBy.values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+  });
+
+  it("os minutos por vaga somam os minutos jogados, e a tupla leva a vaga com mais minutos", () => {
+    const slots = FORMATIONS[input.home.lineup.formation].slots;
+    for (const slot of slots) {
+      const playerId = input.home.lineup.starters[slot.id] as string;
+      const line = result.players[playerId];
+      if (!line?.plays || line.subbedOut !== null || line.sentOff) continue;
+      const minutes = Object.values(line.plays.slotMinutes ?? {}).reduce((a, b) => a + (b ?? 0), 0);
+      expect(minutes).toBe(line.minutesPlayed);
+      expect(playTuple(line.plays)).toHaveLength(9);
+      expect(playStatsOf(playTuple(line.plays)).position).toBe(slot.position);
+    }
+  });
+
+  it("depois de mudar de vaga, vale a vaga com mais minutos", () => {
+    let state = advanceMatch(started(input), { minutes: 20 });
+    const team = state.teams.home;
+    const formation = team.formation === "4-3-3" ? "4-4-2" : "4-3-3";
+    const slots = FORMATIONS[formation].slots;
+    const assignment: Record<string, string | null> = {};
+    const players = Object.values(team.onField).filter((id): id is string => id !== null);
+    slots.forEach((slot, index) => {
+      assignment[slot.id] = players[index] ?? null;
+    });
+    const changed = applyChange(state, "home", { type: "formation", formation, assignment });
+    if (!changed.ok) throw new Error(JSON.stringify(changed.error));
+    state = advanceMatch(changed.state, { toEnd: true });
+    for (const slot of slots) {
+      const playerId = assignment[slot.id];
+      const plays = playerId ? state.teams.home.players[playerId]?.plays : undefined;
+      if (!plays || !playerId) continue;
+      const minutes = plays.slotMinutes ?? {};
+      const best = Object.entries(minutes).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0]?.[0];
+      expect(playStatsOf(playTuple(plays)).position).toBe(best);
+    }
   });
 });

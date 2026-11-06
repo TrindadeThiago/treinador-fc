@@ -2,7 +2,8 @@
 
 import { ageOn, clubUnavailability, seasonStats } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
-import { label, useT } from "../i18n";
+import { clubSeasonRatings } from "../game/selectors";
+import { formatRating, label, useT } from "../i18n";
 import { Button } from "./Button";
 import { Dialog } from "./Dialog";
 import { evolutionText, lastEvolution } from "./evolution-text";
@@ -24,6 +25,8 @@ const STATS = [
 export function PlayerStats({ save, playerId }: { save: SaveFile; playerId: string }) {
   const t = useT();
   const stats = seasonStats(userSeason(save)).find((entry) => entry.playerId === playerId);
+  const clubId = save.bank.players.find((entry) => entry.id === playerId)?.clubId ?? save.clubId;
+  const rating = clubSeasonRatings(save, clubId).get(playerId);
   return (
     <>
       <h3 className={styles.heading}>{t("player.season")}</h3>
@@ -37,6 +40,20 @@ export function PlayerStats({ save, playerId }: { save: SaveFile; playerId: stri
             <dd>{String(stats?.[field] ?? 0)}</dd>
           </div>
         ))}
+        <div className={styles.row}>
+          <dt>{t("player.ratingAverage")}</dt>
+          <dd>{rating ? formatRating(rating.average) : t("rating.none")}</dd>
+        </div>
+        <div className={styles.row}>
+          <dt>{t("player.ratedMatches")}</dt>
+          <dd>{String(rating?.matches ?? 0)}</dd>
+        </div>
+        {rating && rating.simplified > 0 ? (
+          <div className={styles.row}>
+            <dt>{t("player.simplifiedRatings")}</dt>
+            <dd>{String(rating.simplified)}</dd>
+          </div>
+        ) : null}
       </dl>
     </>
   );

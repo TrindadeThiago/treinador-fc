@@ -319,11 +319,15 @@ const addPlays: Migration = {
   },
 };
 
-/** Uma tupla de jogadas válida (033): seis inteiros ≥ 0, com certos ≤ tentados. */
+/**
+ * Uma tupla de jogadas válida: seis inteiros ≥ 0, com certos ≤ tentados (033, v19), ou nove, com
+ * finalizações, defesas e o índice da posição da vaga entre 0 e 5 (034, v20).
+ */
 function validPlays(plays: unknown): boolean {
-  if (!Array.isArray(plays) || plays.length !== 6) return false;
+  if (!Array.isArray(plays) || (plays.length !== 6 && plays.length !== 9)) return false;
   if (!plays.every((value) => Number.isInteger(value) && value >= 0)) return false;
   const [passes, completed, , tackles, won] = plays as number[];
+  if (plays.length === 9 && (plays[8] as number) > 5) return false;
   return (completed as number) <= (passes as number) && (won as number) <= (tackles as number);
 }
 
@@ -346,6 +350,17 @@ function playsProblem(save: SaveFile): string | undefined {
   return undefined;
 }
 
+/**
+ * v19 → v20: finalizações, defesas e posição da vaga nas jogadas (034). As tuplas de 6 da v19
+ * continuam válidas; as partidas novas gravam 9 inteiros.
+ */
+const addPlayExtras: Migration = {
+  from: 19,
+  migrate(raw) {
+    return { ...(raw as object), formatVersion: 20 };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -366,6 +381,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addContinental,
   addRegional,
   addPlays,
+  addPlayExtras,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */

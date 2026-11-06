@@ -1,4 +1,4 @@
-import type { Position } from "../model/catalogs";
+import { POSITIONS, type Position } from "../model/catalogs";
 import type { Rng } from "../rng/xoshiro";
 import { adequacy } from "./adequacy";
 import { fieldPlayers, type MatchContext, opponent, playerState, strengthOf } from "./minute";
@@ -16,10 +16,25 @@ export interface PlayStats {
   tackles: number;
   tacklesWon: number;
   interceptions: number;
+  /** Finalizações do jogador (034), contadas dos eventos, sem sorteio. */
+  shots: number;
+  /** Defesas do goleiro (034): finalizações do adversário defendidas por ele. */
+  saves: number;
+  /**
+   * Minutos em cada posição de vaga (034), na ordem em que o jogador passou por elas: dá a vaga da
+   * nota. Só no estado da partida; no registro vira o índice da posição com mais minutos.
+   */
+  slotMinutes?: Partial<Record<Position, number>>;
+  /** Posição da vaga lida de um registro (tupla de 9); ausente nas tuplas de 6 da v19. */
+  position?: Position;
 }
 
-/** `[passes, passesCompleted, keyPasses, tackles, tacklesWon, interceptions]`: a forma do save. */
-export type PlayTuple = readonly [number, number, number, number, number, number];
+/**
+ * A forma do save: `[passes, passesCompleted, keyPasses, tackles, tacklesWon, interceptions,
+ * shots, saves, position]` (v20, 9 inteiros; `position` é o índice em `POSITIONS`) ou só os 6
+ * primeiros (partidas da v19).
+ */
+export type PlayTuple = readonly number[];
 
 export interface PlayTotals extends PlayStats {
   /** Passes certos ÷ tentados; ausente sem passes. */
@@ -34,10 +49,28 @@ export function emptyPlays(): PlayStats {
     tackles: 0,
     tacklesWon: 0,
     interceptions: 0,
+    shots: 0,
+    saves: 0,
+    slotMinutes: {},
   };
 }
 
+/** Posição da vaga com mais minutos; em empate, a primeira por onde o jogador passou. */
+export function mainPosition(stats: PlayStats): Position | undefined {
+  if (stats.position) return stats.position;
+  let best: Position | undefined;
+  let most = -1;
+  for (const [position, minutes] of Object.entries(stats.slotMinutes ?? {})) {
+    if ((minutes ?? 0) > most) {
+      best = position as Position;
+      most = minutes ?? 0;
+    }
+  }
+  return best;
+}
+
 export function playTuple(stats: PlayStats): PlayTuple {
+  const position = mainPosition(stats);
   return [
     stats.passes,
     stats.passesCompleted,
@@ -45,12 +78,34 @@ export function playTuple(stats: PlayStats): PlayTuple {
     stats.tackles,
     stats.tacklesWon,
     stats.interceptions,
+    stats.shots,
+    stats.saves,
+    position === undefined ? 0 : POSITIONS.indexOf(position),
   ];
 }
 
+/** Tupla do registro → contagens; a de 6 (v19) fica sem finalizações, defesas e posição. */
 export function playStatsOf(tuple: PlayTuple): PlayStats {
-  const [passes, passesCompleted, keyPasses, tackles, tacklesWon, interceptions] = tuple;
-  return { passes, passesCompleted, keyPasses, tackles, tacklesWon, interceptions };
+  const [passes = 0, passesCompleted = 0, keyPasses = 0, tackles = 0, tacklesWon = 0] = tuple;
+  const interceptions = tuple[5] ?? 0;
+  const stats: PlayStats = {
+    passes,
+    passesCompleted,
+    keyPasses,
+    tackles,
+    tacklesWon,
+    interceptions,
+    shots: tuple[6] ?? 0,
+    saves: tuple[7] ?? 0,
+  };
+  const position = tuple.length >= 9 ? POSITIONS[tuple[8] ?? 0] : undefined;
+  if (position) stats.position = position;
+  return stats;
+}
+
+/** A tupla tem os dados da 034 (finalizações, defesas e vaga). */
+export function hasPlayExtras(tuple: PlayTuple): boolean {
+  return tuple.length >= 9;
 }
 
 function add(total: PlayStats, stats: PlayStats): void {
@@ -60,11 +115,14 @@ function add(total: PlayStats, stats: PlayStats): void {
   total.tackles += stats.tackles;
   total.tacklesWon += stats.tacklesWon;
   total.interceptions += stats.interceptions;
+  total.shots += stats.shots;
+  total.saves += stats.saves;
 }
 
 function withAccuracy(total: PlayStats): PlayTotals {
+  const { slotMinutes: _slots, position: _position, ...counts } = total;
   return {
-    ...total,
+    ...counts,
     passAccuracy: total.passes > 0 ? total.passesCompleted / total.passes : undefined,
   };
 }
@@ -221,6 +279,11 @@ export function playMinutePlays(
   for (let index = eventsBefore; index < state.events.length; index++) {
     const event = state.events[index];
     if (event?.type !== "shot") continue;
+    // Finalizações e defesas (034): só contagem dos eventos, sem sorteio.
+    playsOf(state, event.side, event.playerId).shots += 1;
+    if (event.outcome === "saved" && event.goalkeeperId) {
+      playsOf(state, opponent(event.side), event.goalkeeperId).saves += 1;
+    }
     const mine = field[event.side];
     let passerId: string | undefined = event.assistId;
     if (

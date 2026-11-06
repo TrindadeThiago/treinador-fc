@@ -11,8 +11,8 @@ import { currentDate, type SaveFile } from "@brasfoot-like/save";
 import { useCallback, useMemo, useState } from "react";
 import { GameLayout } from "../../../game/GameLayout";
 import { lineupContext, type useGame } from "../../../game/GameProvider";
-import { fitnessAt } from "../../../game/selectors";
-import { label, useT } from "../../../i18n";
+import { clubSeasonRatings, fitnessAt } from "../../../game/selectors";
+import { formatRating, label, useT } from "../../../i18n";
 import {
   readPreferences,
   type SquadAvailability,
@@ -59,6 +59,8 @@ function SquadScreen({ save, game }: { save: SaveFile; game: Game }) {
   const club = save.bank.clubs.find((entry) => entry.id === save.clubId);
   const reference = currentDate(save);
   const fitness = useMemo(() => fitnessAt(save), [save]);
+  // Média das notas da temporada (034), de todas as competições.
+  const ratings = useMemo(() => clubSeasonRatings(save, save.clubId), [save]);
 
   const updateFilter = (next: typeof filter) => {
     setFilter(next);
@@ -195,6 +197,18 @@ function SquadScreen({ save, game }: { save: SaveFile; game: Game }) {
           : contract.untilYear;
       },
       sortValue: (player) => player.contract?.untilYear ?? 0,
+      align: "right",
+    },
+    {
+      key: "rating",
+      header: t("col.rating"),
+      render: (player) => {
+        const entry = ratings.get(player.id);
+        return entry
+          ? t("rating.average", { rating: formatRating(entry.average), matches: entry.matches })
+          : t("rating.none");
+      },
+      sortValue: (player) => ratings.get(player.id)?.average,
       align: "right",
     },
   ];

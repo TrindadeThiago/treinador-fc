@@ -565,6 +565,17 @@ export type {
   QualificationResult,
 } from "./qualification/types";
 export { berthZones } from "./qualification/zones";
+export {
+  liveRatings,
+  type MatchRatings,
+  matchRatings,
+  type PlayerRating,
+  RATING_REALISM_LIMITS,
+  RATING_TUNING,
+  type RatingKind,
+  type SeasonRating,
+  seasonRatings,
+} from "./rating";
 export { regionalEdition, regionalEditions } from "./regional/history";
 export {
   isRegional,
@@ -633,7 +644,7 @@ export {
   matchTicks,
   startRound,
 } from "./season/live-round";
-export { playerLines, toSummaryRecord } from "./season/record";
+export { playerLines, toMatchRecord, toSummaryRecord } from "./season/record";
 export type { AdvanceSeasonResult, CreateSeasonResult } from "./season/season";
 export { advanceSeason, createSeason, isSeasonOver, unavailablePlayers } from "./season/season";
 export { standings } from "./season/standings";

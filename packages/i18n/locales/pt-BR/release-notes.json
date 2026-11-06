@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.7.0",
+    "date": "2026-11-06",
+    "changes": [
+      "Cada jogador que joga pelo menos 10 minutos ganha uma nota de 0 a 10, como nos jornais: 6,0 é a atuação comum, acima de 8 é excepcional. O resumo da partida mostra a nota de todos e o melhor em campo; durante a partida ao vivo, o painel Meu time mostra a nota parcial de cada jogador, para ajudar a decidir as substituições.",
+      "A nota usa o que o jogador fez em campo, com pesos pela posição: gols, assistências, finalizações e passes decisivos; passes certos; desarmes e interceptações; as defesas do goleiro; os gols sofridos enquanto ele estava em campo; cartões, pênalti cometido e o resultado do time. Quem joga pouco fica com a nota perto de 6,0. Nas partidas sem estatísticas de jogadas (ligas de outros países e partidas antigas), a nota é simplificada e vem marcada assim.",
+      "O elenco ganhou a coluna Nota, com a média da temporada e o número de jogos, que dá para ordenar; o detalhe do jogador mostra a mesma média. As notas foram medidas em milhares de partidas: a média fica em 6,3, nenhuma posição leva vantagem, e quem marca e quem vence têm nota maior.",
+      "A nota só informa: as partidas, a evolução e o mercado não mudam, e a mesma seed dá a mesma carreira. Os saves existentes continuam abrindo (o formato passa para a versão 20) e nenhum formato de mod mudou."
+    ]
+  },
+  {
     "version": "1.6.0",
     "date": "2026-11-04",
     "changes": [
