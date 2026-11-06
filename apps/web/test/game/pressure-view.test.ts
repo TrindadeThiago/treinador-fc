@@ -4,6 +4,8 @@ import {
   pressureTicks,
   pressureView,
   RECENT,
+  SHOT_PRESSURE,
+  SMOOTH,
   VERDICT_MARGIN,
   verdictOf,
 } from "../../src/game/pressure-view";
@@ -80,5 +82,26 @@ describe("pressão do meu jogo", () => {
         expect(point).toMatchObject(goal.tick);
       }
     }
+  });
+
+  it("a finalização soma à pressão de quem finalizou, e sai da linha depois da média móvel", () => {
+    const flat = Array(40).fill(0.13);
+    const shot = { type: "shot", side: "home", half: 1, minute: 20, stoppage: 0, outcome: "saved" };
+    const state = stateWith([...flat], [...flat], {
+      events: [shot],
+    } as unknown as Partial<MatchState>);
+    const view = pressureView(state, "home");
+    const before = view?.points[18]?.share ?? 0;
+    const at = view?.points[19]?.share ?? 0;
+    const after = view?.points[19 + SMOOTH]?.share ?? 0;
+    expect(before).toBe(50);
+    expect(at).toBe(
+      Math.round(
+        (100 * (0.13 * SMOOTH + SHOT_PRESSURE.saved)) / (0.13 * SMOOTH * 2 + SHOT_PRESSURE.saved),
+      ),
+    );
+    expect(after).toBe(50);
+    // Do ponto de vista do adversário, o mesmo lance é pressão sofrida.
+    expect(pressureView(state, "away")?.points[19]?.share).toBe(100 - at);
   });
 });
