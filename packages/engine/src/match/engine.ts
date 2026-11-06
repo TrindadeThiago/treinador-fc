@@ -53,7 +53,15 @@ function cloneTeam(team: TeamState): TeamState {
   const players: TeamState["players"] = {};
   for (const [id, player] of Object.entries(team.players)) {
     // As jogadas (033) são um objeto próprio: copiar, senão avançar mexe no estado anterior.
-    players[id] = player.plays ? { ...player, plays: { ...player.plays } } : { ...player };
+    players[id] = player.plays
+      ? {
+          ...player,
+          plays: {
+            ...player.plays,
+            ...(player.plays.slotMinutes ? { slotMinutes: { ...player.plays.slotMinutes } } : {}),
+          },
+        }
+      : { ...player };
   }
   return {
     ...team,

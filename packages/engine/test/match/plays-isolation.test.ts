@@ -63,7 +63,9 @@ describe("jogadas não mudam a partida (033 FR-006, FR-007)", () => {
     expect(
       off.every((result) =>
         Object.values(result.players).every(
-          (line) => !line.plays || Object.values(line.plays).every((value) => value === 0),
+          (line) =>
+            !line.plays ||
+            Object.values(line.plays).every((value) => typeof value !== "number" || value === 0),
         ),
       ),
     ).toBe(true);

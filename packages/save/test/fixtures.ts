@@ -567,6 +567,25 @@ export function saveV18(step: SaveV11Step = { rounds: 0 }): SaveV18 {
   return JSON.parse(JSON.stringify(save)) as SaveV18;
 }
 
+export type SaveV19 = Omit<SaveFile, "formatVersion"> & { formatVersion: 19 };
+
+const v19Cache = new Map<string, SaveV19>();
+
+/** Carreira atual no formato v19: as tuplas de jogadas só com os 6 primeiros inteiros (034). */
+export function saveV19(step: SaveV11Step = { rounds: 0 }): SaveV19 {
+  const key = JSON.stringify(step);
+  let save = v19Cache.get(key);
+  if (!save) {
+    const six = JSON.parse(JSON.stringify(playedCurrentSave(step)), (name, value) =>
+      name === "plays" && Array.isArray(value) ? value.slice(0, 6) : value,
+    );
+    const { formatVersion: _version, ...rest } = six as SaveFile;
+    save = { ...rest, formatVersion: 19 };
+    v19Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV19;
+}
+
 /** Banco padrão com uma copa de 16 clubes (8 de cada divisão), quartas a cada 2 semanas (018). */
 export function bankWithCup(): ModPackage {
   const bank = JSON.parse(JSON.stringify(defaultBank())) as ModPackage;

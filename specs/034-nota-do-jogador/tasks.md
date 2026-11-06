@@ -22,7 +22,7 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 ## Phase 1: Setup
 
-- [ ] T001 Criar o esqueleto do módulo `packages/engine/src/rating/`: `index.ts`, `input.ts`, `rate.ts`, `tuning.ts` e `limits.ts`, com tipos e funções vazias que lançam "não implementado" (contrato `contracts/engine-rating.md`). No teste de fronteira (`packages/engine/test/architecture.test.ts`), acrescentar um caso: nenhum arquivo de `packages/engine/src` fora de `rating/` importa `rating/`, exceto `src/index.ts` (contrato `engine-rating.md`, garantia 4).
+- [X] T001 Criar o esqueleto do módulo `packages/engine/src/rating/`: `index.ts`, `input.ts`, `rate.ts`, `tuning.ts` e `limits.ts`, com tipos e funções vazias que lançam "não implementado" (contrato `contracts/engine-rating.md`). No teste de fronteira (`packages/engine/test/architecture.test.ts`), acrescentar um caso: nenhum arquivo de `packages/engine/src` fora de `rating/` importa `rating/`, exceto `src/index.ts` (contrato `engine-rating.md`, garantia 4).
 
 ---
 
@@ -34,20 +34,20 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 ### Testes primeiro
 
-- [ ] T002 [P] Em `packages/engine/test/match/plays.test.ts`, acrescentar (research R1):
+- [X] T002 [P] Em `packages/engine/test/match/plays.test.ts`, acrescentar (research R1):
   - `shots` de cada jogador = número de eventos `shot` dele;
   - `saves` do goleiro = eventos `shot` do adversário com `outcome: "saved"` e `goalkeeperId` dele;
   - `playTuple` tem 9 inteiros e o 9º é o índice em `POSITIONS` da vaga com mais minutos (testar com uma troca de posição no meio da partida pelo `applyChange` de formação);
   - `playStatsOf` aceita tuplas de 6 e de 9.
 
   `test/match/plays-isolation.test.ts` deve continuar verde.
-- [ ] T003 [P] Criar `packages/save/test/migrate-v20.test.ts`, com a fixture `saveV19(step)` em `packages/save/test/fixtures.ts`: a carreira atual com as tuplas de `plays` cortadas para os 6 primeiros. Casos:
+- [X] T003 [P] Criar `packages/save/test/migrate-v20.test.ts`, com a fixture `saveV19(step)` em `packages/save/test/fixtures.ts`: a carreira atual com as tuplas de `plays` cortadas para os 6 primeiros. Casos:
   - v19 abre como v20, igual ao original;
   - tuplas de 6 continuam válidas, e partidas novas gravam tuplas de 9;
   - tupla de 9 com `position` fora de 0–5 é rejeitada, assim como tuplas de 7 ou 8 inteiros.
 
   Ajustar os testes de migração antigos (`formatVersion).toBe(19)` → 20) e a expectativa de tamanho 6 em `migrate-v19.test.ts`.
-- [ ] T004 [P] Criar `packages/engine/test/rating/input.test.ts` (research R5):
+- [X] T004 [P] Criar `packages/engine/test/rating/input.test.ts` (research R5):
   - gols sofridos com o jogador em campo, a partir dos eventos em ordem de `seq` (titular que sai antes de um gol não responde por ele; reserva que entra responde só pelos seguintes; expulso deixa de responder);
   - minutos;
   - resultado do ponto de vista de cada lado;
@@ -56,7 +56,7 @@ description: "Tarefas da feature 034: nota do jogador por partida"
 
 ### Implementação
 
-- [ ] T005 Em `packages/engine/src/match/plays.ts`, acrescentar a `PlayStats` os campos `shots`, `saves` e `slotMinutes` (data-model):
+- [X] T005 Em `packages/engine/src/match/plays.ts`, acrescentar a `PlayStats` os campos `shots`, `saves` e `slotMinutes` (data-model):
   - `shots` e `saves` saem dos eventos `shot` do minuto, no mesmo laço dos passes decisivos;
   - `slotMinutes` soma 1 na posição da vaga de cada jogador em campo, a cada minuto, sem sorteio;
   - `playTuple` devolve 9 inteiros (`position` = índice da posição com mais minutos; em empate, a primeira registrada);
@@ -64,8 +64,8 @@ description: "Tarefas da feature 034: nota do jogador por partida"
   - `emptyPlays` e `cloneTeam` (`packages/engine/src/match/engine.ts`) copiam `slotMinutes`.
 
   Atualizar `PlayTuple` para `readonly number[]` com comprimento documentado, e `playTotals` para somar também `shots` e `saves`.
-- [ ] T006 Subir `SAVE_FORMAT_VERSION` para 20 (`packages/save/src/format.ts`). Acrescentar a migração `addPlayExtras` (v19 → v20, só a versão) e estender `validPlays` (`packages/save/src/migrate.ts`) para 6 ou 9 inteiros, com `[8]` entre 0 e 5.
-- [ ] T007 Implementar `ratingInputs(record, bank)` e `liveRatingInputs(state, players)` em `packages/engine/src/rating/input.ts` (data-model `RatingInput`, research R5 e R6). Para tuplas de 6, a posição vem da natural do jogador, e as defesas do goleiro de `stats` do adversário (finalizações no alvo − gols), atribuídas ao goleiro com mais minutos. Rodar T002–T004 até ficarem verdes, junto com as linhas de base e `test/match/performance.test.ts`, sem regravar nada.
+- [X] T006 Subir `SAVE_FORMAT_VERSION` para 20 (`packages/save/src/format.ts`). Acrescentar a migração `addPlayExtras` (v19 → v20, só a versão) e estender `validPlays` (`packages/save/src/migrate.ts`) para 6 ou 9 inteiros, com `[8]` entre 0 e 5.
+- [X] T007 Implementar `ratingInputs(record, bank)` e `liveRatingInputs(state, players)` em `packages/engine/src/rating/input.ts` (data-model `RatingInput`, research R5 e R6). Para tuplas de 6, a posição vem da natural do jogador, e as defesas do goleiro de `stats` do adversário (finalizações no alvo − gols), atribuídas ao goleiro com mais minutos. Rodar T002–T004 até ficarem verdes, junto com as linhas de base e `test/match/performance.test.ts`, sem regravar nada.
 
 **Checkpoint**: os dados existem, o save v20 abre os antigos e as entradas da nota batem entre ao vivo e registro.
 

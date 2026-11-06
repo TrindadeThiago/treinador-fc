@@ -37,6 +37,19 @@ function stripComments(source: string): string {
 }
 
 describe("fronteira do motor", () => {
+  it("a nota do jogador (034) só informa: nenhum sistema do jogo importa rating/", () => {
+    const importers: string[] = [];
+    for (const file of listTsFiles(SRC_DIR)) {
+      const path = relative(SRC_DIR, file);
+      if (path.startsWith("rating/") || path === "index.ts") continue;
+      const source = stripComments(readFileSync(file, "utf8"));
+      if (/from\s+"[./]*rating\//.test(source) || /from\s+"\.\.\/rating"/.test(source))
+        importers.push(path);
+    }
+    expect(importers).toEqual([]);
+    expect(listTsFiles(join(SRC_DIR, "rating")).length).toBeGreaterThanOrEqual(5);
+  });
+
   it("não usa APIs não determinísticas em packages/engine/src", () => {
     const violations: string[] = [];
     for (const file of listTsFiles(SRC_DIR)) {

@@ -444,12 +444,18 @@ export function playMinute(
   onRemoval: RemovalHook,
 ): void {
   for (const side of ["home", "away"] as const) {
-    for (const playerId of Object.values(state.teams[side].onField)) {
+    const slots = FORMATIONS[state.teams[side].formation].slots;
+    for (const slot of slots) {
+      const playerId = state.teams[side].onField[slot.id];
       if (!playerId) continue;
       const played = playerState(state, side, playerId);
       played.minutesPlayed += 1;
       // Jogadas (033): quem pisou em campo tem contagens, mesmo saindo neste minuto.
       if (!played.plays) played.plays = emptyPlays();
+      // Minutos por posição da vaga (034), para a nota.
+      if (!played.plays.slotMinutes) played.plays.slotMinutes = {};
+      const minutes = played.plays.slotMinutes;
+      minutes[slot.position] = (minutes[slot.position] ?? 0) + 1;
       // Ao completar um bloco a força do jogador muda: a escalação em cache deixa de valer.
       if (state.input.fatigue && played.minutesPlayed % FATIGUE_TUNING.blockMinutes === 0) {
         delete context.lineups[side];
