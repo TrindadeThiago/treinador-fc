@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.8.1",
+    "date": "2026-11-06",
+    "changes": [
+      "Na Início, as manchetes ganharam mais espaço na linha de baixo, e o cartão de torcida e diretoria ficou mais estreito.",
+      "No próximo jogo, os escudos ficaram maiores e os textos, mais discretos. Os indicadores agora se chamam \"Força dos times\" e \"Condição média\", e o link \"Ver escalação\" fica do lado oposto ao número de desfalques.",
+      "Nada mudou nas partidas: a mesma seed dá a mesma carreira. Os saves existentes continuam abrindo e nenhum formato de save ou de mod mudou."
+    ]
+  },
+  {
     "version": "1.8.0",
     "date": "2026-11-06",
     "changes": [
