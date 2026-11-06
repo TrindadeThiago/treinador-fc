@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Jogar o Treinador FC
+    url: https://treinador-fc.vercel.app
+    about: O jogo no navegador, gratuito e offline.
+  - name: Guia do jogador
+    url: https://github.com/TrindadeThiago/brasfoot-like/blob/main/docs/guia-do-jogador.md
+    about: Como jogar, tela por tela. Pode responder a sua dúvida antes de abrir uma issue.
+  - name: Formato de mods
+    url: https://github.com/TrindadeThiago/brasfoot-like/blob/main/docs/mod-format.md
+    about: Como criar um mod e o que significa cada erro de validação.

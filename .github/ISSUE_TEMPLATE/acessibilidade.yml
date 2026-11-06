@@ -1,0 +1,51 @@
+name: Acessibilidade
+description: Algo impede ou dificulta o uso com teclado, leitor de tela, zoom ou contraste.
+title: "[Acessibilidade] "
+labels: ["accessibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        O jogo busca funcionar só com o teclado, com leitor de tela, com zoom de 200% e com
+        contraste mínimo de 4,5:1 nos dois temas. Se algo falhou, conte aqui.
+  - type: input
+    id: version
+    attributes:
+      label: Versão do jogo
+      placeholder: "1.8.1"
+    validations:
+      required: true
+  - type: input
+    id: screen
+    attributes:
+      label: Tela
+      placeholder: "Escalação, Rodada ao vivo..."
+    validations:
+      required: true
+  - type: dropdown
+    id: tech
+    attributes:
+      label: Como você usa o jogo
+      multiple: true
+      options:
+        - Só o teclado
+        - Leitor de tela (NVDA, JAWS, VoiceOver, TalkBack...)
+        - Zoom ou fonte ampliada
+        - Alto contraste ou tema escuro/claro
+        - Movimento reduzido
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: O que acontece
+      description: O que você tentou fazer e o que impediu. Diga o leitor de tela e o navegador, se for o caso.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
