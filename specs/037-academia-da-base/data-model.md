@@ -48,7 +48,10 @@ IA:       virada ──► level anda 1 degrau em direção a levelForReputation
 
 ## Save v22
 
-`renewal.academy.clubs` é obrigatório. A migração v21 → v22:
+`renewal.academy.clubs` é obrigatório e tem um registro para cada clube do banco.
+- **Carreira nova:** `initialRenewal` (ou `createSave`) cria o registro de todos os clubes pela reputação, antes de `seedAcademies`.
+
+A migração v21 → v22:
 - cria o nível de cada clube pela reputação, sem pendente;
 - completa a base até 15 jovens (`seedAcademies`).
 

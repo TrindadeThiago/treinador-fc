@@ -224,7 +224,7 @@ Como jogador com uma carreira salva na 1.9.0, quero abri-la e continuar, com a a
 - **SC-002**: Em carreiras simuladas de 10 temporadas, a academia no nível 5 gera, em média, pelo menos 50% mais jovens que a do nível 1, com força inicial e potencial médios maiores.
 - **SC-003**: Num clube pequeno, ao longo de 10 temporadas, a receita das vendas das crias da base fica abaixo do custo total do nível 5 (obras mais manutenção).
 - **SC-004**: Em 30 temporadas sem interação, as faixas do mundo e os critérios da 036 ficam dentro dos limites, e a fração de clubes da IA em crise não passa dos limites atuais da economia.
-- **SC-005**: Na simulação continental completa, a média dos critérios em 3 seeds fica no nível da 1.9.0.
+- **SC-005**: Na simulação continental completa, em 3 seeds, a média da correlação vagas × títulos fica ≥ 0, e o peso dos prêmios na receita fica ≤ 18,1% em cada seed (o valor da `main` da 1.8.1).
 - **SC-006**: 100% dos saves da 1.9.0 abrem, migram e chegam à virada seguinte sem erro.
 - **SC-006a**: Em 100% das carreiras novas e dos saves migrados, todo clube começa com 15 jovens na base, e nenhum clube começa acima do limite do próprio nível.
 - **SC-007**: Melhorar ou baixar a academia leva no máximo três ações (escolher a ação, revisar e confirmar), com o teclado ou o mouse.

@@ -58,12 +58,14 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
   - `academyLimit` dá 15, 15, 15, 20 e 25;
   - `referenceMonthlyPayroll` depende só da reputação e do fator do país (igual antes e depois de uma contratação) e usa o fator regional nos clubes só regionais;
   - `academyMaintenance` é 2% a 10% da folha de referência;
-  - `academyUpgradeCost` vai de 2 a 6 folhas, arredondado a 1 000.
+  - `academyUpgradeCost` vai de 2 a 6 folhas, arredondado a 1 000;
+  - validação do mod (em `packages/engine/test/validation/`): `economy.academy.levels` com 5 entradas válidas é aceito; com 4 entradas ou um campo inválido é recusado, com mensagem que aponta o campo; um mod sem a seção continua válido.
 - [ ] T004 [P] Criar `packages/engine/test/finance/academy-maintenance.test.ts`:
   - na rodada, todo clube da liga e todo clube só regional paga `wageInstalment` da manutenção anual na categoria `academy`;
   - a soma da temporada dá 12 manutenções mensais;
   - `totals.academy` aparece no resumo (`summary.ts`) e na previsão (`forecast.ts`);
-  - o caixa negativo não impede a cobrança.
+  - o caixa negativo não impede a cobrança;
+  - a manutenção entra no caixa que as metas financeiras da diretoria avaliam (`packages/engine/src/board/goals.ts`: "não negativar" e "manter caixa"), sem mudar o cálculo das metas.
 - [ ] T005 [P] Em `packages/engine/test/renewal/academy-levels.test.ts`, acrescentar `seedAcademies`:
   - cada clube fica com exatamente 15 jovens na base, 3 de cada idade de 15 a 19 na data da temporada;
   - a qualidade média sobe com o nível;
@@ -88,14 +90,24 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
 
   Faz passar T003.
 - [ ] T008 Em `packages/engine/src/finance/types.ts`, acrescentar `"academy"` a `LEDGER_CATEGORIES`. Em `packages/engine/src/finance/round.ts`, cobrar a manutenção por rodada nos mesmos dois laços da folha (clubes da liga; clubes só regionais nas rodadas da divisão mais longa), com `wageInstalment(12 × manutenção mensal, …)`. A função de rodada recebe a academia: passar `renewal?.state.academy` para `applyRoundFinances`. Incluir a categoria em `packages/engine/src/finance/forecast.ts` (manutenção restante da temporada) e conferir `summary.ts` e `turnover.ts`. Faz passar T004.
-- [ ] T009 Em `packages/engine/src/renewal/academy.ts`, trocar `ACADEMY_RULES.maxPlayers` por `academyLimit` em `rosterIssues`, `generateYouth` (via `youth.ts`) e no excedente da IA. Atualizar os testes da 036 que fixavam 15 (`academy.test.ts`, `youth.test.ts`) para o limite pelo nível.
+- [ ] T009 Trocar o limite fixo da 036 (`ACADEMY_RULES.maxPlayers`) por `academyLimit` (o limite do nível do clube) em todos os pontos:
+  - motor: `rosterIssues` em `packages/engine/src/renewal/academy.ts` e o excedente da IA em `packages/engine/src/renewal/youth.ts`;
+  - web: `academyCapacity` em `apps/web/src/game/academy-view.ts`;
+  - critério do teste de 30 temporadas em `packages/engine/test/renewal/long-run.ts`: cada base fica ≤ o limite do nível do próprio clube (guardar o maior excesso por clube, não o maior tamanho);
+  - testes: `packages/engine/test/renewal/academy.test.ts`, `academy-turnover.test.ts`, `youth.test.ts`, `packages/save/test/academy.test.ts` e `apps/web/test/ui/academy.test.tsx`.
+
+  Manter `ACADEMY_RULES.maxPlayers` só como o limite dos níveis 1 a 3 (ou removê-lo, se nada mais o usar).
 - [ ] T010 Implementar `seedAcademies` em `packages/engine/src/renewal/academy-levels.ts` (research R6), reaproveitando `createYouth` com idade fixa e a qualidade do nível. Se `createYouth` só sorteia a idade, acrescentar um parâmetro opcional de idade em `packages/engine/src/renewal/youth.ts`. Faz passar T005.
 - [ ] T011 Save v22:
   - `packages/save/src/format.ts`: `SAVE_FORMAT_VERSION = 22`;
   - `packages/save/src/migrate.ts`: `addAcademyLevels` (`from: 21`), com `academy.clubs` pela reputação e `seedAcademies`, e a validação de níveis e pendentes;
-  - `packages/save/src/create.ts`: `createSave` chama `seedAcademies` depois de `initialRenewal`.
+  - `packages/save/src/create.ts` e `initialRenewal` (`packages/engine/src/renewal/measure.ts`): toda carreira nova já nasce com `academy.clubs` preenchido para **todos** os clubes, com o nível da reputação e sem pendente. Em seguida, `createSave` chama `seedAcademies`. Assim nenhum clube fica sem registro, e a etapa da IA nunca precisa adivinhar o nível de partida.
 
   Atualizar os testes `migrate-v*.test.ts` que fixam `formatVersion).toBe(21)` para 22. Faz passar T006.
+- [ ] T012a Atualizar os testes que esperavam a base vazia numa carreira nova (FR-004b):
+  - `apps/web/e2e/academy.spec.ts`: o passo "Primeira temporada: a base está vazia" passa a conferir os 15 jovens iniciais;
+  - `apps/web/e2e/screens-list.ts`: o item "/jogo/elenco/ (base)" espera a lista, e não o estado vazio;
+  - `apps/web/test/ui/academy.test.tsx`: o teste "estado vazio antes da primeira virada" passa a montar uma base esvaziada à mão. O estado vazio continua existindo para a base que o técnico esvazia.
 - [ ] T012 Medida imediata do risco da base cheia: rodar `packages/engine/test/renewal/long-run-1.test.ts`, `long-run-2.test.ts`, `packages/engine/test/worldgen/regional-long-run.test.ts` e `pnpm sim:world --seasons 10`. Anotar em `specs/037-academia-da-base/research.md` (seção "Medição da base cheia") livres, população, folha da IA e crise. Se algum critério da 036 quebrar só pela base cheia, decidir ali, com justificativa, entre rever o limite e mudar a regra (ex.: a IA solta como livre quem sai por idade e não cabe no elenco).
 
 **Checkpoint**: todo clube tem nível e manutenção, e a base começa cheia; saves v21 abrem.
@@ -197,7 +209,7 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
   - no clube que o técnico deixou, a obra paga termina, a redução é cancelada e depois vale a regra da IA.
 - [ ] T026 [US6] Implementar a parte da IA e a do clube deixado em `academyLevelsStep`. Faz passar T025.
 - [ ] T027 [US6] Em `packages/engine/test/renewal/long-run.ts`, acrescentar o nível médio da IA e a manutenção sobre a receita, e rodar os dois mundos de 30 temporadas, os estaduais (`worldgen/regional-long-run.test.ts`) e `pnpm sim:world --seasons 30`. Calibrar em `packages/engine/src/renewal/academy-levels.ts` (faixas de reputação, quantidades, percentuais) e em `YOUTH_RULES` até passar, registrando as medidas em `research.md` ("Calibragem").
-- [ ] T028 [US6] Rodar a continental completa em 3 seeds (`pnpm sim:world --scale --countries 5 --seasons 30 --continental --seed padrao|var-a|var-b`) e `pnpm sim:gates`. Comparar com as médias da 1.9.0 (vagas × títulos 0,13; prêmios 16,4%) e registrar em `research.md`.
+- [ ] T028 [US6] Rodar a continental completa em 3 seeds (`pnpm sim:world --scale --countries 5 --seasons 30 --continental --seed padrao|var-a|var-b`) e `pnpm sim:gates`. Comparar com as médias da 1.9.0 (vagas × títulos 0,13; prêmios 16,4%) e registrar em `research.md`. Tolerância: média da correlação nas 3 seeds ≥ 0, e prêmios ≤ 18,1% (o valor da `main` da 1.8.1) em cada seed.
 - [ ] T029 [US6] Regravar as linhas de base (`equivalence-baseline.json`, snapshots de composição e continental) depois de conferir que a primeira temporada difere só pela manutenção e pela base inicial. Explicar no commit e no `research.md`.
 
 ---
@@ -219,7 +231,7 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
 - [ ] T032 [P] Ampliar `apps/web/e2e/academy.spec.ts`: a base com 15 jovens na carreira nova, melhorar a academia pelo teclado (no máximo três ações, SC-007), ver a obra no painel e "Academia" em Finanças, e baixar e cancelar. Incluir o painel em `a11y.spec.ts` e no layout de 768 px (via `screens-list.ts`).
 - [ ] T033 [P] Medir o tamanho do save (`packages/save/test/long-career.test.ts`, `football-world-scale.test.ts`) e o tempo de criação da carreira no mundo padrão com a base cheia, contra as metas da 020. Registrar no PR.
 - [ ] T034 [P] Documentação:
-  - `docs/guia-do-jogador.md`: academia, níveis, custos, vagas e base inicial;
+  - `docs/guia-do-jogador.md`: academia, níveis, custos, vagas e base inicial, corrigindo o trecho da 036 que diz "até 15 vagas" e "os jovens chegam na virada" (a base agora começa cheia e as vagas dependem do nível);
   - `docs/mod-format.md`: `economy.academy.levels`, com a tabela e os padrões;
   - `docs/glossario.md`: academia, nível da academia, manutenção;
   - `docs/arquitetura.md`: `academy-levels.ts` e a etapa nova.
@@ -230,7 +242,7 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
 
 ## Dependencies & Execution Order
 
-- **Setup (T001–T002)** → **Foundational (T003–T012)** → histórias.
+- **Setup (T001–T002)** → **Foundational (T003–T012, com T012a)** → histórias.
 - **US1 (T013–T015)** depende da fundação.
 - **US2 (T016–T019)** depende da US1 (o painel onde ficam as ações).
 - **US3 (T020–T021)** depende da US2 (a etapa `academy-levels`).
