@@ -58,7 +58,7 @@ describe("tamanho e tempo com 27 estaduais (023 SC-004)", () => {
       }
       lastRound.push(last);
       const t1 = performance.now();
-      const turned = advanceCareerSeason(save, NOW);
+      const turned = advanceCareerSeason(save, NOW, { passiveManager: true });
       if (!turned.ok) throw new Error(JSON.stringify(turned.error));
       turnovers.push(performance.now() - t1);
       save = turned.save;

@@ -586,6 +586,26 @@ export function saveV19(step: SaveV11Step = { rounds: 0 }): SaveV19 {
   return JSON.parse(JSON.stringify(save)) as SaveV19;
 }
 
+export type SaveV20 = Omit<SaveFile, "formatVersion"> & { formatVersion: 20 };
+
+const v20Cache = new Map<string, SaveV20>();
+
+/**
+ * Carreira atual no formato v20: sem os elencos de base (036). Com temporadas jogadas, os jovens
+ * que estavam na base somem (na v20 eles nunca existiram) e a origem dos promovidos também.
+ */
+export function saveV20(step: SaveV11Step = { rounds: 0 }): SaveV20 {
+  const key = JSON.stringify(step);
+  let save = v20Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, renewal, ...rest } = playedCurrentSave(step);
+    const { academy: _academy, ...oldRenewal } = renewal;
+    save = { ...rest, renewal: oldRenewal, formatVersion: 20 };
+    v20Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV20;
+}
+
 /** Banco padrão com uma copa de 16 clubes (8 de cada divisão), quartas a cada 2 semanas (018). */
 export function bankWithCup(): ModPackage {
   const bank = JSON.parse(JSON.stringify(defaultBank())) as ModPackage;

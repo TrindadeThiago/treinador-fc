@@ -1,3 +1,13 @@
+export type { AcademySaveResult } from "./academy";
+export {
+  academyWarningOf,
+  emergencyPositionsOf,
+  emergencyYouth,
+  promoteYouth,
+  releaseYouth,
+  rosterIssuesOf,
+  youthContractPreview,
+} from "./academy";
 export type { BoardSaveResult } from "./board";
 export {
   acceptManagerOffer,

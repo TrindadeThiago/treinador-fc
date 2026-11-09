@@ -9,7 +9,8 @@ import type { FinanceState } from "../../src/finance/types";
 import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal, measureWorld } from "../../src/renewal/measure";
+import { initialRenewal, measureWorld, playerSeq } from "../../src/renewal/measure";
+import { ACADEMY_RULES } from "../../src/renewal/rules";
 import { squadProblems } from "../../src/renewal/squads";
 import type { EvolutionRecord, RenewalState, WorldMeasure } from "../../src/renewal/types";
 import { spearman } from "../../src/season/credibility";
@@ -38,6 +39,17 @@ const ECONOMY = {
 const NO_MANAGER = "";
 /** Livres ao fim de cada virada (010, research.md R11). */
 const MAX_FREE_AGENTS = 150;
+/** Elenco de base (036 R10): população estável e elencos da IA no tamanho de hoje. */
+const ACADEMY_LIMITS = {
+  /**
+   * Elencos + bases variam no máximo isto em relação à temporada `settledSeason`, quando a base já
+   * se formou (no início não há base, e ela vira um estoque de ~10% a mais de jogadores). As ondas
+   * de geração fazem a população oscilar até ~6,5% nas duas seeds medidas.
+   */
+  populationDrift: 0.08,
+  settledSeason: 5,
+  aiSquadMean: [23, 28] as const,
+};
 
 interface SeasonEnd {
   measure: WorldMeasure;
@@ -49,6 +61,16 @@ interface SeasonEnd {
   freeAgents: number;
   /** Jogadores com contrato vencido no mundo depois da virada. */
   expired: number;
+  /** Maior base de um clube depois da virada (036). */
+  academyMax: number;
+  /** Safras de emergência da virada (036 R6). */
+  emergencies: number;
+  /** Jogadores criados na virada fora da safra e da emergência (deve ser 0, 036 FR-011). */
+  createdDirect: number;
+  /** Elencos + bases (036 R10). */
+  population: number;
+  /** Tamanho médio dos elencos. */
+  squadMean: number;
 }
 
 function median(values: number[]): number {
@@ -116,6 +138,16 @@ function simulate(careerSeed: string): SeasonEnd[] {
     if (!turned.ok || !turned.finances || !turned.renewal || !turned.market) {
       throw new Error(JSON.stringify(turned));
     }
+    const before = played.renewal ?? renewal;
+    const academyIds = new Set(
+      (turned.renewal.academy?.players ?? []).map((entry) => entry.player.id),
+    );
+    const promotedNew = turned.world.players.filter(
+      (player) =>
+        playerSeq(player.id) >= before.nextPlayerSeq &&
+        turned.renewal?.academy?.graduates[player.id] === undefined,
+    ).length;
+    void academyIds;
     market = turned.market;
     const end = turned.renewal.lastEvolution;
     const endGap = end ? youthGap(played.world, end, date) : undefined;
@@ -124,8 +156,23 @@ function simulate(careerSeed: string): SeasonEnd[] {
     finances = turned.finances;
     renewal = turned.renewal;
     const clubs = Object.values(finances.clubs);
+    const academy = renewal.academy?.players ?? [];
+    const clubIds = league.divisions.flatMap((season) => season.clubIds);
+    const sizes = clubIds.map((clubId) => world.players.filter((p) => p.clubId === clubId).length);
+    const perClub = new Map<string, number>();
+    for (const entry of academy) perClub.set(entry.clubId, (perClub.get(entry.clubId) ?? 0) + 1);
     ends.push({
-      measure: measureWorld(world, league, seasonDate(world.manifest.referenceDate, league.year)),
+      academyMax: Math.max(0, ...perClub.values()),
+      emergencies: renewal.academy?.emergencies ?? 0,
+      createdDirect: promotedNew,
+      population: world.players.length + academy.length,
+      squadMean: sizes.reduce((sum, size) => sum + size, 0) / sizes.length,
+      measure: measureWorld(
+        world,
+        league,
+        seasonDate(world.manifest.referenceDate, league.year),
+        renewal.academy,
+      ),
       problems: squadProblems(world, league),
       bankValid: validateBank(world).ok,
       cash: new Map(clubs.map((club) => [club.clubId, club.cash])),
@@ -172,6 +219,32 @@ export function describeLongRun(seed: string): void {
       for (const end of ends) {
         expect(end.problems).toEqual([]);
         expect(end.bankValid).toBe(true);
+      }
+    });
+
+    it("base no limite, nada criado direto no elenco, população e elencos estáveis (036 R10)", () => {
+      const settled = ends[ACADEMY_LIMITS.settledSeason - 1]?.population ?? 0;
+      const clubs = testWorld().clubs.length;
+      const emergencies = ends.reduce((sum, end) => sum + end.emergencies, 0);
+      expect(emergencies / (clubs * ends.length)).toBeLessThanOrEqual(
+        ACADEMY_RULES.emergencyLimitPerClubSeason,
+      );
+      for (const [index, end] of ends.entries()) {
+        const label = `temporada ${index + 1}`;
+        expect(end.academyMax, `${label} base`).toBeLessThanOrEqual(ACADEMY_RULES.maxPlayers);
+        expect(end.createdDirect, `${label} criados direto`).toBe(0);
+        if (index + 1 >= ACADEMY_LIMITS.settledSeason) {
+          expect(
+            Math.abs(end.population - settled) / settled,
+            `${label} população`,
+          ).toBeLessThanOrEqual(ACADEMY_LIMITS.populationDrift);
+        }
+        expect(end.squadMean, `${label} elenco médio`).toBeGreaterThanOrEqual(
+          ACADEMY_LIMITS.aiSquadMean[0],
+        );
+        expect(end.squadMean, `${label} elenco médio`).toBeLessThanOrEqual(
+          ACADEMY_LIMITS.aiSquadMean[1],
+        );
       }
     });
 

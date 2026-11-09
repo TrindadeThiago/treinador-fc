@@ -7,7 +7,16 @@ import { Button } from "./Button";
 import { evolutionText } from "./evolution-text";
 import styles from "./SquadChangeNotice.module.css";
 
-const SECTIONS = ["retired", "arrived", "released", "promoted"] as const;
+// A safra vai para a base (036): "arrived" só aparece em avisos de saves antigos.
+const SECTIONS = [
+  "retired",
+  "arrived",
+  "released",
+  "academyArrived",
+  "promoted",
+  "academyAgedOut",
+  "academyReleased",
+] as const;
 
 /** Resumo das mudanças do elenco na virada (009 US6), até o jogador dispensar. */
 export function SquadChangeNotice({
@@ -37,7 +46,7 @@ export function SquadChangeNotice({
     ...SECTIONS.map((section) => ({
       key: section,
       title: t(`renewal.notice.${section}`),
-      lines: notice[section].map(playerLine),
+      lines: (notice[section] ?? []).map(playerLine),
     })),
     { key: "risers", title: t("renewal.notice.risers"), lines: notice.risers.map(deltaLine) },
     { key: "fallers", title: t("renewal.notice.fallers"), lines: notice.fallers.map(deltaLine) },

@@ -190,7 +190,7 @@ export function longCareer(id: string, seasons: number): { seasonOver: SaveFile;
   for (let season = 1; season <= seasons; season++) {
     while (!isLeagueSeasonOver(save.league)) save = playRound(save);
     seasonOver = save;
-    const turned = advanceCareerSeason(save, now);
+    const turned = advanceCareerSeason(save, now, { passiveManager: true });
     if (!turned.ok) throw new Error(JSON.stringify(turned.error));
     save = turned.save;
   }

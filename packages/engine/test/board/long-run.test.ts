@@ -140,6 +140,8 @@ function simulate(
       careerSeed,
       finances: state.finances,
       managerClubId: state.board.manager.clubId ?? "",
+      // Técnico passivo: o elenco dele é completado como o da IA (036).
+      passiveManager: true,
       renewal: state.renewal,
       market: state.market,
       board: state.board,

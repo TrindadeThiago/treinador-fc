@@ -59,7 +59,7 @@ describe("tamanho e tempo no mundo compacto (024 US4)", () => {
       }
       lastRound.push(last);
       const t1 = performance.now();
-      const turned = advanceCareerSeason(save, NOW);
+      const turned = advanceCareerSeason(save, NOW, { passiveManager: true });
       if (!turned.ok) throw new Error(JSON.stringify(turned.error));
       turnovers.push(performance.now() - t1);
       save = turned.save;

@@ -136,6 +136,16 @@ export const SCREENS: ScreenCase[] = [
     close: pressEscape,
   },
   {
+    // Aba Base do Elenco (036): estado vazio na primeira temporada.
+    label: "/jogo/elenco/ (base)",
+    group: "club",
+    path: "/jogo/elenco/",
+    open: async (page) => {
+      await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
+      await expect(page.getByText(t("academy.empty.title"))).toBeVisible();
+    },
+  },
+  {
     label: "/jogo/mercado/ (modal)",
     group: "club",
     path: "/jogo/mercado/",

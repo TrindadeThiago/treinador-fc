@@ -90,7 +90,7 @@ beforeAll(() => {
     while (!isLeagueSeasonOver(save.league)) save = playRound(save);
     lastRound.push(sizeOf(save));
     seasonOver = save;
-    const turned = advanceCareerSeason(save, NOW);
+    const turned = advanceCareerSeason(save, NOW, { passiveManager: true });
     if (!turned.ok) throw new Error(JSON.stringify(turned.error));
     save = turned.save;
   }
@@ -100,7 +100,7 @@ beforeAll(() => {
 
 describe("desempenho numa carreira de 30 temporadas (016 R1)", () => {
   it(`virada de temporada abaixo de ${MAX_TURNOVER_MS} ms`, () => {
-    const time = median(() => advanceCareerSeason(seasonOver, NOW));
+    const time = median(() => advanceCareerSeason(seasonOver, NOW, { passiveManager: true }));
     console.log(`virada (30 temporadas): ${time.toFixed(1)} ms`);
     expect(time).toBeLessThan(MAX_TURNOVER_MS);
   });

@@ -33,6 +33,11 @@ novo, use estes termos; ao traduzir, mantenha a mesma distinção entre eles.
 | **clube** | a instituição: elenco, finanças, diretoria, torcida, escudo | time, para a instituição |
 | **time** | os jogadores em campo, a equipe que joga ("meu time", "escalar o time", "time sem goleiro") | equipe |
 | **elenco** | todos os jogadores do clube | plantel |
+| **base** | o elenco de base (sub-20) do clube, com até 15 jovens que ainda não são profissionais; no jogo, "Base" | categorias de base (no singular, para a aba), juniores |
+| **safra** | os jovens que chegam à base na virada da temporada | geração, fornada |
+| **cria da base** | o jogador profissional que subiu da base de um clube | prata da casa |
+| **safra de emergência** | o jovem criado na base de um clube da IA e promovido na hora, só quando nem a base nem o mercado cobrem um mínimo do elenco (medida e limitada) | — |
+| **promover / dispensar** | levar um jovem da base ao elenco / tirá-lo da base (ele vira livre) | subir, cortar |
 | **escalação** | formação + titulares + reservas para o próximo jogo | — |
 | **jogo** | uma partida, em rótulos e títulos ("Próximo jogo", "Jogos da rodada") | — |
 | **partida** | sinônimo de jogo, aceito em frases ("A partida já terminou") | — |

@@ -143,6 +143,11 @@ export interface TurnoverContext {
   finances?: FinanceState;
   /** Clube do jogador: as decisões da IA não o alteram. */
   managerClubId?: string;
+  /**
+   * Técnico passivo das simulações sem interação (036): o elenco do clube dele é completado pelas
+   * regras da IA na virada. O jogo nunca usa: o técnico completa o elenco à mão (FR-011b).
+   */
+  passiveManager?: boolean;
   /** Estado de renovação do mundo (009). */
   renewal?: RenewalState;
   /** Mercado de transferências (010): livres, negociações e propostas. */
@@ -174,6 +179,8 @@ export interface TurnoverOptions {
   /** Finanças da temporada encerrada (008). */
   finances?: FinanceState;
   managerClubId?: string;
+  /** Ver `TurnoverContext.passiveManager` (036). */
+  passiveManager?: boolean;
   renewal?: RenewalState;
   market?: MarketState;
   board?: BoardState;

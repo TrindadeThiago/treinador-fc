@@ -1,7 +1,7 @@
 "use client";
 
 import { pendingOffers } from "@brasfoot-like/engine";
-import type { SaveFile } from "@brasfoot-like/save";
+import { academyWarningOf, isEmployed, rosterIssuesOf, type SaveFile } from "@brasfoot-like/save";
 import Link from "next/link";
 import type { useGame } from "../../game/GameProvider";
 import { useT } from "../../i18n";
@@ -9,6 +9,7 @@ import { BoardNotice } from "../board/BoardNotice";
 import { LineupNotice } from "../LineupNotice";
 import { MarketNotice, marketNoticeCounts } from "../MarketNotice";
 import { Notice } from "../Notice";
+import { rosterText } from "../SimulateDialogs";
 import { SquadChangeNotice } from "../SquadChangeNotice";
 import { screenHref } from "../shell/screens";
 import styles from "./home.module.css";
@@ -26,6 +27,9 @@ export function activeNotices(save: SaveFile) {
     squad: save.renewal.squadNotice !== undefined,
     market: market.offers + market.expiring > 0 || market.report,
     lineup: (save.lineupNotice?.length ?? 0) > 0,
+    // Base (036): o que impede a próxima partida e os jovens no último ano (última janela).
+    roster: rosterIssuesOf(save).filter((issue) => issue.severity === "error"),
+    academy: isEmployed(save) ? academyWarningOf(save)?.count : undefined,
   };
 }
 
@@ -37,7 +41,9 @@ export function hasNotices(save: SaveFile): boolean {
     notices.crisis !== undefined ||
     notices.squad ||
     notices.market ||
-    notices.lineup
+    notices.lineup ||
+    notices.roster.length > 0 ||
+    notices.academy !== undefined
   );
 }
 
@@ -53,6 +59,28 @@ export function NoticeStrip({ save, game }: { save: SaveFile; game: Game }) {
     <section aria-label={t("home.beforeMatch")} className={styles.strip}>
       <h2 className={styles.stripTitle}>{t("home.beforeMatch")}</h2>
       <ul className={styles.notices}>
+        {notices.roster.length > 0 ? (
+          <li>
+            <Notice tone="danger" title={t("simulate.rosterTitle")}>
+              {notices.roster.map((issue) => (
+                <p key={issue.code}>{rosterText(issue, t)}</p>
+              ))}
+              <Link href={`${screenHref("/jogo/elenco", save.id)}&aba=base`}>
+                {t("academy.goToBase")}
+              </Link>
+            </Notice>
+          </li>
+        ) : null}
+        {notices.academy !== undefined ? (
+          <li>
+            <Notice tone="warning" title={t("academy.lastYear")}>
+              <p>{t("academy.warning.lastWindow", { count: notices.academy })}</p>
+              <Link href={`${screenHref("/jogo/elenco", save.id)}&aba=base`}>
+                {t("academy.goToBase")}
+              </Link>
+            </Notice>
+          </li>
+        ) : null}
         {notices.board ? (
           <li>
             <BoardNotice save={save} onDismiss={game.dismissBoardNotice} />

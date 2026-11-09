@@ -1,16 +1,32 @@
 import { seasonDate } from "../calendar/date";
 import { dateOfRound } from "../calendar/season-calendar";
 import type { LeagueSeason, TurnoverContext, TurnoverStep } from "../career/types";
+import { aiMarketRules } from "../market/ai/rules";
 import { ensureContracts } from "../market/contracts";
 import { addFreeAgents, toFreeAgent } from "../market/free-agents";
+import type { Position } from "../model/catalogs";
+import type { CompletedPlayer } from "../model/types";
+import { createRng } from "../rng/xoshiro";
+import { canSignForeign } from "../world/foreign";
+import { squadOf } from "../world/squads";
+import {
+  academyFreeAgent,
+  academyState,
+  agedOut,
+  asClubPlayer,
+  evolveAcademy,
+  squadShortage,
+  withGraduates,
+  withoutAcademyPlayers,
+} from "./academy";
 import { evolvePlayers, midSeasonRound } from "./evolution";
 import { measureWorld } from "./measure";
 import { withRegionalClubs } from "./regional";
 import { regulate, regulatorFor, withRegulator } from "./regulator";
 import { playerRef, retirePlayers } from "./retirement";
 import { balanceSquads } from "./squads";
-import type { PlayerDelta, PlayerRef, SquadChangeNotice } from "./types";
-import { generateYouth } from "./youth";
+import type { AcademyPlayer, PlayerDelta, PlayerRef, SquadChangeNotice } from "./types";
+import { createYouth, generateYouth, neediestPosition } from "./youth";
 
 /**
  * Etapas de renovação da virada (research.md R11). Sem `renewal` no contexto (usos só da liga ou
@@ -45,16 +61,26 @@ export const evolvePlayersStep: TurnoverStep = {
     if (!context.renewal) return context;
     const finished = context.finished;
     const last = Math.max(...finished.divisions.map((season) => season.calendar.length));
+    const league = withRegionalClubs(context.world, finished);
     const { world, record } = evolvePlayers(
       context.world,
-      withRegionalClubs(context.world, finished),
+      league,
       context.careerSeed,
       "end",
       midSeasonRound(finished) + 1,
       last,
       playedAfterMidSeason(context),
     );
-    return { ...context, world, renewal: { ...context.renewal, lastEvolution: record } };
+    // A base evolui no mesmo momento, sem minutos (036 FR-004, R4).
+    const academy = evolveAcademy(
+      academyState(context.renewal),
+      new Set(league.divisions.flatMap((season) => season.clubIds)),
+      context.careerSeed,
+      finished.number,
+      "end",
+      seasonDate(context.world.manifest.referenceDate, finished.year),
+    );
+    return { ...context, world, renewal: { ...context.renewal, lastEvolution: record, academy } };
   },
 };
 
@@ -83,18 +109,26 @@ function notice(context: TurnoverContext): SquadChangeNotice | undefined {
 /** Acrescenta ao aviso do clube do jogador os jogadores dele de uma lista. */
 export function withNotice(
   context: TurnoverContext,
-  field: "retired" | "arrived" | "released" | "promoted",
+  field:
+    | "retired"
+    | "arrived"
+    | "released"
+    | "promoted"
+    | "academyArrived"
+    | "academyAgedOut"
+    | "academyReleased",
   refs: readonly PlayerRef[],
   clubOf: (ref: PlayerRef) => string,
 ): TurnoverContext {
   const current = notice(context);
   if (!current || !context.renewal) return context;
   const own = refs.filter((ref) => clubOf(ref) === current.clubId);
+  if (own.length === 0 && current[field] !== undefined) return context;
   return {
     ...context,
     renewal: {
       ...context.renewal,
-      squadNotice: { ...current, [field]: [...current[field], ...own] },
+      squadNotice: { ...current, [field]: [...(current[field] ?? []), ...own] },
     },
   };
 }
@@ -120,22 +154,84 @@ export const retirePlayersStep: TurnoverStep = {
   },
 };
 
+/** Livres que saem da base, acrescentados ao mercado quando ele existe (036 R7). */
+function withAcademyFreeAgents(
+  context: TurnoverContext,
+  entries: readonly AcademyPlayer[],
+): TurnoverContext {
+  if (!context.market || entries.length === 0) return context;
+  return {
+    ...context,
+    market: addFreeAgents(
+      context.market,
+      entries.map((entry) => academyFreeAgent(entry, context.finished.year)),
+    ),
+  };
+}
+
+/**
+ * Idade-limite da base (036 FR-005, R5): quem tem 20 anos ou mais na nova temporada sai. Na IA, é
+ * promovido (o contrato vem do `balance-squads`); no clube do técnico, vira livre.
+ */
+export const academyAgeOutStep: TurnoverStep = {
+  id: "academy-age-out",
+  run: (context) => {
+    if (!context.renewal) return context;
+    const league = withRegionalClubs(context.world, context.finished);
+    const clubIds = new Set(league.divisions.flatMap((season) => season.clubIds));
+    const academy = academyState(context.renewal);
+    const leaving = agedOut(
+      academy,
+      clubIds,
+      context.world.manifest.referenceDate,
+      context.finished.year + 1,
+    );
+    if (leaving.length === 0) return context;
+    const date = nextSeasonDate(context);
+    const toFree = leaving.filter((entry) => entry.clubId === context.managerClubId);
+    const toSquad = leaving.filter((entry) => entry.clubId !== context.managerClubId);
+    const ids = new Set(leaving.map((entry) => entry.player.id));
+    const next = withGraduates(
+      withoutAcademyPlayers(academy, ids),
+      toSquad,
+      context.finished.number + 1,
+    );
+    const world = {
+      ...context.world,
+      players: [...context.world.players, ...toSquad.map(asClubPlayer)],
+    };
+    const updated = withAcademyFreeAgents(
+      { ...context, world, renewal: { ...context.renewal, academy: next } },
+      toFree,
+    );
+    return withNotice(
+      updated,
+      "academyAgedOut",
+      toFree.map((entry) => playerRef(asClubPlayer(entry), date)),
+      () => context.managerClubId ?? "",
+    );
+  },
+};
+
 export const generateYouthStep: TurnoverStep = {
   id: "generate-youth",
   run: (context) => {
     if (!context.renewal) return context;
-    const { world, renewal, arrived } = generateYouth(
+    const { renewal, arrived, released } = generateYouth(
       context.world,
       withRegionalClubs(context.world, context.finished),
       context.renewal,
       context.careerSeed,
       context.finished.number,
       nextSeasonDate(context),
+      context.managerClubId,
     );
-    const clubs = new Map(world.players.map((player) => [player.id, player.clubId]));
+    const clubs = new Map(
+      academyState(renewal).players.map((entry) => [entry.player.id, entry.clubId]),
+    );
     return withNotice(
-      { ...context, world: contracted(context, world), renewal },
-      "arrived",
+      withAcademyFreeAgents({ ...context, renewal }, released),
+      "academyArrived",
       arrived,
       (ref) => clubs.get(ref.playerId) ?? "",
     );
@@ -165,29 +261,26 @@ export const balanceSquadsStep: TurnoverStep = {
       context.careerSeed,
       context.finished.number,
       date,
-      context.managerClubId,
+      context.passiveManager ? undefined : context.managerClubId,
     );
     const after = new Map(world.players.map((player) => [player.id, player.clubId]));
-    let next = withNotice(
-      {
-        ...context,
-        world: contracted(context, world),
-        renewal,
-        ...(context.market
-          ? {
-              market: addFreeAgents(
-                context.market,
-                releasedPlayers.map((player) =>
-                  toFreeAgent(player, before.get(player.id) ?? "", context.finished.year),
-                ),
+    void promoted;
+    void after;
+    let next: TurnoverContext = {
+      ...context,
+      world: contracted(context, world),
+      renewal,
+      ...(context.market
+        ? {
+            market: addFreeAgents(
+              context.market,
+              releasedPlayers.map((player) =>
+                toFreeAgent(player, before.get(player.id) ?? player.clubId, context.finished.year),
               ),
-            }
-          : {}),
-      },
-      "promoted",
-      promoted,
-      (ref) => after.get(ref.playerId) ?? "",
-    );
+            ),
+          }
+        : {}),
+    };
     next = withNotice(next, "released", released, (ref) => before.get(ref.playerId) ?? "");
     const current = next.renewal?.squadNotice;
     const deltas = next.renewal?.lastEvolution?.deltas ?? {};
@@ -209,12 +302,141 @@ export const balanceSquadsStep: TurnoverStep = {
   },
 };
 
+/**
+ * Completa os elencos da IA que continuam abaixo de um mínimo depois das promoções (036 FR-011a,
+ * R5, R6): primeiro com o livre mais forte da posição (contrato inicial); sem livre, com a safra de
+ * emergência — um jovem novo na base, promovido na hora. Nenhum jogador nasce direto no elenco.
+ */
+export const completeSquadsStep: TurnoverStep = {
+  id: "complete-squads",
+  run: (context) => {
+    if (!context.renewal) return context;
+    const league = withRegionalClubs(context.world, context.finished);
+    const date = nextSeasonDate(context);
+    const caps = aiMarketRules(context.world, context.finished.competitionId).positionMax;
+    let world = context.world;
+    let freeAgents = [...(context.market?.freeAgents ?? [])];
+    let academy = academyState(context.renewal);
+    let seq = context.renewal.nextPlayerSeq;
+    let emergencies = 0;
+    let signed = 0;
+    const born: AcademyPlayer[] = [];
+    for (const clubId of league.divisions.flatMap((season) => season.clubIds).sort()) {
+      if (clubId === context.managerClubId && !context.passiveManager) continue;
+      const club = world.clubs.find((entry) => entry.id === clubId);
+      if (!club) continue;
+      let shortage = squadShortage(squadOf(world, clubId));
+      const rng = createRng(`${context.careerSeed}:emergency:${context.finished.number}:${clubId}`);
+      while (shortage.missing > 0) {
+        const position: Position =
+          shortage.positions[0] ?? neediestPosition(squadOf(world, clubId), rng, caps);
+        const foreignOk = canSignForeign(world, clubId);
+        const agent = freeAgents
+          .filter(
+            (candidate) =>
+              candidate.player.position === position &&
+              (foreignOk || candidate.player.nationalityId === club.countryId),
+          )
+          .sort(
+            (a, b) => b.player.strength - a.player.strength || (a.player.id < b.player.id ? -1 : 1),
+          )[0];
+        let player: CompletedPlayer;
+        if (agent) {
+          freeAgents = freeAgents.filter((candidate) => candidate !== agent);
+          player = { ...agent.player, clubId };
+        } else {
+          const youth = createYouth(
+            world,
+            club,
+            position,
+            seq,
+            regulatorFor(context.renewal, world, league),
+            date,
+            rng,
+          );
+          seq += 1;
+          emergencies += 1;
+          const { clubId: _c, contract: _k, ...rest } = youth;
+          born.push({ player: rest, clubId, joinedSeason: context.finished.number + 1 });
+          player = youth;
+        }
+        world = { ...world, players: [...world.players, player] };
+        signed += 1;
+        shortage = squadShortage(squadOf(world, clubId));
+      }
+    }
+    if (signed === 0) return context;
+    academy = withGraduates(academy, born, context.finished.number + 1);
+    academy = { ...academy, emergencies: academy.emergencies + emergencies };
+    return {
+      ...context,
+      world: contracted(context, world),
+      renewal: { ...context.renewal, nextPlayerSeq: seq, academy },
+      ...(context.market ? { market: { ...context.market, freeAgents } } : {}),
+    };
+  },
+};
+
+/**
+ * Fecha a base na virada (036): as promoções e dispensas do técnico na temporada vão para o aviso,
+ * `graduates` fica só com quem ainda está no mundo ou entre os livres, e o contador de emergências
+ * é zerado no início (ele mede a virada em andamento).
+ */
+export const academyOpenStep: TurnoverStep = {
+  id: "academy-open",
+  run: (context) => {
+    if (!context.renewal) return context;
+    const academy = academyState(context.renewal);
+    let next: TurnoverContext = {
+      ...context,
+      renewal: { ...context.renewal, academy: { ...academy, emergencies: 0 } },
+    };
+    const own = () => context.managerClubId ?? "";
+    next = withNotice(next, "promoted", academy.promotedThisSeason, own);
+    next = withNotice(next, "academyReleased", academy.releasedThisSeason, own);
+    return next;
+  },
+};
+
+export const academyCloseStep: TurnoverStep = {
+  id: "academy-close",
+  run: (context) => {
+    if (!context.renewal) return context;
+    const academy = academyState(context.renewal);
+    const alive = new Set([
+      ...context.world.players.map((player) => player.id),
+      ...(context.market?.freeAgents ?? []).map((agent) => agent.player.id),
+    ]);
+    const graduates = Object.fromEntries(
+      Object.entries(academy.graduates).filter(([playerId]) => alive.has(playerId)),
+    );
+    return {
+      ...context,
+      renewal: {
+        ...context.renewal,
+        academy: { ...academy, graduates, promotedThisSeason: [], releasedThisSeason: [] },
+      },
+    };
+  },
+};
+
 /** Mede o mundo depois das aposentadorias e ajusta a geração de jovens desta virada (R8). */
 export const regulateWorldStep: TurnoverStep = {
   id: "regulate-world",
   run: (context) => {
     if (!context.renewal) return context;
-    const measure = measureWorld(context.world, context.finished, nextSeasonDate(context));
+    // A força que o regulador persegue é a dos profissionais (os jovens da base, mais fracos,
+    // puxariam a média de cada país de um jeito diferente e distorceriam o equilíbrio entre
+    // países); as promessas contam também a base, senão o regulador inflaria o potencial (036 R10).
+    const date = nextSeasonDate(context);
+    const professionals = measureWorld(context.world, context.finished, date);
+    const withAcademy = measureWorld(
+      context.world,
+      context.finished,
+      date,
+      context.renewal.academy,
+    );
+    const measure = { ...professionals, prospects: withAcademy.prospects };
     return {
       ...context,
       renewal: withRegulator(

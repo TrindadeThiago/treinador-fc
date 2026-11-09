@@ -4,13 +4,21 @@ import { POSITIONS, type Position } from "../model/catalogs";
 import type { Club, CompletedBank, CompletedPlayer } from "../model/types";
 import { intIrwinHall, triangular } from "../rng/distributions";
 import { createRng, type Rng } from "../rng/xoshiro";
+import { squadOf } from "../world/squads";
 import { birthDateFor, personName, pickTraits } from "../worldgen/players";
 import { GENERATOR_TUNING } from "../worldgen/tuning";
+import {
+  academyState,
+  asClubPlayer,
+  byUtilityDesc,
+  withAcademyPlayers,
+  withoutAcademyPlayers,
+} from "./academy";
 import { nameBankFor } from "./names";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
-import { EVOLUTION_RULES, YOUTH_RULES } from "./rules";
-import type { PlayerRef, RegulatorState, RenewalState } from "./types";
+import { ACADEMY_RULES, EVOLUTION_RULES, YOUTH_RULES } from "./rules";
+import type { AcademyPlayer, PlayerRef, RegulatorState, RenewalState } from "./types";
 
 /** Jovens por clube por temporada: base + 1 por degrau de reputação atingido (R6). */
 export function youthCount(reputation: number): number {
@@ -88,8 +96,10 @@ export function createYouth(
 }
 
 /**
- * Jovens da virada para todos os clubes da competição (FR-008 a FR-010), em ordem de id de clube;
- * a sequência de ids avança no estado devolvido.
+ * Safra da virada para todos os clubes da competição (FR-008 a FR-010 da 009; 036 FR-002): os
+ * jovens chegam à base, em ordem de id de clube; a sequência de ids avança no estado devolvido. A
+ * posição de cada jovem é a mais carente contando elenco e base. Na IA, a base acima do limite manda
+ * os de menor utilidade para os livres (FR-012); a do técnico fica acima do limite (FR-009a).
  */
 export function generateYouth(
   world: CompletedBank,
@@ -98,31 +108,59 @@ export function generateYouth(
   careerSeed: string,
   season: number,
   date: string,
-): { world: CompletedBank; renewal: RenewalState; arrived: PlayerRef[] } {
+  managerClubId?: string,
+): {
+  world: CompletedBank;
+  renewal: RenewalState;
+  arrived: PlayerRef[];
+  /** Jovens que saíram da base por excesso (clubes da IA), com o clube de origem. */
+  released: AcademyPlayer[];
+} {
   const clubIds = league.divisions.flatMap((entry) => entry.clubIds).sort();
   const caps = aiMarketRules(world, league.competitionId).positionMax;
-  const players = [...world.players];
   const arrived: PlayerRef[] = [];
+  const released: AcademyPlayer[] = [];
+  let academy = academyState(renewal);
+  const fresh: AcademyPlayer[] = [];
   let seq = renewal.nextPlayerSeq;
   for (const clubId of clubIds) {
     const club = world.clubs.find((entry) => entry.id === clubId);
     if (!club) continue;
     const rng = createRng(`${careerSeed}:youth:${season}:${clubId}`);
+    const own = academy.players.filter((entry) => entry.clubId === clubId);
+    const base: AcademyPlayer[] = [...own];
     for (let index = 0; index < youthCount(club.reputation); index++) {
-      const squad = players.filter((player) => player.clubId === clubId);
+      const pool = [...squadOf(world, clubId), ...base.map(asClubPlayer)];
       const youth = createYouth(
         world,
         club,
-        neediestPosition(squad, rng, caps),
+        neediestPosition(pool, rng, caps),
         seq,
         regulatorFor(renewal, world, league),
         date,
         rng,
       );
       seq += 1;
-      players.push(youth);
+      const { clubId: _clubId, contract: _contract, ...player } = youth;
+      const entry: AcademyPlayer = { player, clubId, joinedSeason: season + 1 };
+      base.push(entry);
+      fresh.push(entry);
       arrived.push(playerRef(youth, date));
     }
+    if (clubId !== managerClubId && base.length > ACADEMY_RULES.maxPlayers) {
+      const order = [...base].sort(byUtilityDesc(date));
+      released.push(...order.slice(ACADEMY_RULES.maxPlayers));
+    }
   }
-  return { world: { ...world, players }, renewal: { ...renewal, nextPlayerSeq: seq }, arrived };
+  const out = new Set(released.map((entry) => entry.player.id));
+  academy = withAcademyPlayers(
+    withoutAcademyPlayers(academy, out),
+    fresh.filter((entry) => !out.has(entry.player.id)),
+  );
+  return {
+    world,
+    renewal: { ...renewal, nextPlayerSeq: seq, academy },
+    arrived,
+    released: released.sort((a, b) => (a.player.id < b.player.id ? -1 : 1)),
+  };
 }
