@@ -48,7 +48,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - `emptyAcademy()` vazio;
   - `academyOf` em ordem de id;
   - `academyStatus`: idade na data da temporada, `leavesSeason` (primeira temporada com 20 anos ou mais na data de início) e `lastYear` (para nascidos perto do corte da data de referência);
-  - invariante: um id nunca está ao mesmo tempo em `world.players`, `market.freeAgents` e `academy.players`.
+  - invariante: um id nunca está ao mesmo tempo em `world.players`, `market.freeAgents` e `academy.players`;
+  - isolamento (FR-014a): busca do mercado (`packages/engine/src/market/search.ts`), necessidades da IA e elencos de outros clubes não leem `renewal.academy` (a base fica fora de `world.players`, R1).
 - [ ] T004 [P] Em `packages/engine/test/renewal/youth.test.ts`, trocar as expectativas da safra:
   - `generateYouth` grava em `renewal.academy.players` com `clubId` e `joinedSeason`, e `world.players` não muda;
   - a posição carente conta elenco mais base (um clube com 3 goleiros no elenco e 2 na base não recebe goleiro);
@@ -72,7 +73,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - Ordem das etapas em `DEFAULT_TURNOVER_STEPS`: `academy-age-out` antes de `generate-youth`, e `complete-squads` depois de `balance-squads` e antes de `age-out-free-agents`.
   - Depois de cada virada de teste, nenhum jogador novo em `world.players` sem passar pela base.
 - [ ] T009 [P] Criar `packages/save/test/migrate-v21.test.ts` e a fixture `saveV20` em `packages/save/test/fixtures.ts` (no padrão de `saveV19`):
-  - v20 abre e vira v21 com `renewal.academy` vazio (`players: []`, `graduates: {}`, `promotedThisSeason: []`, `emergencies: 0`);
+  - v20 abre e vira v21 com `renewal.academy` vazio (`players: []`, `graduates: {}`, `promotedThisSeason: []`, `releasedThisSeason: []`, `emergencies: 0`);
   - os jogadores ficam onde estavam;
   - a carreira migrada avança até a virada, e a safra chega à base;
   - a validação recusa save com id repetido entre base, mundo e livres, ou com `clubId` da base inexistente (`corrupt` com motivo).
@@ -109,8 +110,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - `academyAgeOutStep` (`academy-age-out`): IA promove e técnico vira livre, com `academyAgedOut` no aviso;
   - `completeSquadsStep` (`complete-squads`): livres por posição para a IA abaixo do mínimo, com a mesma regra de `freeAgentFor` (`market/ai/free-agents.ts`) e cobertura sem barrar o orçamento; depois a emergência (R6) e a soma de `emergencies`.
 
-  Registrar as duas, com `perCountry`, em `DEFAULT_TURNOVER_STEPS` de `packages/engine/src/career/turnover.ts`. Ao fim da virada, podar `graduates` e zerar `promotedThisSeason` depois de copiá-lo para `squadNotice.promoted`. Faz passar T008.
-- [ ] T016 Em `packages/engine/src/market/ai/round.ts`, antes dos livres por carência, um clube da IA abaixo de um mínimo promove o melhor da base na posição (FR-013, research R5). Teste em `packages/engine/test/market/ai-round.test.ts` (ou no arquivo de rodada da IA que já existe): um clube forçado abaixo do mínimo no meio da temporada promove da base.
+  Registrar as duas, com `perCountry`, em `DEFAULT_TURNOVER_STEPS` de `packages/engine/src/career/turnover.ts`. Ao fim da virada, podar `graduates` e zerar `promotedThisSeason` e `releasedThisSeason` depois de copiá-los para `squadNotice.promoted` e `squadNotice.academyReleased`. Faz passar T008.
+- [ ] T016 Em `packages/engine/src/market/ai/round.ts`, antes dos livres por carência, um clube da IA abaixo de um mínimo promove o melhor da base na posição (FR-013, research R5). Teste primeiro, no arquivo de testes de `aiMarketRound` em `packages/engine/test/market/` (localizar com `grep -l aiMarketRound packages/engine/test/market`): um clube forçado abaixo do mínimo no meio da temporada promove da base.
 - [ ] T017 Criar a renovação inicial com `academy: emptyAcademy()` em `initialRenewal` (`packages/engine/src/renewal/measure.ts`) e em `packages/save/src/create.ts`.
 - [ ] T018 Save v21:
   - `packages/save/src/format.ts`: `SAVE_FORMAT_VERSION = 21`, e `renewal.academy` obrigatório no comentário do tipo;
@@ -174,14 +175,14 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 **Independent Test**: com jovem no último ano, ver o aviso na abertura da última janela e antes do último jogo; na virada, ele sai como livre e aparece em "Saíram da base por idade".
 
 - [ ] T028 [P] [US3] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
-  - `academyWarning` devolve `{ kind: "last_window", count }` só com a última janela da temporada aberta (`isWindowOpen` e a última de `transferWindows`) e jovens no último ano;
+  - `academyWarning` devolve `{ kind: "last_window", count }` só com a última janela da temporada aberta (`isWindowOpen` e a última de `transferWindows`) e jovens no último ano; sem nenhuma janela, nunca devolve aviso;
   - `rosterIssues` devolve `academy_last_year` (gravidade `warning`, `count`) só quando o próximo jogo do clube é o último dele na temporada (`nextClubFixture` e calendário).
 - [ ] T029 [US3] Implementar `academyWarning` e o caso `academy_last_year` de `rosterIssues` em `packages/engine/src/renewal/academy.ts`. Faz passar T028.
 - [ ] T030 [US3] Na web:
   - `apps/web/src/ui/home/NoticeStrip.tsx` mostra o aviso da última janela com link para `/jogo/elenco?aba=base`, e `AcademyTab.tsx` mostra o mesmo `Notice`;
   - `apps/web/src/ui/SimulateDialogs.tsx` e `GameProvider.tsx` tratam `academy_last_year` como `confirm` ("Jogar" e "Ir para a base");
   - chaves `academy.warning*` e `simulate.academyLastYear*` em `ui.json`.
-- [ ] T031 [US3] Em `apps/web/src/ui/SquadChangeNotice.tsx` (e na tela de fim de temporada que o usa), seções "Chegaram à base", "Saíram da base por idade (agora livres)" e "Promovidos da base", sem "promovidos automáticos" no clube do técnico. Chaves `squadNotice.academy*` em `ui.json` e teste de componente.
+- [ ] T031 [US3] Em `apps/web/src/ui/SquadChangeNotice.tsx` (e na tela de fim de temporada que o usa), seções "Chegaram à base", "Saíram da base por idade (agora livres)", "Promovidos da base" e "Dispensados da base" (FR-016), sem "promovidos automáticos" no clube do técnico. Chaves `squadNotice.academy*` em `ui.json` e teste de componente.
 
 ---
 
@@ -192,7 +193,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 **Independent Test**: dispensar e achar o jovem entre os livres. Com a base acima do limite, ou o elenco abaixo do mínimo, tentar jogar e ser impedido até resolver.
 
 - [ ] T032 [P] [US4] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
-  - `releaseFromAcademy` tira da base e põe em `market.freeAgents` (`lastClubId`, `sinceYear`), e um clube da IA pode contratá-lo depois (`freeAgentFor`);
+  - `releaseFromAcademy` tira da base, põe em `market.freeAgents` (`lastClubId`, `sinceYear`) e registra em `releasedThisSeason`, e um clube da IA pode contratá-lo depois (`freeAgentFor`);
   - `rosterIssues`: `academy_over_limit` (erro, `excess`, `limit`) com a base do técnico acima de 15;
   - `rosterIssues`: `squad_below_minimum` (erro, `missing` e `positions`) com o elenco abaixo do mínimo total ou de posição;
   - nada disso para o técnico desempregado.
@@ -235,7 +236,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: abrir a fixture v20 no jogo e avançar até a virada.
 
-- [ ] T041 [US6] Em `packages/save/test/migrate-v21.test.ts`, acrescentar uma carreira longa v20 (fixture com algumas temporadas) que migra e passa por duas viradas com elencos válidos (inclusive o do técnico, que pode ficar bloqueado e ser resolvido promovendo). Em `apps/web/e2e/save-file.spec.ts`, importar um arquivo v20 e conferir que abre.
+- [ ] T041 [US6] Em `packages/save/test/migrate-v21.test.ts`, acrescentar uma carreira longa v20 (fixture gerada em `packages/save/test/fixtures.ts` por `saveV20({ seasons: 2 })`, que joga duas temporadas na v20 antes de gravar) que migra e passa por duas viradas com elencos válidos (inclusive o do técnico, que pode ficar bloqueado e ser resolvido promovendo). Em `apps/web/e2e/save-file.spec.ts`, importar um arquivo v20 e conferir que abre.
 
 ---
 
@@ -247,7 +248,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - promover pelo teclado e escalar;
   - dispensar e ver entre os livres;
   - aviso de último ano;
-  - bloqueio com a base acima do limite (save de teste preparado).
+  - bloqueio com a base acima do limite (save de teste preparado);
+  - SC-008: promover e dispensar com no máximo três ações (foco no jovem, ação e confirmação), contadas no teste pelo teclado.
 
   Incluir a aba Base em `apps/web/e2e/a11y.spec.ts` (dois temas) e em `apps/web/e2e/screens-list.ts`.
 - [ ] T043 [P] Medir o tamanho do save com a base em `packages/save/test/long-career.test.ts` (teto de 5,5 MB) e `packages/save/test/football-world-scale.test.ts` (`SCALE_LIMITS`, 42 MB). Registrar no PR os valores antes e depois.

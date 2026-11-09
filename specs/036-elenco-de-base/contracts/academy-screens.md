@@ -45,7 +45,8 @@ Uma linha "Cria da base do {clube} (temporada {n})" quando `graduateOf` existe.
 Novas seções:
 - "Chegaram à base" (`academyArrived`);
 - "Saíram da base por idade" (`academyAgedOut`, com "agora livre");
-- "Promovidos da base" (`promoted`, as promoções do técnico na temporada).
+- "Promovidos da base" (`promoted`, as promoções do técnico na temporada);
+- "Dispensados da base" (`academyReleased`, as dispensas do técnico na temporada, agora livres).
 
 A seção "Promovidos automaticamente" some do clube do técnico.
 

@@ -100,11 +100,11 @@ A dispensa durante a temporada vira livre na hora. A IA pode contratá-lo pela r
 - `squad_below_minimum` (erro): o elenco principal está abaixo do mínimo total ou de um mínimo por posição, com `params.missing` e a lista de posições;
 - `academy_last_year` (aviso): há jovens no último ano e o próximo jogo é o último do clube na temporada.
 
-A camada do save (`playNextDay` e o caminho ao vivo) recusa avançar com problema de erro, e a web mostra o diálogo de bloqueio que já existe para a escalação inválida (`SimulateDialogs`), com o link para a aba Base ou para o mercado. O aviso usa o diálogo de confirmação (`confirm`) que já existe para "time sem goleiro". Assim a regra fica no motor e na camada do save, e a interface só mostra (Princípio I).
+A camada do save (`advanceCareerSeason` e o caminho ao vivo) recusa avançar com problema de erro, e a web mostra o diálogo de bloqueio que já existe para a escalação inválida (`SimulateDialogs`), com o link para a aba Base ou para o mercado. O aviso usa o diálogo de confirmação (`confirm`) que já existe para "time sem goleiro". Assim a regra fica no motor e na camada do save, e a interface só mostra (Princípio I).
 
 Desempregado, não há bloqueio: o clube em foco é da IA.
 
-**Aviso da última janela:** `academyWarning(state, clubId)` devolve `{ kind: "last_window", count }` enquanto a última janela de transferências da temporada está aberta e há jovens no último ano. A faixa de avisos do Início (`NoticeStrip`) e a aba Base o mostram. O aviso antes do último jogo é o `academy_last_year` do diálogo de confirmação. Os dois juntos atendem ao FR-010 e ao SC-003.
+**Aviso da última janela:** `academyWarning(state, clubId)` devolve `{ kind: "last_window", count }` enquanto a última janela de transferências da temporada está aberta e há jovens no último ano. A "última janela" é a última de `transferWindows(league, rules)`, que já cobre as janelas padrão; se a competição não tiver nenhuma janela, vale só o aviso antes do último jogo. A faixa de avisos do Início (`NoticeStrip`) e a aba Base o mostram. O aviso antes do último jogo é o `academy_last_year` do diálogo de confirmação. Os dois juntos atendem ao FR-010 e ao SC-003.
 
 ## R9. Origem "cria da base"
 
@@ -125,7 +125,7 @@ O teste de longo prazo ganha critérios novos:
 
 ## R11. Save v21
 
-**Decisão:** `SAVE_FORMAT_VERSION` vai de 20 para 21. A migração `addAcademy` cria `renewal.academy = { players: [], graduates: {}, emergencies: 0 }`. A validação do save confere:
+**Decisão:** `SAVE_FORMAT_VERSION` vai de 20 para 21. A migração `addAcademy` cria `renewal.academy = { players: [], graduates: {}, promotedThisSeason: [], releasedThisSeason: [], emergencies: 0 }`. A validação do save confere:
 - que nenhum jogador da base está também em `bank.players` ou entre os livres;
 - que todo `clubId` da base existe no banco.
 

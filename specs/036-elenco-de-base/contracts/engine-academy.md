@@ -38,7 +38,7 @@ releaseFromAcademy(state: CareerSeasonState, clubId: string, playerId: string):
 ```
 
 - `promoteFromAcademy`: tira o jovem da base, põe em `bank.players` com `clubId` e o contrato de `promotionContract`, registra em `graduates` e `promotedThisSeason`. Recusa com o elenco no máximo (`squadLimit` do técnico).
-- `releaseFromAcademy`: tira da base e acrescenta aos livres (`toFreeAgent`, `lastClubId` = clube).
+- `releaseFromAcademy`: tira da base, acrescenta aos livres (`toFreeAgent`, `lastClubId` = clube) e registra em `releasedThisSeason`.
 - No save: `promoteYouth(save, playerId)` e `releaseYouth(save, playerId)` usam `save.clubId` e recusam com o técnico desempregado.
 
 ## Virada (etapas, `TurnoverStep`, todas por país)
@@ -52,13 +52,13 @@ releaseFromAcademy(state: CareerSeasonState, clubId: string, playerId: string):
 | `complete-squads` (nova) | depois de `balance-squads` | IA abaixo do mínimo contrata livres; senão, safra de emergência (R6) |
 | `regulate-world` (alterada) | — | mede mundo + base |
 
-Também na virada: `graduates` é podado e `promotedThisSeason` é zerado depois de ir para o aviso.
+Também na virada: `graduates` é podado, e `promotedThisSeason` e `releasedThisSeason` são zerados depois de irem para o aviso.
 
 ## Dia da carreira
 
 - Evolução do meio da temporada: evolui a base dos clubes da liga da rodada, inclusive em liga estrangeira (R4).
 - `aiMarketRound`: antes dos livres por carência, um clube da IA abaixo do mínimo promove da base (FR-013).
-- `playNextDay` e o início da rodada ao vivo no save: com `rosterIssues` de gravidade `error`, devolvem `{ ok: false, error: "roster.blocked", issues }` sem avançar. A web mostra o diálogo de bloqueio.
+- `advanceCareerSeason` e o início da rodada ao vivo no save: com `rosterIssues` de gravidade `error`, devolvem `{ ok: false, error: "roster.blocked", issues }` sem avançar. A web mostra o diálogo de bloqueio.
 
 ## Medidas
 

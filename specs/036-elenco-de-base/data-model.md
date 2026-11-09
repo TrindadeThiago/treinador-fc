@@ -19,6 +19,7 @@ Derivados (não gravados): idade na data da temporada; `leavesSeason` (primeira 
 | `players` | `AcademyPlayer[]` | ordenados por id; por clube, no máximo `ACADEMY_RULES.maxPlayers`, exceto o clube do técnico logo depois da safra (bloqueio) |
 | `graduates` | `Record<string, { clubId: string; season: number }>` | promovidos da base; podado na virada (só quem ainda está no mundo ou entre os livres) |
 | `promotedThisSeason` | `PlayerRef[]` | promoções do técnico na temporada atual, para o fim de temporada; zerado na virada |
+| `releasedThisSeason` | `PlayerRef[]` | dispensas do técnico na temporada atual, para o fim de temporada; zerado na virada |
 | `emergencies` | `number` | safras de emergência da última virada (R6), para medição |
 
 `RenewalState.academy` é opcional no tipo (usos só da liga) e obrigatório no save v21.
@@ -36,7 +37,7 @@ Derivados (não gravados): idade na data da temporada; `leavesSeason` (primeira 
 
 ## SquadChangeNotice (alterado)
 
-Campos novos: `academyArrived`, `academyAgedOut` e `academyReleased` (`PlayerRef[]`). O campo `promoted` passa a listar as promoções da temporada do técnico (de `promotedThisSeason`). `arrived` deixa de receber a safra.
+Campos novos: `academyArrived`, `academyAgedOut` e `academyReleased` (`PlayerRef[]`). O campo `promoted` passa a listar as promoções da temporada do técnico (de `promotedThisSeason`), e `academyReleased` junta as dispensas da temporada do técnico (de `releasedThisSeason`). Na IA, `academyReleased` é o excesso da base na virada. `arrived` deixa de receber a safra.
 
 ## Problemas de elenco (novo, motor)
 
@@ -63,4 +64,4 @@ Invariantes:
 
 ## Save v21
 
-`renewal.academy` obrigatório. A migração v20 → v21 cria `{ players: [], graduates: {}, promotedThisSeason: [], emergencies: 0 }`. A validação recusa ids repetidos entre base, mundo e livres, e clubes inexistentes.
+`renewal.academy` obrigatório. A migração v20 → v21 cria `{ players: [], graduates: {}, promotedThisSeason: [], releasedThisSeason: [], emergencies: 0 }`. A validação recusa ids repetidos entre base, mundo e livres, e clubes inexistentes.
