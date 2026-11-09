@@ -259,8 +259,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - `docs/arquitetura.md`: `renewal/academy.ts`, as etapas novas da virada e `RenewalState.academy`;
   - `docs/design.md` §5: o reequilíbrio não cria mais jogadores;
   - `docs/mod-format.md`: confirmar que nada muda.
-- [ ] T045 Rodar o quickstart inteiro (`specs/036-elenco-de-base/quickstart.md`): `pnpm lint`, `pnpm typecheck`, a suíte completa, `pnpm build:web` e `pnpm test:e2e`. Conferir em prints a aba Base, os diálogos e os bloqueios, em 1440 e 768 px, nos dois temas.
-- [ ] T046 Release no mesmo PR: `package.json` em 1.9.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de `TZ=America/Sao_Paulo date +%F`, explicando a base, a promoção e dispensa, os bloqueios e o fim da criação automática de jogadores no elenco. Depois do build, rodar `pnpm check-release`.
+- [X] T045 Rodar o quickstart inteiro (`specs/036-elenco-de-base/quickstart.md`): `pnpm lint`, `pnpm typecheck`, a suíte completa, `pnpm build:web` e `pnpm test:e2e`. Conferir em prints a aba Base, os diálogos e os bloqueios, em 1440 e 768 px, nos dois temas.
+- [X] T046 Release no mesmo PR: `package.json` em 1.9.0 e uma entrada nova em `packages/i18n/locales/pt-BR/release-notes.json`, com a data de `TZ=America/Sao_Paulo date +%F`, explicando a base, a promoção e dispensa, os bloqueios e o fim da criação automática de jogadores no elenco. Depois do build, rodar `pnpm check-release`.
 
 ---
 

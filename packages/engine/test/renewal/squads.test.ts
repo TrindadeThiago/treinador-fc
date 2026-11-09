@@ -95,14 +95,15 @@ describe("elencos válidos (US4, R7)", () => {
     expect(result.renewal.nextPlayerSeq).toBe(renewal.nextPlayerSeq);
   });
 
-  it("a IA promove da base até o tamanho-alvo, sem passar do teto por posição", () => {
+  it("a IA promove da base só até o tamanho-alvo (o mínimo), sem passar do teto por posição", () => {
     const world = editedWorld((w) => {
       const own = w.players.filter((player) => player.clubId === CLUB);
-      const keep = new Set(own.slice(0, 22).map((player) => player.id));
+      const keep = new Set(own.slice(0, 20).map((player) => player.id));
       w.players = w.players.filter((player) => player.clubId !== CLUB || keep.has(player.id));
     });
-    const entries = Array.from({ length: 6 }, (_, index) =>
-      youth(world, "CB", 45 + index, `jogador-9100${index}`),
+    const positions: Position[] = ["MF", "FW", "FB", "DM", "MF", "FW"];
+    const entries = positions.map((position, index) =>
+      youth(world, position, 45 + index, `jogador-9100${index}`),
     );
     const result = balanceSquads(
       world,
@@ -113,10 +114,8 @@ describe("elencos válidos (US4, R7)", () => {
       DATE,
     );
     const own = result.world.players.filter((player) => player.clubId === CLUB);
-    const caps = 6;
-    expect(own.length).toBeLessThanOrEqual(ACADEMY_RULES.aiTargetSize);
-    expect(own.filter((player) => player.position === "CB").length).toBeLessThanOrEqual(caps);
-    expect(own.length).toBeGreaterThan(22);
+    expect(own.length).toBe(Math.max(SQUAD_RULES.min, ACADEMY_RULES.aiTargetSize));
+    expect(result.renewal.academy?.players.length).toBe(6 - (own.length - 20));
   });
 
   it("no clube do técnico, ninguém é promovido da base", () => {

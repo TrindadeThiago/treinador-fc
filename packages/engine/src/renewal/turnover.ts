@@ -6,7 +6,6 @@ import { ensureContracts } from "../market/contracts";
 import { addFreeAgents, toFreeAgent } from "../market/free-agents";
 import type { Position } from "../model/catalogs";
 import type { CompletedPlayer } from "../model/types";
-import { isRegionalOnly } from "../regional/scope";
 import { createRng } from "../rng/xoshiro";
 import { canSignForeign } from "../world/foreign";
 import { squadOf } from "../world/squads";

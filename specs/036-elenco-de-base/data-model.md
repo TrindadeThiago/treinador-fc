@@ -30,7 +30,7 @@ Derivados (não gravados): idade na data da temporada; `leavesSeason` (primeira 
 |---|---|---|
 | `maxPlayers` | 15 | limite de vagas por clube |
 | `ageLimit` | 20 | idade na data de início da nova temporada que obriga a sair |
-| `aiTargetSize` | 25 | tamanho do elenco a que a IA chega promovendo da base |
+| `aiTargetSize` | 22 | tamanho do elenco a que a IA chega promovendo da base (o mínimo; ver research I7) |
 | `emergencyLimitPerClubSeason` | 0,05 | teto da média de safras de emergência (teste longo) |
 
 `YOUTH_RULES.perClub` é recalibrado (R3).

@@ -64,8 +64,11 @@ export const ACADEMY_RULES = {
   maxPlayers: 15,
   /** Quem tem esta idade ou mais na data de início da nova temporada sai da base na virada. */
   ageLimit: 20,
-  /** Tamanho do elenco a que a IA chega promovendo da base (mantém os elencos de hoje). */
-  aiTargetSize: 25,
+  /**
+   * Tamanho do elenco a que a IA chega promovendo da base: o mínimo. Com 25, os clubes das ligas
+   * quase paravam de comprar, e os clubes só de estadual perdiam a receita das vendas (research I7).
+   */
+  aiTargetSize: 22,
   /** Teto da média de safras de emergência por clube e temporada (teste longo). */
   emergencyLimitPerClubSeason: 0.05,
 };

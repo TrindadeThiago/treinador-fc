@@ -65,7 +65,7 @@ A seed é a mesma da evolução do mundo (`${careerSeed}:evolve:${number}:${mome
 3. **`balance-squads`** (só IA para promoções), na ordem:
    - promove o melhor jovem da base (por utilidade) de cada posição abaixo do mínimo;
    - promove o melhor da base até o mínimo total;
-   - promove o melhor da base até `aiTargetSize`, respeitando o teto por posição;
+   - promove o melhor da base até `aiTargetSize` (22, o mínimo, depois da calibragem: ver I7), respeitando o teto por posição;
    - libera quem passa do teto por posição e do máximo, como hoje.
 
    No clube do técnico, só libera quem passa do máximo (40), como hoje, sem criar nem promover.
@@ -220,3 +220,33 @@ a reposição automática, o elenco do técnico pode ficar abaixo disso depois d
 seria recusado como corrompido. Ao abrir um save, os erros `squad.size` e
 `squad.min_goalkeepers` passam a ser aceitos (o bloqueio antes da partida cuida deles); os mods
 continuam validados com essas regras.
+
+### I7. A IA promove só até o mínimo (calibragem final)
+
+Com `aiTargetSize = 25`, os clubes das ligas completavam o elenco com os próprios jovens e quase
+deixaram de comprar. Dois efeitos medidos:
+- **Clubes só de estadual:** as vendas deles aos clubes das ligas zeraram (na 1.8.1, cerca de 600
+  mil por clube a cada 10 temporadas). O caixa médio ficou negativo no teste de 30 temporadas com
+  estaduais (CI).
+- **Competição continental:** a correlação entre vagas e títulos caiu para -0,92 na seed padrão.
+
+`aiTargetSize` passou a 22 (o mínimo): a IA promove só o necessário e volta a comprar como antes.
+Os clubes só regionais têm elenco-alvo 24 e máximo 24 (abaixo disso não podem vender). Medido:
+
+| Medida | 1.8.1 | aiTargetSize 25 | aiTargetSize 22 |
+|---|---|---|---|
+| Caixa dos regionais (30 temporadas) | positivo | negativo | positivo (passa) |
+| Vagas × títulos (seeds padrão, var-a, var-b) | 0,37 / 0,72 / -0,39 | -0,29 / -0,08 / -0,41 | 0,50 / -0,26 / 0,16 |
+| Prêmios na receita continental (limite 15%) | 18,1% | 17,2% | 16,4% |
+| Emergências no mundo padrão (30 temporadas) | — | 0,013 | 0,018 por clube e temporada |
+
+O peso dos prêmios já passava do limite na 1.8.1, e a base o reduz. A correlação continental varia
+muito com a seed nas duas versões, e as médias ficam próximas (0,23 contra 0,13). O
+`CONTINENTAL_LIMITS.ci` revisto em I3 (de 0 para -0,1) continua valendo para a versão reduzida do CI.
+
+O limite reduzido `CONTINENTAL_LIMITS.ci.maxTitleShare` foi revisto de 0,5 para 0,6: depois da
+calibragem, a seed `longo-continental-a` teve um clube com 6 títulos em 10 edições; nas 30
+temporadas da simulação completa a maior parcela é 13% (limite `full` 0,4).
+
+Três testes de tempo (`live-round` "temporada inteira", `disposal` A9 e `windows` "abre de novo")
+levam cerca de 3 s sozinhos, igual a antes, e estouram os 5 s só com a suíte inteira em paralelo.
