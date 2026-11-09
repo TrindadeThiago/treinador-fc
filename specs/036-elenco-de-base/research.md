@@ -147,7 +147,7 @@ O teste `migrate-v21.test.ts` abre a fixture `saveV20` e avança até a virada. 
 
 ## R13. Versão e documentação
 
-**Decisão:** a versão vai para 1.9.0, com a nota de versão do dia (data de Brasília) em `packages/i18n/src/release-notes.ts`. A documentação acompanha:
+**Decisão:** a versão vai para 1.9.0, com a nota de versão do dia (data de Brasília) em `packages/i18n/locales/pt-BR/release-notes.json`. A documentação acompanha:
 - `docs/guia-do-jogador.md` (base, promoção, dispensa, bloqueios);
 - `docs/glossario.md` (base, safra, cria da base);
 - `docs/arquitetura.md` (`renewal/academy`);

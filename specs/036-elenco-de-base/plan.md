@@ -116,7 +116,7 @@ apps/web/src/ui/
 └── home/NoticeStrip.tsx                 # aviso da última janela
 apps/web/src/game/{GameProvider.tsx,academy-view.ts}   # comandos e seletores
 apps/web/e2e/academy.spec.ts             # novo
-packages/i18n/locales/pt-BR/ui.json, packages/i18n/src/release-notes.ts
+packages/i18n/locales/pt-BR/ui.json, packages/i18n/locales/pt-BR/release-notes.json
 tools/src/simulate-world.ts              # medidas da base, emergências, população
 docs/{guia-do-jogador,glossario,arquitetura,design}.md
 package.json                             # 1.9.0
