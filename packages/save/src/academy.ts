@@ -1,6 +1,9 @@
 import {
   type AcademyError,
   academyWarning,
+  emergencyPositions,
+  emergencyPromotion,
+  type Position,
   promoteFromAcademy,
   promotionContract,
   type RosterIssue,
@@ -15,7 +18,21 @@ import type { SaveFile } from "./format";
 
 export type AcademySaveResult =
   | { ok: true; save: SaveFile }
-  | { ok: false; error: AcademyError | "academy.unemployed" };
+  | { ok: false; error: AcademyError | "academy.unemployed" | "academy.no_emergency" };
+
+/** Posições em que a safra de emergência está liberada (nenhum candidato para o mínimo). */
+export function emergencyPositionsOf(save: SaveFile): Position[] {
+  if (!isEmployed(save)) return [];
+  return emergencyPositions(seasonStateOf(save), save.clubId);
+}
+
+/** Safra de emergência pedida pelo técnico: o jovem nasce na base e sobe na hora. */
+export function emergencyYouth(save: SaveFile, position: Position): AcademySaveResult {
+  if (!isEmployed(save)) return { ok: false, error: "academy.unemployed" };
+  const done = emergencyPromotion(seasonStateOf(save), save.clubId, position, save.seed);
+  if (!done.ok) return done;
+  return { ok: true, save: withAdjustedLineup(withDayResult(save, done.state)) };
+}
 
 /** Promove um jovem da base do clube do técnico; a escalação é ajustada como em outras saídas. */
 export function promoteYouth(save: SaveFile, playerId: string): AcademySaveResult {

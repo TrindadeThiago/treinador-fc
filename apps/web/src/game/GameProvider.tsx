@@ -19,6 +19,7 @@ import {
   type NegotiationStep,
   otherSuspensions,
   type Place,
+  type Position,
   type Posture,
   placePlayer as placeLineupPlayer,
   type RosterIssue,
@@ -42,6 +43,7 @@ import {
   dismissBoardNotice as dismissSavedBoardNotice,
   dismissSquadNotice as dismissSavedSquadNotice,
   dismissWindowReport as dismissSavedWindowReport,
+  emergencyYouth as emergencySavedYouth,
   type FinanceSaveResult,
   type IncomingSaveResult,
   isCareerSeasonOver,
@@ -253,6 +255,8 @@ interface GameContextValue {
   /** Base (036): promover ao elenco e dispensar (vira livre). */
   promoteYouth(playerId: string): AcademyActionResult;
   releaseYouth(playerId: string): AcademyActionResult;
+  /** Safra de emergência (036): só sem nenhum candidato para o mínimo da posição. */
+  emergencyYouth(position: Position): AcademyActionResult;
   /** Carreira do técnico (012): aceitar/recusar proposta de emprego e dispensar o aviso. */
   acceptJobOffer(offerId: string): boolean;
   declineJobOffer(offerId: string): void;
@@ -838,6 +842,11 @@ export function GameProvider({
     (playerId: string) => academyAction(releaseSavedYouth, playerId),
     [academyAction],
   );
+  const emergencyYouth = useCallback(
+    (position: Position) =>
+      academyAction((save, value) => emergencySavedYouth(save, value as Position), position),
+    [academyAction],
+  );
   const terminateContract = useCallback(
     (playerId: string) => disposePlayer(terminateManagerContract, playerId),
     [disposePlayer],
@@ -948,6 +957,7 @@ export function GameProvider({
       terminateContract,
       promoteYouth,
       releaseYouth,
+      emergencyYouth,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,
@@ -988,6 +998,7 @@ export function GameProvider({
       terminateContract,
       promoteYouth,
       releaseYouth,
+      emergencyYouth,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,

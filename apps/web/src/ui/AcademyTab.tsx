@@ -1,7 +1,7 @@
 "use client";
 
 import { POSITIONS } from "@brasfoot-like/engine";
-import { type SaveFile, youthContractPreview } from "@brasfoot-like/save";
+import { emergencyPositionsOf, type SaveFile, youthContractPreview } from "@brasfoot-like/save";
 import { useId, useMemo, useState } from "react";
 import {
   type AcademyRow,
@@ -40,6 +40,8 @@ export function AcademyTab({
   const [status, setStatus] = useState<string | undefined>();
   const rows = useMemo(() => academyRows(save), [save]);
   const capacity = academyCapacity(save);
+  // Sem nenhum candidato para o mínimo, a safra de emergência fica disponível (036).
+  const emergency = useMemo(() => emergencyPositionsOf(save), [save]);
   const manage = canManageAcademy(save);
   const { full, max } = squadIsFull(save);
   const live = game.state.live !== undefined;
@@ -162,6 +164,31 @@ export function AcademyTab({
       {warning ? (
         <Notice tone="warning" title={t("academy.lastYear")}>
           <p>{t("academy.warning.lastWindow", { count: warning.count })}</p>
+        </Notice>
+      ) : null}
+      {manage && emergency.length > 0 ? (
+        <Notice tone="danger" title={t("academy.emergency.title")}>
+          <p>{t("academy.emergency.body")}</p>
+          <span className={styles.actions}>
+            {emergency.map((position) => (
+              <Button
+                key={position}
+                variant="primary"
+                disabled={live}
+                onClick={() => {
+                  const result = game.emergencyYouth(position);
+                  const name = label(`position.${position}`);
+                  setStatus(
+                    result.ok
+                      ? t("academy.emergency.done", { position: name })
+                      : t("academy.error"),
+                  );
+                }}
+              >
+                {t("academy.emergency.action", { position: label(`position.${position}`) })}
+              </Button>
+            ))}
+          </span>
         </Notice>
       ) : null}
       <div className={styles.header}>

@@ -6,6 +6,7 @@ import { ensureContracts } from "../market/contracts";
 import { addFreeAgents, toFreeAgent } from "../market/free-agents";
 import type { Position } from "../model/catalogs";
 import type { CompletedPlayer } from "../model/types";
+import { isRegionalOnly } from "../regional/scope";
 import { createRng } from "../rng/xoshiro";
 import { canSignForeign } from "../world/foreign";
 import { squadOf } from "../world/squads";
@@ -425,12 +426,18 @@ export const regulateWorldStep: TurnoverStep = {
   id: "regulate-world",
   run: (context) => {
     if (!context.renewal) return context;
-    const measure = measureWorld(
+    // A força que o regulador persegue é a dos profissionais (os jovens da base, mais fracos,
+    // puxariam a média de cada país de um jeito diferente e distorceriam o equilíbrio entre
+    // países); as promessas contam também a base, senão o regulador inflaria o potencial (036 R10).
+    const date = nextSeasonDate(context);
+    const professionals = measureWorld(context.world, context.finished, date);
+    const withAcademy = measureWorld(
       context.world,
       context.finished,
-      nextSeasonDate(context),
+      date,
       context.renewal.academy,
     );
+    const measure = { ...professionals, prospects: withAcademy.prospects };
     return {
       ...context,
       renewal: withRegulator(

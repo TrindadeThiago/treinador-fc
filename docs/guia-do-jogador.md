@@ -152,7 +152,10 @@ próxima virada fica marcado como **último ano**.
 O jogo **não completa o elenco sozinho**. Se o elenco ficar abaixo do mínimo (por exemplo, com
 contratos que venceram na virada) ou se a base passar das 15 vagas, a próxima partida fica
 impedida até você promover, dispensar ou contratar. A Início mostra o que falta, com o caminho para
-a base e para o mercado. Os clubes do computador seguem as mesmas regras.
+a base e para o mercado. Se não houver nenhum candidato (ninguém da posição na base, nenhum livre
+da posição e a compra impossível, com a janela fechada ou o caixa negativo), a aba Base oferece
+**Subir jovem de emergência**: um jovem novo sobe na hora, para o jogo nunca travar. Os clubes do
+computador seguem as mesmas regras.
 
 Quem subiu da base aparece como **cria da base** no detalhe do jogador.
 

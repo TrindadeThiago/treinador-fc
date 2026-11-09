@@ -208,3 +208,23 @@ export async function resumeWhenPaused(page: Page): Promise<void> {
     },
   );
 }
+
+/**
+ * Sem a reposição automática (036), o elenco pode ficar abaixo do mínimo depois da virada. Como um
+ * técnico faria: abre a base e promove jovens até a Início não mostrar mais o bloqueio. Volta à
+ * Início no fim.
+ */
+export async function completeSquadFromBase(page: Page): Promise<void> {
+  const blocked = page.getByRole("region", { name: t("simulate.rosterTitle") });
+  for (let attempt = 0; attempt < 15 && (await blocked.count()) > 0; attempt++) {
+    await blocked.getByRole("link", { name: t("academy.goToBase") }).click();
+    const promote = page.getByRole("button", { name: /^Promover .* ao elenco profissional$/ });
+    await expect(promote.first()).toBeVisible();
+    await promote.first().click();
+    const dialog = page.getByRole("dialog", { name: /^Promover / });
+    await dialog.getByRole("button", { name: t("academy.promote") }).click();
+    await expect(page.getByText(/foi promovido ao elenco profissional/)).toBeVisible();
+    await page.keyboard.press("1");
+    await expect(page).toHaveURL(/\/jogo\/\?/);
+  }
+}

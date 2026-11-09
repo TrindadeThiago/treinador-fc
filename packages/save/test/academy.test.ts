@@ -7,15 +7,18 @@ import {
 } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import {
+  emergencyPositionsOf,
+  emergencyYouth,
   migrateSave,
   promoteYouth,
   releaseYouth,
   rosterIssuesOf,
   type SaveFile,
   seasonStateOf,
+  withAdjustedLineup,
   youthContractPreview,
 } from "../src";
-import { validSave } from "./fixtures";
+import { playDay, validSave } from "./fixtures";
 
 // 036 (T024, T033): ações da base no save e os problemas que impedem a partida.
 
@@ -147,5 +150,59 @@ describe("base no save (036)", () => {
         (p) => p.clubId === save.clubId && p.position === "GK",
       ),
     ).toHaveLength(keepers.length);
+  });
+});
+
+describe("safra de emergência do técnico no save (036)", () => {
+  it("sem candidatos, sobe um goleiro de emergência e libera a partida", () => {
+    // Janela de transferências fechada (depois da 4ª rodada): sem compra possível.
+    let start = validSave();
+    for (let day = 0; day < 6; day++) start = playDay(start);
+    const stuck: SaveFile = {
+      ...start,
+      bank: {
+        ...start.bank,
+        players: start.bank.players.filter(
+          (player) => !(player.clubId === start.clubId && player.position === "GK"),
+        ),
+      },
+      market: { ...start.market, freeAgents: [] },
+    };
+    expect(emergencyPositionsOf(stuck)).toEqual(["GK"]);
+    let save = stuck;
+    while (emergencyPositionsOf(save).includes("GK")) {
+      const done = emergencyYouth(save, "GK");
+      if (!done.ok) throw new Error(done.error);
+      save = done.save;
+    }
+    expect(rosterIssuesOf(save)).toEqual([]);
+    const reloaded = migrateSave(JSON.parse(JSON.stringify(save)));
+    expect(reloaded.status === "corrupt" ? reloaded.reason : "ok").toBe("ok");
+    expect(emergencyYouth(save, "GK")).toEqual({ ok: false, error: "academy.no_emergency" });
+  });
+});
+
+describe("save com o elenco do técnico curto (036)", () => {
+  it("abre mesmo com menos de 16 jogadores e sem goleiro: é bloqueio, não defeito", () => {
+    const start = validSave();
+    const own = start.bank.players.filter((player) => player.clubId === start.clubId);
+    const keep = new Set(
+      own
+        .filter((player) => player.position !== "GK")
+        .slice(0, 12)
+        .map((p) => p.id),
+    );
+    const short = withAdjustedLineup({
+      ...start,
+      bank: {
+        ...start.bank,
+        players: start.bank.players.filter(
+          (player) => player.clubId !== start.clubId || keep.has(player.id),
+        ),
+      },
+    });
+    const reloaded = migrateSave(JSON.parse(JSON.stringify(short)));
+    expect(reloaded.status === "corrupt" ? reloaded.reason : "ok").toBe("ok");
+    expect(rosterIssuesOf(short).map((issue) => issue.code)).toContain("squad_below_minimum");
   });
 });

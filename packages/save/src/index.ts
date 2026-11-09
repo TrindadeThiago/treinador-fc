@@ -1,6 +1,8 @@
 export type { AcademySaveResult } from "./academy";
 export {
   academyWarningOf,
+  emergencyPositionsOf,
+  emergencyYouth,
   promoteYouth,
   releaseYouth,
   rosterIssuesOf,

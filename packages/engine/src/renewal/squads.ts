@@ -3,6 +3,7 @@ import { aiMarketRules } from "../market/ai/rules";
 import { squadLimit } from "../market/squad";
 import { POSITIONS, type Position } from "../model/catalogs";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
+import { isRegionalOnly } from "../regional/scope";
 import { squadOf } from "../world/squads";
 import {
   academyState,
@@ -16,6 +17,9 @@ import {
 import { playerRef } from "./retirement";
 import { ACADEMY_RULES, SQUAD_RULES } from "./rules";
 import type { AcademyPlayer, PlayerRef, RenewalState } from "./types";
+
+/** Máximo do elenco de um clube só regional (036). */
+const REGIONAL_SQUAD_MAX = 24;
 
 /** Problemas de elenco de cada clube da competição (vazio = todos dentro das regras). */
 export function squadProblems(
@@ -97,7 +101,10 @@ export function balanceSquads(
       squad.splice(squad.indexOf(out), 1);
     };
     const isManager = clubId === managerClubId;
-    const max = squadLimit(clubId, managerClubId);
+    // Clubes só regionais (023): elenco curto, porque a receita deles não sustenta uma folha maior
+    // (com a base, todo jovem que sai por idade sobe; sem este teto a folha crescia sem parar).
+    const regionalOnly = !isManager && isRegionalOnly(world, clubId);
+    const max = regionalOnly ? REGIONAL_SQUAD_MAX : squadLimit(clubId, managerClubId);
     if (!isManager) {
       const pool = academy.players.filter((entry) => entry.clubId === clubId);
       const chosen = promotionsForMinimums(squad, pool, date);
@@ -108,8 +115,11 @@ export function balanceSquads(
       );
       for (const entry of chosen)
         counts.set(entry.player.position, (counts.get(entry.player.position) ?? 0) + 1);
+      // Clubes só regionais (023): elenco menor (a receita deles não sustenta a folha de 25), mas
+      // acima do mínimo, porque no mínimo o clube não pode vender e a venda é parte da receita.
+      const target = regionalOnly ? SQUAD_RULES.min + 2 : ACADEMY_RULES.aiTargetSize;
       for (const entry of rest) {
-        if (size >= Math.min(ACADEMY_RULES.aiTargetSize, max)) break;
+        if (size >= Math.min(target, max)) break;
         const position = entry.player.position;
         if ((counts.get(position) ?? 0) >= caps[position]) continue;
         chosen.push(entry);

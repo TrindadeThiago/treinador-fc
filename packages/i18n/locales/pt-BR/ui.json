@@ -1585,5 +1585,9 @@
   "rosterIssue.academy_over_limit": "A base tem {excess, plural, one {# jovem acima} other {# jovens acima}} do limite de {limit}. Promova ou dispense para jogar.",
   "rosterIssue.squad_below_minimum": "{missing, plural, one {Falta # jogador} other {Faltam # jogadores}} no elenco{positions, select, none {} other { ({positions})}}. Promova da base ou contrate para jogar.",
   "rosterIssue.academy_last_year": "{count, plural, one {# jovem da base sai} other {# jovens da base saem}} na virada se não {count, plural, one {for promovido} other {forem promovidos}}.",
-  "player.origin": "Origem"
+  "player.origin": "Origem",
+  "academy.emergency.title": "Sem candidatos para completar o elenco",
+  "academy.emergency.body": "Não há ninguém da posição na base nem entre os livres, e não dá para comprar agora. Você pode subir um jovem de emergência, criado na base e promovido na hora com o contrato inicial.",
+  "academy.emergency.action": "Subir jovem de emergência ({position})",
+  "academy.emergency.done": "Um jovem de emergência ({position}) subiu ao elenco."
 }

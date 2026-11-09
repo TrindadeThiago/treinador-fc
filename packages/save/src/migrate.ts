@@ -379,6 +379,19 @@ const addAcademy: Migration = {
   },
 };
 
+/**
+ * Regras de elenco do mod que não valem para o mundo vivo da carreira (036): sem a reposição
+ * automática, o elenco do técnico pode ficar abaixo de 16 jogadores ou de 2 goleiros depois da
+ * virada (contratos vencidos). Isso é regra do jogo (bloqueio antes da partida, completar na
+ * virada), não defeito do save; os mods continuam validados com elas.
+ */
+const LIVE_SQUAD_RULES = new Set(["squad.size", "squad.min_goalkeepers"]);
+
+function liveBankValid(bank: unknown): boolean {
+  const result = validateBank(bank);
+  return result.ok || result.errors.every((issue) => LIVE_SQUAD_RULES.has(issue.code));
+}
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -859,7 +872,7 @@ export function migrateSave(
   const envelope = envelopeSchema.safeParse(current);
   if (!envelope.success) return { status: "corrupt", reason: "estrutura inválida" };
   const save = current as SaveFile;
-  if (!validateBank(save.bank).ok) return { status: "corrupt", reason: "banco inválido" };
+  if (!liveBankValid(save.bank)) return { status: "corrupt", reason: "banco inválido" };
   const incoherence =
     leagueProblem(save) ??
     financeProblem(save) ??

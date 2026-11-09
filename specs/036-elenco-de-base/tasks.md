@@ -242,7 +242,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T042 [P] Criar `apps/web/e2e/academy.spec.ts`, seguindo o quickstart, passos 1 a 6:
+- [X] T042 [P] Criar `apps/web/e2e/academy.spec.ts`, seguindo o quickstart, passos 1 a 6:
   - estado vazio;
   - safra na Base;
   - promover pelo teclado e escalar;

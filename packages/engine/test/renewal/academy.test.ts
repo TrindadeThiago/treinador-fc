@@ -16,6 +16,8 @@ import {
   academyStatus,
   academyWarning,
   asClubPlayer,
+  emergencyPositions,
+  emergencyPromotion,
   emptyAcademy,
   evolveAcademy,
   graduateOf,
@@ -373,5 +375,54 @@ describe("base durante a temporada (036 R4, FR-013)", () => {
       [],
     );
     expect(academyOf(applied.renewal, MANAGER)).toHaveLength(1);
+  });
+});
+
+describe("safra de emergência do técnico (036, decisão de 2026-11-09)", () => {
+  /** Sem goleiros, sem caixa e sem livres: nenhum candidato. */
+  function stuck(): CareerSeasonState {
+    const start = baseState();
+    const clubFinance = start.finances.clubs[MANAGER];
+    if (!clubFinance || !start.market) throw new Error("sem finanças");
+    return withBase(
+      {
+        ...start,
+        world: {
+          ...start.world,
+          players: start.world.players.filter(
+            (player) => !(player.clubId === MANAGER && player.position === "GK"),
+          ),
+        },
+        finances: {
+          ...start.finances,
+          clubs: { ...start.finances.clubs, [MANAGER]: { ...clubFinance, cash: -1 } },
+        },
+        market: { ...start.market, freeAgents: [] },
+      },
+      [youth(state0(), "jogador-93001", { position: "MF" })],
+    );
+  }
+
+  it("só existe sem nenhum candidato: base, livres e compra", () => {
+    const state = stuck();
+    expect(emergencyPositions(state, MANAGER)).toEqual(["GK"]);
+    const withKeeper = withBase(state, [youth(state0(), "jogador-93002", { position: "GK" })]);
+    expect(emergencyPositions(withKeeper, MANAGER)).toEqual([]);
+    expect(emergencyPositions(baseState(), MANAGER)).toEqual([]);
+  });
+
+  it("o jovem nasce na base e sobe na hora, contado como emergência", () => {
+    const state = stuck();
+    const done = emergencyPromotion(state, MANAGER, "GK", SEED);
+    if (!done.ok) throw new Error(done.error);
+    const keeper = squadOf(done.state.world, MANAGER).find((player) => player.position === "GK");
+    expect(keeper?.contract).toBeDefined();
+    expect(graduateOf(done.state.renewal, keeper?.id ?? "")?.clubId).toBe(MANAGER);
+    expect(done.state.renewal?.academy?.emergencies).toBe(1);
+    expect(done.state.renewal?.nextPlayerSeq).toBe((state.renewal?.nextPlayerSeq ?? 0) + 1);
+    expect(emergencyPromotion(baseState(), MANAGER, "GK", SEED)).toEqual({
+      ok: false,
+      error: "academy.no_emergency",
+    });
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { createCareer, simulateSeason, t } from "./helpers";
+import { completeSquadFromBase, createCareer, simulateSeason, t } from "./helpers";
 
 test("Série B: temporada direto, resumo, próxima temporada e rodada ao vivo (SC-004, SC-005)", async ({
   page,
@@ -29,6 +29,8 @@ test("Série B: temporada direto, resumo, próxima temporada e rodada ao vivo (S
     page.getByRole("region", { name: t("renewal.notice.title", { year: 2028 }) }),
   ).toBeVisible();
 
+  // Contratos vencidos na virada podem deixar o elenco abaixo do mínimo (036): promove da base.
+  await completeSquadFromBase(page);
   await page.getByRole("button", { name: t("home.playLive") }).click();
   await expect(page).toHaveURL(/rodada/);
   await page.getByRole("button", { name: t("round.finishNow") }).click();

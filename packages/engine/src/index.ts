@@ -600,6 +600,8 @@ export {
   academyStatus,
   academyWarning,
   asClubPlayer,
+  emergencyPositions,
+  emergencyPromotion,
   emptyAcademy,
   evolveAcademy,
   graduateOf,

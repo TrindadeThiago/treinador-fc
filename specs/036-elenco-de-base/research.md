@@ -204,3 +204,19 @@ países ele é quase só ruído, e a seed `longo-continental-b` passou a dar -0,
 `equivalence-baseline.json` e os snapshots de `composition-baseline` e `continental-baseline`. Nas
 duas seeds da equivalência, a primeira temporada continua idêntica (rodadas e finanças); as
 diferenças começam depois da primeira virada, quando a safra passa a ir para a base.
+
+### I5. Saída de emergência do técnico (decisão de 2026-11-09)
+
+Medido sem renovar contratos (mundo padrão, 3 clubes): depois da primeira virada, 2 dos 3 ficaram
+1 jogador abaixo do mínimo (um deles faltando goleiro), com só 2 ou 3 livres no mercado. O
+bloqueio continua, mas `emergencyPositions` libera a safra de emergência ao técnico quando não há
+nenhum candidato para a posição (base, livres e compra: janela fechada ou caixa negativo), para o
+jogo nunca travar (`emergencyPromotion` no motor, `emergencyYouth` no save, botão na aba Base).
+
+### I6. Validação do banco ao abrir o save
+
+O save validava o mundo vivo com as regras de elenco do mod (16 a 40 jogadores, 2 goleiros). Sem
+a reposição automática, o elenco do técnico pode ficar abaixo disso depois da virada, e o save
+seria recusado como corrompido. Ao abrir um save, os erros `squad.size` e
+`squad.min_goalkeepers` passam a ser aceitos (o bloqueio antes da partida cuida deles); os mods
+continuam validados com essas regras.

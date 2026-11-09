@@ -12,6 +12,7 @@ import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { createRng } from "../rng/xoshiro";
 import { squadOf } from "../world/squads";
 import { evolutionDelta } from "./evolution";
+import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
 import { ACADEMY_RULES, EVOLUTION_RULES, SQUAD_RULES } from "./rules";
 import type {
@@ -21,6 +22,7 @@ import type {
   PlayerRef,
   RenewalState,
 } from "./types";
+import { createYouth } from "./youth";
 
 /**
  * Elenco de base (036). Os jovens ficam fora de `world.players` (research.md R1): escalação,
@@ -455,5 +457,90 @@ export function fillShortSquadsFromAcademy(
   return {
     world: { ...world, players: [...world.players, ...added] },
     renewal: { ...renewal, academy },
+  };
+}
+
+/**
+ * Posições em que o técnico pode pedir a safra de emergência (036, decisão de 2026-11-09): o elenco
+ * está abaixo de um mínimo e não há nenhum candidato — ninguém da posição na base, nenhum livre da
+ * posição e a compra impossível (janela fechada ou caixa negativo). Sem posição específica faltando
+ * (só o mínimo total), vale a posição mais carente, e o critério é não haver ninguém na base nem
+ * entre os livres. Vazio = não há emergência.
+ */
+export function emergencyPositions(state: CareerSeasonState, clubId: string): Position[] {
+  const squad = squadOf(state.world, clubId);
+  const shortage = squadShortage(squad);
+  if (shortage.missing === 0) return [];
+  const rules = marketRules(state.world, state.league.competitionId);
+  const cash = state.finances.clubs[clubId]?.cash ?? 0;
+  const canBuy = isWindowOpen(state.league, rules) && cash > 0;
+  if (canBuy) return [];
+  const base = academyOf(state.renewal, clubId);
+  const free = state.market?.freeAgents ?? [];
+  const has = (position?: Position) =>
+    base.some((entry) => position === undefined || entry.player.position === position) ||
+    free.some((agent) => position === undefined || agent.player.position === position);
+  if (shortage.positions.length > 0) return shortage.positions.filter((position) => !has(position));
+  if (has()) return [];
+  const counts = new Map<Position, number>(POSITIONS.map((position) => [position, 0]));
+  for (const player of squad) counts.set(player.position, (counts.get(player.position) ?? 0) + 1);
+  const neediest = [...POSITIONS].sort(
+    (a, b) =>
+      (counts.get(a) ?? 0) / SQUAD_RULES.positionMin[a] -
+        (counts.get(b) ?? 0) / SQUAD_RULES.positionMin[b] ||
+      POSITIONS.indexOf(a) - POSITIONS.indexOf(b),
+  )[0];
+  return neediest ? [neediest] : [];
+}
+
+/**
+ * Safra de emergência pedida pelo técnico (036): um jovem novo nasce na base, na posição, e sobe na
+ * hora com o contrato inicial. Só quando `emergencyPositions` a permite.
+ */
+export function emergencyPromotion(
+  state: CareerSeasonState,
+  clubId: string,
+  position: Position,
+  careerSeed: string,
+): AcademyResult | { ok: false; error: "academy.no_emergency" } {
+  if (!state.renewal || !emergencyPositions(state, clubId).includes(position)) {
+    return { ok: false, error: "academy.no_emergency" };
+  }
+  const club = state.world.clubs.find((entry) => entry.id === clubId);
+  if (!club) return { ok: false, error: "academy.not_found" };
+  const seq = state.renewal.nextPlayerSeq;
+  const date = seasonDate(state.world.manifest.referenceDate, state.league.year);
+  const rng = createRng(`${careerSeed}:emergency-manager:${state.league.number}:${seq}`);
+  const youth = createYouth(
+    state.world,
+    club,
+    position,
+    seq,
+    regulatorFor(state.renewal, state.world, state.league),
+    date,
+    rng,
+  );
+  const { clubId: _c, contract: _k, ...player } = youth;
+  const entry: AcademyPlayer = { player, clubId, joinedSeason: state.league.number };
+  const withEntry: CareerSeasonState = {
+    ...state,
+    renewal: {
+      ...state.renewal,
+      nextPlayerSeq: seq + 1,
+      academy: withAcademyPlayers(academyState(state.renewal), [entry]),
+    },
+  };
+  const promoted = promoteFromAcademy(withEntry, clubId, player.id, careerSeed);
+  if (!promoted.ok || !promoted.state.renewal) return promoted;
+  const academy = academyState(promoted.state.renewal);
+  return {
+    ...promoted,
+    state: {
+      ...promoted.state,
+      renewal: {
+        ...promoted.state.renewal,
+        academy: { ...academy, emergencies: academy.emergencies + 1 },
+      },
+    },
   };
 }

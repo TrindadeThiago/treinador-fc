@@ -1,5 +1,5 @@
 import { ACADEMY_RULES, type AcademyPlayer, emptyAcademy } from "@brasfoot-like/engine";
-import type { SaveFile } from "@brasfoot-like/save";
+import { type SaveFile, withAdjustedLineup } from "@brasfoot-like/save";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
@@ -128,5 +128,31 @@ describe("aba Base (036)", () => {
       ),
     ).toBeDefined();
     expect(screen.getAllByRole("link", { name: t("academy.goToBase") }).length).toBeGreaterThan(0);
+  });
+});
+
+describe("safra de emergência na aba Base (036)", () => {
+  it("sem candidatos, o botão sobe um jovem e o aviso some", async () => {
+    // Rodada 8: a janela do começo já fechou, e sem livres não há candidato.
+    const { store } = await storedCareer(8, (save) =>
+      withAdjustedLineup({
+        ...save,
+        bank: {
+          ...save.bank,
+          players: save.bank.players.filter(
+            (player) => !(player.clubId === save.clubId && player.position === "GK"),
+          ),
+        },
+        market: { ...save.market, freeAgents: [] },
+      }),
+    );
+    renderApp("/jogo/elenco?c=tela&aba=base", store);
+    const user = userEvent.setup();
+    const position = label("position.GK");
+    const button = await screen.findByRole("button", {
+      name: t("academy.emergency.action", { position }),
+    });
+    await user.click(button);
+    expect(await screen.findByText(t("academy.emergency.done", { position }))).toBeDefined();
   });
 });
