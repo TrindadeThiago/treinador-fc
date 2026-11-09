@@ -15,7 +15,7 @@ import {
   ensureContracts,
   type FinanceState,
   generateDefaultBank,
-  initialRenewal,
+  initialCareerRenewal,
   type SeasonHistoryEntry,
   seasonTurnover,
   spearman,
@@ -70,7 +70,7 @@ export function runSimulateEconomy(options: SimulateEconomyOptions): SimulateEco
   let market = emptyMarket();
   let league = created.league;
   let finances: FinanceState = createFinances(world, league);
-  let renewal = initialRenewal(world);
+  let renewal = initialCareerRenewal(world, options.seed, world.manifest.referenceDate);
   // Torcidas ativas (013): o humor mexe na bilheteria.
   let fans = createFans(world, league);
   let history: SeasonHistoryEntry[] = [];

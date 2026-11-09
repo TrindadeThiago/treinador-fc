@@ -3,6 +3,7 @@ import { clubDivision, leagueRound } from "../career/league";
 import { type CareerSeasonState, calendarNext } from "../career/season-state";
 import type { LeagueSeason } from "../career/types";
 import { neutralCapacityOf } from "../knockout/prizes";
+import { academyClub, academyMaintenance } from "../renewal/academy-levels";
 import { standings } from "../season/standings";
 import type { Fixture } from "../season/types";
 import { interestFor } from "./actions";
@@ -21,6 +22,8 @@ export interface CashForecast {
   /** Parcelas da folha que faltam (negativo), com o elenco de hoje. */
   wages: number;
   wageRounds: number;
+  /** Manutenção da academia que falta na temporada (negativo, 037). */
+  academy: number;
   /** Juros da dívida de hoje nas rodadas que faltam (negativo). */
   interest: number;
   /**
@@ -89,6 +92,9 @@ export function seasonCashForecast(
   let gateGames = 0;
   let wages = 0;
   let wageRounds = 0;
+  let academy = 0;
+  const academyAnnual =
+    12 * academyMaintenance(world, clubId, academyClub(state.renewal, world, clubId).level);
   let interest = 0;
   let capacity = finance.capacity;
   let worksLeft = finance.works?.remainingRounds;
@@ -161,6 +167,9 @@ export function seasonCashForecast(
         wages -= wage;
         wageRounds += 1;
         cash -= wage;
+        const maintenance = wageInstalment(academyAnnual, slot.round, total);
+        academy -= maintenance;
+        cash -= maintenance;
       }
       interest -= instalment;
       cash -= instalment;
@@ -196,6 +205,7 @@ export function seasonCashForecast(
     gateGames,
     wages,
     wageRounds,
+    academy,
     interest,
     prize,
     position,

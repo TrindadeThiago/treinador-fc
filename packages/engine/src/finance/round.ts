@@ -16,6 +16,7 @@ import type { CompletedBank } from "../model/types";
 import { newsAfterRound } from "../news/round";
 import type { NewsState } from "../news/types";
 import { academyState, evolveAcademy, fillShortSquadsFromAcademy } from "../renewal/academy";
+import { academyClub, academyLevelRule, academyMaintenance } from "../renewal/academy-levels";
 import { evolvePlayers, midSeasonRound } from "../renewal/evolution";
 import { withRegionalClubs } from "../renewal/regional";
 import type { RenewalState } from "../renewal/types";
@@ -89,10 +90,16 @@ export function applyRoundFinances(
   round: number,
   managerClubId: string,
   fans?: FansState,
+  /** Renovação, para o nível da academia de cada clube (037); sem ela, o nível da reputação. */
+  renewal?: RenewalState,
 ): FinanceState {
   const rules = economyRules(world, league.competitionId);
   const working = draft(finances);
-  const entry = (clubId: string, category: "gate" | "wages" | "interest", amount: number) => ({
+  const entry = (
+    clubId: string,
+    category: "gate" | "wages" | "interest" | "academy",
+    amount: number,
+  ) => ({
     clubId,
     season: league.number,
     round,
@@ -129,6 +136,13 @@ export function applyRoundFinances(
     for (const clubId of [...season.clubIds].sort()) {
       const annual = annualWageBill(world, clubId, date);
       post(working, entry(clubId, "wages", -wageInstalment(annual, round, season.calendar.length)));
+      // Manutenção da academia (037 FR-010): 12 mensalidades por temporada, como a folha.
+      const academy =
+        12 * academyMaintenance(world, clubId, academyClub(renewal, world, clubId).level);
+      post(
+        working,
+        entry(clubId, "academy", -wageInstalment(academy, round, season.calendar.length)),
+      );
     }
   }
 
@@ -143,6 +157,9 @@ export function applyRoundFinances(
       if (inLeague.has(clubId)) continue;
       const annual = annualWageBill(world, clubId, date);
       post(working, entry(clubId, "wages", -wageInstalment(annual, round, longest)));
+      const academy =
+        12 * academyMaintenance(world, clubId, academyClub(renewal, world, clubId).level);
+      post(working, entry(clubId, "academy", -wageInstalment(academy, round, longest)));
     }
   }
   for (const clubId of ids) {
@@ -315,7 +332,15 @@ export function applyRoundSystems(
   const foreign = options.foreign === true;
   const userClubId = options.userClubId ?? managerClubId;
   // A bilheteria usa o humor de antes do jogo (013 R10).
-  let nextFinances = applyRoundFinances(finances, league, world, round, userClubId, fans?.state);
+  let nextFinances = applyRoundFinances(
+    finances,
+    league,
+    world,
+    round,
+    userClubId,
+    fans?.state,
+    renewal?.state,
+  );
   let nextWorld = world;
   let nextRenewal = renewal?.state;
   if (renewal && round === midSeasonRound(league)) {
@@ -341,6 +366,7 @@ export function applyRoundSystems(
       league.number,
       "mid",
       seasonDate(world.manifest.referenceDate, league.year),
+      (clubId) => academyLevelRule(renewal.state, world, clubId).evolutionBonus,
     );
     nextRenewal = foreign
       ? { ...renewal.state, academy }

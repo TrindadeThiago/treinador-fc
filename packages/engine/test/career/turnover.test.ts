@@ -164,6 +164,7 @@ describe("virada de temporada (R5–R8, FR-010 a FR-016)", () => {
       "retire-players",
       "expire-contracts",
       "academy-open",
+      "academy-levels",
       "regulate-world",
       "academy-age-out",
       "generate-youth",

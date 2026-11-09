@@ -10,6 +10,7 @@ import {
   advanceSeason,
   type Competition,
   completeCareerDay,
+  emptyAcademy,
   joinBankFiles,
   type ModPackage,
   type Season,
@@ -606,6 +607,31 @@ export function saveV20(step: SaveV11Step = { rounds: 0 }): SaveV20 {
   return JSON.parse(JSON.stringify(save)) as SaveV20;
 }
 
+export type SaveV21 = Omit<SaveFile, "formatVersion"> & { formatVersion: 21 };
+
+const v21Cache = new Map<string, SaveV21>();
+
+/**
+ * Carreira atual no formato v21 (1.9.0): sem `academy.clubs` e com a base como na 1.9.0, que
+ * começava vazia; aqui fica só com os jovens das safras (os da base inicial saem).
+ */
+export function saveV21(step: SaveV11Step = { rounds: 0 }): SaveV21 {
+  const key = JSON.stringify(step);
+  let save = v21Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, renewal, ...rest } = playedCurrentSave(step);
+    const { clubs: _clubs, ...academy } = renewal.academy ?? emptyAcademy();
+    const safra = academy.players.filter((entry) => entry.joinedSeason > 1);
+    save = {
+      ...rest,
+      renewal: { ...renewal, academy: { ...academy, players: safra } },
+      formatVersion: 21,
+    };
+    v21Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV21;
+}
+
 /** Banco padrão com uma copa de 16 clubes (8 de cada divisão), quartas a cada 2 semanas (018). */
 export function bankWithCup(): ModPackage {
   const bank = JSON.parse(JSON.stringify(defaultBank())) as ModPackage;
@@ -641,4 +667,20 @@ export function bankWithCup(): ModPackage {
     schedule: { weekday: 3, startWeek: 1, everyWeeks: 2 },
   });
   return bank;
+}
+
+/**
+ * O save sem a base e a sequência de ids da renovação (037): a migração v21 → v22 completa a base
+ * de cada clube até 15 jovens, então os testes de "o resto fica igual" das migrações antigas
+ * comparam sem esses dois campos.
+ */
+export function sansAcademy<T>(save: T): T {
+  const copy = JSON.parse(JSON.stringify(save)) as T & {
+    renewal?: { academy?: unknown; nextPlayerSeq?: unknown };
+  };
+  if (copy.renewal) {
+    delete copy.renewal.academy;
+    delete copy.renewal.nextPlayerSeq;
+  }
+  return copy;
 }

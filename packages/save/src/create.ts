@@ -8,8 +8,9 @@ import {
   createWorldSystems,
   emptyMarket,
   ensureContracts,
-  initialRenewal,
+  initialCareerRenewal,
   mainCompetitions,
+  seasonDate,
   validateBank,
 } from "@brasfoot-like/engine";
 import { MANAGER_NAME_MAX, SAVE_FORMAT_VERSION, type SaveError, type SaveFile } from "./format";
@@ -114,7 +115,12 @@ export function createSave(input: CreateSaveInput): CreateSaveResult {
       competitionHistory: [],
       cupHistory: [],
       finances,
-      renewal: initialRenewal(bank),
+      // Base de todos os clubes já cheia (037 FR-004b).
+      renewal: initialCareerRenewal(
+        bank,
+        input.seed,
+        seasonDate(bank.manifest.referenceDate, seasons.league.year),
+      ),
       market: emptyMarket(),
       fans: systems.fans,
       news: createNews(),

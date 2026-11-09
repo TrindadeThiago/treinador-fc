@@ -308,6 +308,25 @@ export const economySchema = z.object({
   crisisRounds: intInRange(1, 200).optional(),
   wageFactorPct: intInRange(1, 1000).optional(),
   divisions: list(divisionEconomySchema, 0, 99).optional(),
+  /** Academia (037): os 5 níveis, do 1 ao 5; ausente = padrão do jogo. */
+  academy: z
+    .object({
+      levels: z
+        .array(
+          z.object({
+            minReputation: intInRange(0, 100),
+            slots: intInRange(1, 60),
+            youthPerIntake: intInRange(1, 10),
+            strengthAdjust: intInRange(-20, 20),
+            potentialBonus: intInRange(-20, 30),
+            evolutionBonus: z.number().min(0).max(1),
+            maintenancePct: intInRange(0, 100),
+            buildMonths: z.number().min(0).max(60),
+          }),
+        )
+        .length(5),
+    })
+    .optional(),
 });
 
 const pct = intInRange(0, 1000);

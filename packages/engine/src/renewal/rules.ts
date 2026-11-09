@@ -50,7 +50,8 @@ export const YOUTH_RULES = {
   perClub: { base: 1, reputationSteps: [45, 70] },
   age: [16, 18] as const,
   /** Força = base + porReputação × rep + offset do regulador ± ruído. */
-  strength: { base: 41, perReputation: 0.12, noise: 6 },
+  /** Peso da reputação reduzido na 037 (o nível da academia soma `strengthAdjust`); base compensada. */
+  strength: { base: 44, perReputation: 0.06, noise: 6 },
   /** Margem de potencial uniforme (+ bônus do regulador). */
   potentialMargin: [10, 30] as const,
 };
@@ -69,6 +70,11 @@ export const ACADEMY_RULES = {
    * quase paravam de comprar, e os clubes só de estadual perdiam a receita das vendas (research I7).
    */
   aiTargetSize: 22,
+  /**
+   * Quem sai da base por idade sobe na IA se o elenco tiver menos que isto ou se for melhor que o
+   * pior da posição; senão sai como livre (037: com a base cheia, os elencos cresciam até 28).
+   */
+  aiAgeOutSquad: 25,
   /** Teto da média de safras de emergência por clube e temporada (teste longo). */
   emergencyLimitPerClubSeason: 0.05,
 };

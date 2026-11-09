@@ -1,11 +1,14 @@
-export type { AcademySaveResult } from "./academy";
+export type { AcademyLevelSaveResult, AcademySaveResult } from "./academy";
 export {
   academyWarningOf,
+  cancelYouthAcademyChange,
+  downgradeYouthAcademy,
   emergencyPositionsOf,
   emergencyYouth,
   promoteYouth,
   releaseYouth,
   rosterIssuesOf,
+  upgradeYouthAcademy,
   youthContractPreview,
 } from "./academy";
 export type { BoardSaveResult } from "./board";

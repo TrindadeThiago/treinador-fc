@@ -1,6 +1,10 @@
 import {
   type AcademyError,
+  type AcademyLevelError,
+  type AcademyLevelResult,
   academyWarning,
+  cancelAcademyChange,
+  downgradeAcademy,
   emergencyPositions,
   emergencyPromotion,
   type Position,
@@ -9,6 +13,7 @@ import {
   type RosterIssue,
   releaseFromAcademy,
   rosterIssues,
+  upgradeAcademy,
 } from "@brasfoot-like/engine";
 import { isEmployed } from "./board";
 import { seasonStateOf, withAdjustedLineup, withDayResult } from "./career";
@@ -72,4 +77,31 @@ export function academyWarningOf(
   save: SaveFile,
 ): { kind: "last_window"; count: number } | undefined {
   return academyWarning(seasonStateOf(save), save.clubId);
+}
+
+/** Academia (037): melhorar (paga a obra agora), baixar e cancelar a redução. */
+export type AcademyLevelSaveResult =
+  | { ok: true; save: SaveFile }
+  | { ok: false; error: AcademyLevelError | "academy.unemployed"; params?: Record<string, number> };
+
+function levelAction(
+  save: SaveFile,
+  action: (state: ReturnType<typeof seasonStateOf>, clubId: string) => AcademyLevelResult,
+): AcademyLevelSaveResult {
+  if (!isEmployed(save)) return { ok: false, error: "academy.unemployed" };
+  const done = action(seasonStateOf(save), save.clubId);
+  if (!done.ok) return done;
+  return { ok: true, save: withDayResult(save, done.state) };
+}
+
+export function upgradeYouthAcademy(save: SaveFile): AcademyLevelSaveResult {
+  return levelAction(save, upgradeAcademy);
+}
+
+export function downgradeYouthAcademy(save: SaveFile): AcademyLevelSaveResult {
+  return levelAction(save, downgradeAcademy);
+}
+
+export function cancelYouthAcademyChange(save: SaveFile): AcademyLevelSaveResult {
+  return levelAction(save, cancelAcademyChange);
 }

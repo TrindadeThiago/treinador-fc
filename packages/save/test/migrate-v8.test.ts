@@ -1,7 +1,7 @@
 import { DEFAULT_BOARD } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import { migrateSave, type SaveFile } from "../src";
-import { saveV7, validSave } from "./fixtures";
+import { sansAcademy, saveV7, validSave } from "./fixtures";
 
 describe("migração v7 → v8 (012 R12, FR-038, SC-009)", () => {
   it("meio da temporada: técnico empregado, carência até o fim, metas de meio de temporada", () => {
@@ -10,7 +10,7 @@ describe("migração v7 → v8 (012 R12, FR-038, SC-009)", () => {
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(7);
     const { board } = result.save;
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(board.manager).toMatchObject({
       clubId: v7.clubId,
       noFiring: false,
@@ -37,7 +37,7 @@ describe("migração v7 → v8 (012 R12, FR-038, SC-009)", () => {
       ...rest
     } = result.save;
     const { formatVersion: _v7, bank: _bank7, ...restV7 } = v7;
-    expect(rest).toEqual(restV7);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV7));
   });
 
   it("temporada encerrada: sem metas até a virada", () => {

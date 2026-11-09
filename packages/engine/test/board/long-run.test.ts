@@ -12,7 +12,7 @@ import type { FinanceState } from "../../src/finance/types";
 import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 import type { RenewalState } from "../../src/renewal/types";
 import { standings } from "../../src/season/standings";
 import { competitionId, testWorld } from "../career/helpers";
@@ -65,7 +65,7 @@ function startCareer(
     world,
     league,
     finances,
-    renewal: initialRenewal(world),
+    renewal: initialCareerRenewal(world, careerSeed, world.manifest.referenceDate),
     market: emptyMarket(),
     board: createBoard(world, league, finances, careerSeed, manager),
     history: [],

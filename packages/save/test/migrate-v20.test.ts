@@ -1,7 +1,7 @@
 import type { MatchRecord } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import { migrateSave, SAVE_FORMAT_VERSION, type SaveFile } from "../src";
-import { playDay, saveV19 } from "./fixtures";
+import { playDay, sansAcademy, saveV19 } from "./fixtures";
 
 // 034 (T003): a migração v19 → v20 só sobe a versão; as tuplas de 6 da v19 continuam válidas e as
 // partidas novas gravam 9 inteiros (finalizações, defesas e posição da vaga).
@@ -31,7 +31,7 @@ describe("migração v19 → v20 (034)", () => {
     const save = migrated(4);
     const { formatVersion: _a, ...rest } = save;
     const { formatVersion: _b, ...restV19 } = v19;
-    expect(rest).toEqual(restV19);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV19));
     const key = (record: MatchRecord) => `${record.round}:${record.home}:${record.away}`;
     const old = new Set(records(save).map(key));
     expect(old.size).toBeGreaterThan(0);

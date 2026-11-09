@@ -10,7 +10,7 @@ import {
   seasonStateOf,
   userSeason,
 } from "../src";
-import { playDay, type SaveV11Step, saveV11 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV11 } from "./fixtures";
 
 const STEPS: [string, SaveV11Step][] = [
   ["início da temporada", { rounds: 0 }],
@@ -32,7 +32,7 @@ describe("migração v11 → v12 (017 R12, FR-040 a FR-042, critério de aceite 
     "%s: abre na mesma rodada, com o mesmo histórico",
     (_label, step) => {
       const { save, v11 } = migrated(step);
-      expect(save.formatVersion).toBe(21);
+      expect(save.formatVersion).toBe(22);
       const {
         formatVersion: _v,
         competitions: _c,
@@ -43,7 +43,7 @@ describe("migração v11 → v12 (017 R12, FR-040 a FR-042, critério de aceite 
         ...rest
       } = save;
       const { formatVersion: _v11, ...restV11 } = v11;
-      expect(rest).toEqual(restV11);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV11));
     },
     120_000,
   );
@@ -102,7 +102,7 @@ describe("migração v11 → v12 (017 R12, FR-040 a FR-042, critério de aceite 
     const result = importSave(bytes);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(11);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(calendarNext(seasonStateOf(result.save))).toBe(5);
   }, 120_000);
 

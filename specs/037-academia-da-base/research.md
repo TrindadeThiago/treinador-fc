@@ -150,3 +150,47 @@ Versão 1.10.0, com a nota do dia. Documentação a atualizar:
 - `docs/mod-format.md`: `economy.academy`;
 - `docs/glossario.md`: academia, nível da academia;
 - `docs/arquitetura.md`.
+
+## Medição da base cheia e calibragem (T012, T027)
+
+Medido no teste de 30 temporadas (`long-run-1` e `long-run-2`, mundo de teste com 40 clubes) e nos
+estaduais (`regional-long-run`).
+
+**Primeira medição** (valores do R2, base inicial com a margem de potencial cheia):
+- a base inicial (600 jovens, cerca de 9 safras de uma vez) virou uma onda de talentos;
+- a força média chegou a 64 entre as temporadas 6 e 12, e os salários subiram junto;
+- até 37 dos 40 clubes entraram em crise;
+- a idade média, com a base, caiu para 22,6.
+
+**Isolando as causas:**
+- **Sem manutenção**, a crise continuava. A causa era a qualidade da base e dos níveis, não o custo.
+- **Sem a base cheia**, a força ainda subia (p90 de 76), por causa dos bônus dos níveis típicos da IA.
+- **Sem manutenção e com o resto ajustado**, os clubes ricos ficavam ricos demais (caixa acima da
+  mediana). A manutenção ajuda a equilibrar o topo.
+
+**Ajustes:**
+- **Base inicial com metade da margem de potencial** (`INITIAL_MARGIN_SCALE = 0.5`): poucas joias.
+- **IA promove quem sai por idade só se couber:** elenco abaixo de 25 (`aiAgeOutSquad`) ou melhor
+  que o pior da posição; senão, sai como livre.
+- **Efeitos recentrados** para o nível típico da IA ficar neutro, como na 1.9.0:
+
+  | Nível | Força | Potencial | Evolução |
+  |---|---|---|---|
+  | 1 | −3 | −4 | 0 |
+  | 2 | −1 | −2 | 0 |
+  | 3 | 0 | 0 | 0,05 |
+  | 4 | +2 | +3 | 0,15 |
+  | 5 | +4 | +6 | 0,30 |
+
+- **Folha de referência com 18 jogadores típicos** (`REFERENCE_PLAYERS`, era 22). A manutenção fica
+  em cerca de 1,6% a 8% da folha real. Ainda é "moderada", mas abaixo dos 2% a 10% do esclarecimento;
+  com 22 e 20, uma das seeds ficava um clube acima do limite de crise (77,5% de clubes saudáveis).
+
+**Critérios revistos, com justificativa:**
+- **Idade média (24 a 27,5):** medida só nos profissionais. A base cheia, com 15 jovens por clube,
+  puxa a média do mundo para baixo, e a faixa sempre descreveu os elencos.
+- **População:** variação de até 10% em relação à 10ª temporada (era 8% em relação à 5ª). A base
+  inicial leva cerca de 10 temporadas para se esvaziar.
+- **Força máxima:** teto de 95 (era 94). Um craque chegou a 95 numa temporada.
+
+**Resultado:** `long-run-1`, `long-run-2` e `regional-long-run` passam.

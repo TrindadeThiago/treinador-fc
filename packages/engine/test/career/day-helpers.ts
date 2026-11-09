@@ -7,7 +7,7 @@ import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
 import { createNews } from "../../src/news/create";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 
 export const MANAGER = "clube-001";
 
@@ -33,7 +33,7 @@ export function newState(
   if (!options.systems) return state;
   return {
     ...state,
-    renewal: initialRenewal(world),
+    renewal: initialCareerRenewal(world, careerSeed, world.manifest.referenceDate),
     market: emptyMarket(),
     board: createBoard(world, seasons.league, finances, careerSeed, {
       clubId: options.manager ?? MANAGER,

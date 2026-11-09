@@ -43,6 +43,7 @@ describe("virada financeira (US3, FR-011, FR-012, FR-025)", () => {
       "retire-players",
       "expire-contracts",
       "academy-open",
+      "academy-levels",
       "regulate-world",
       "academy-age-out",
       "generate-youth",

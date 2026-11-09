@@ -8,7 +8,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SaveFile,
 } from "../src";
-import { playDay, type SaveV11Step, saveV16 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV16 } from "./fixtures";
 
 // 022 (T013): a migração v16 → v17 só sobe a versão; um save antigo é um mundo sem competição
 // entre países.
@@ -30,7 +30,7 @@ describe("migração v16 → v17 (022 R12, FR-026)", () => {
       expect(result.save.formatVersion).toBe(SAVE_FORMAT_VERSION);
       const { formatVersion: _a, ...rest } = result.save;
       const { formatVersion: _b, ...restV16 } = v16;
-      expect(rest).toEqual(restV16);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV16));
       // Sem competição entre países: nada de histórico continental.
       expect(result.save.continentalHistory).toBeUndefined();
       expect(result.save.bank.competitions.every((entry) => entry.countryId !== undefined)).toBe(

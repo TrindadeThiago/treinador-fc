@@ -71,6 +71,18 @@ export function regionalSponsorship(
 }
 
 /**
+ * Fator de salários do clube (R4): o da competição principal do país; para um clube só regional
+ * (023), o do estadual onde ele vive.
+ */
+export function wageFactorOf(world: CompletedBank, clubId: string): number {
+  const regional = regionalHome(world).get(clubId);
+  return regional === undefined
+    ? economyRules(world, rulesCompetitionOf(world, clubId).id).wageFactorPct
+    : (world.competitions.find((entry) => entry.id === regional)?.economy?.wageFactorPct ??
+        DEFAULT_REGIONAL_WAGE_FACTOR_PCT);
+}
+
+/**
  * Folha anual do clube: 12 × Σ salários mensais × wageFactorPct (R4). O fator é o da competição
  * principal do país; para um clube só regional (023), o do estadual onde ele vive.
  */
@@ -81,12 +93,7 @@ export function annualWageBill(
 ): number {
   const club = world.clubs.find((entry) => entry.id === clubId);
   if (!club) throw new Error(`clube inexistente: ${clubId}`);
-  const regional = regionalHome(world).get(clubId);
-  const factor =
-    regional === undefined
-      ? economyRules(world, rulesCompetitionOf(world, clubId).id).wageFactorPct
-      : (world.competitions.find((entry) => entry.id === regional)?.economy?.wageFactorPct ??
-        DEFAULT_REGIONAL_WAGE_FACTOR_PCT);
+  const factor = wageFactorOf(world, clubId);
   const monthly = squadOf(world, clubId).reduce(
     (sum, player) => sum + (player.contract?.wage ?? deriveWage(player, club, referenceDate)),
     0,
