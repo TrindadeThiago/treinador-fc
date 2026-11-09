@@ -51,11 +51,18 @@ ficam na constituição e entram no `/speckit-plan`.
 | | [030](marco10/prompt030.md) | Rodada ao vivo e fim de temporada | 025, 026 |
 | | [031](marco10/prompt031.md) | Telas de entrada e configuração | 025 |
 | | [032](marco10/prompt032.md) | Telas estreitas, acessibilidade e fechamento do marco | 026 a 031 |
+| M11 — Categorias de base | [036](marco11/prompt036.md) | Elenco de base | 009, 032 |
+| | [037](marco11/prompt037.md) | Academia e investimento na base | 008, 036 |
+| | [038](marco11/prompt038.md) | Potencial estimado e revelações | 014, 037 |
 
 O marco 10 é uma refatoração só visual: não muda motor, regras nem saves. As decisões de design que
 os prompts 025 a 032 compartilham estão em [`../interface-nova.md`](../interface-nova.md). Cada
 feature que muda o que o jogador vê termina com a nota de versão e a subida de versão no mesmo PR,
 **exceto no marco 10**, que segue o fluxo abaixo.
+
+As features 033 a 035 (estatísticas de jogadas, nota do jogador e reformulação do Início) vieram de
+pedidos avulsos, sem prompt de marco. O marco 11 volta ao fluxo normal: cada feature sai de uma
+branch própria da `main`, e o PR leva a nota de versão e a subida de versão (minor).
 
 **Fluxo do marco 10.** O marco é desenvolvido na branch `release/v1.0.0`, cortada da `main` depois do
 PR de documentação. Cada feature (025 a 031) sai de uma branch própria dessa branch e volta para ela

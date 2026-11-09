@@ -132,6 +132,7 @@ Desenvolvimento via Spec-Driven Development com Spec Kit. Os prompts de `/specki
 | **M8 — Mundo** | Vários países, simulação resumida para escala, vagas entre competições e supercopas. | Um mundo com 10 países roda 30 temporadas dentro das metas de tamanho e tempo, e as vagas entre competições se renovam sozinhas. |
 | **M9 — Futebol sul-americano** | Competições continentais, estaduais e o gerador do mod sul-americano (nomes fictícios). | Uma carreira no mod passa por estadual, campeonato nacional, copa nacional e competição continental na mesma temporada. |
 | **M10 — Nova interface** | Refatoração visual: tokens e tema claro e escuro, barra lateral, componentes compartilhados, todas as telas refeitas (clube, competição, mercado, carreira, rodada ao vivo, entrada e configuração) e adaptação a telas menores. Sem mudança de motor, regras ou saves. | Jogo uma temporada inteira com a interface nova, nos dois temas, sem perder nenhuma função da anterior e sem regressão de desempenho. É desenvolvido na branch `release/v1.0.0` e vai ao ar inteiro como o **lançamento oficial 1.0.0** (032); a numeração é reiniciada na 025. |
+| **M11 — Categorias de base** | Elenco de base (sub-20) separado do profissional, promoção e dispensa, academia com nível, obra e manutenção, safra pela academia, potencial estimado em faixa e revelações nas manchetes e no histórico. | Jogo 10 temporadas investindo na academia e vejo crias da base virarem titulares; em 30 temporadas sem interação o mundo e o caixa da IA continuam saudáveis. |
 
 **Estado do M6:** export/import de carreiras e formato de mod (015); dicas de primeiro acesso,
 Configurações (tema claro/escuro), ajuda de atalhos em todas as telas, revisão de
@@ -195,11 +196,14 @@ dicas revisadas, vitrine (capturas e ícones) e a nota única do 1.0.0 resumindo
 oficial 1.0.0 é o PR de `release/v1.0.0` para a `main`, depois dos gates do release sobre a branch;
 o jogo e os saves seguem os mesmos (sem mudança de motor, regras ou formato de save).
 
+O marco 11 traz as categorias de base (036 a 038): elenco de base, academia com investimento e
+potencial estimado. Os prompts estão em [`speckit-prompts/marco11/`](speckit-prompts/README.md).
+
 ## 14. Pós-lançamento
 
 - Copas e outras competições (nacionais, continentais) → marcos 7 a 9
 - Editor de mods embutido
-- Gestão profunda: categorias de base, olheiros, estrutura do clube
+- Gestão profunda: categorias de base → marco 11 (036 a 038); olheiros e estrutura do clube
 - Vestiário/moral e coletivas de imprensa
 - Multiplayer (hot-seat local, ligas entre amigos, desafios por seed)
 - Versão mobile com UI adaptada
