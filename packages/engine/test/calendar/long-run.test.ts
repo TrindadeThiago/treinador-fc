@@ -99,6 +99,8 @@ function simulate(world: CompletedBank, seed: string): SeasonEnd[] {
       careerSeed: seed,
       finances: state.finances,
       managerClubId: MANAGER,
+      // Técnico passivo: o elenco dele é completado como o da IA (036).
+      passiveManager: true,
       ...(state.renewal ? { renewal: state.renewal } : {}),
       ...(state.market ? { market: state.market } : {}),
       ...(state.board ? { board: state.board } : {}),

@@ -15,6 +15,7 @@ import type { MarketState } from "../market/types";
 import type { CompletedBank } from "../model/types";
 import { newsAfterRound } from "../news/round";
 import type { NewsState } from "../news/types";
+import { academyState, evolveAcademy, fillShortSquadsFromAcademy } from "../renewal/academy";
 import { evolvePlayers, midSeasonRound } from "../renewal/evolution";
 import { withRegionalClubs } from "../renewal/regional";
 import type { RenewalState } from "../renewal/types";
@@ -320,9 +321,10 @@ export function applyRoundSystems(
   if (renewal && round === midSeasonRound(league)) {
     // Evolução do meio da temporada (009 R3), no mesmo caminho do ao vivo e do direto.
     // Os clubes só regionais do país (023, A13) evoluem junto, com os minutos dos estaduais.
+    const withRegional = withRegionalClubs(world, league);
     const evolved = evolvePlayers(
       world,
-      withRegionalClubs(world, league),
+      withRegional,
       renewal.careerSeed,
       "mid",
       1,
@@ -330,7 +332,33 @@ export function applyRoundSystems(
       otherCompetitions,
     );
     nextWorld = evolved.world;
-    nextRenewal = foreign ? renewal.state : { ...renewal.state, lastEvolution: evolved.record };
+    // A base evolui no mesmo momento, também nas ligas estrangeiras (036 FR-004, R4); só a última
+    // evolução mostrada ao técnico fica de fora nelas.
+    const academy = evolveAcademy(
+      academyState(renewal.state),
+      new Set(withRegional.divisions.flatMap((season) => season.clubIds)),
+      renewal.careerSeed,
+      league.number,
+      "mid",
+      seasonDate(world.manifest.referenceDate, league.year),
+    );
+    nextRenewal = foreign
+      ? { ...renewal.state, academy }
+      : { ...renewal.state, lastEvolution: evolved.record, academy };
+  }
+  if (renewal && nextRenewal) {
+    // Clube da IA abaixo de um mínimo promove da base antes do mercado (036 FR-013).
+    const filled = fillShortSquadsFromAcademy(
+      nextWorld,
+      nextRenewal,
+      league.divisions.flatMap((season) => season.clubIds).filter((id) => id !== userClubId),
+      seasonDate(world.manifest.referenceDate, league.year),
+      league.number,
+      renewal.careerSeed,
+      league.year,
+    );
+    nextWorld = filled.world;
+    nextRenewal = filled.renewal;
   }
   let nextMarket = market?.state;
   if (market) {

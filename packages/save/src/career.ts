@@ -226,9 +226,15 @@ function worldForNextSeason(save: SaveFile): SaveFile["bank"] {
 export function advanceCareerSeason(
   save: SaveFile,
   now: string,
+  /**
+   * Técnico passivo das simulações (036): o elenco dele é completado como o da IA. O jogo nunca
+   * passa: o técnico completa o elenco à mão (FR-011b).
+   */
+  options: { passiveManager?: boolean } = {},
 ): { ok: true; save: SaveFile } | { ok: false; error: SeasonError } {
   const turned = seasonTurnover(save.league, worldForNextSeason(save), save.history, {
     careerSeed: save.seed,
+    ...(options.passiveManager ? { passiveManager: true } : {}),
     finances: save.finances,
     managerClubId: managerClubOf(save.board),
     renewal: save.renewal,

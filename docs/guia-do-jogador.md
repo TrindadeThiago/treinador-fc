@@ -132,6 +132,30 @@ temporada (gols, assistências, cartões, passes, desarmes, interceptações) e 
 detalhe dá para **vender na hora** (quando há um clube interessado) ou **rescindir** o contrato,
 pagando uma multa pelos meses restantes. A rescisão fica bloqueada com a temporada encerrada.
 
+### Base
+
+A aba **Base** do Elenco mostra os jovens da categoria de base do clube (sub-20). Eles chegam na
+virada da temporada, com 16 a 18 anos, e a base tem até **15 vagas**. Para cada jovem aparecem a
+posição, a idade, a força, as características e o ano em que ele precisa sair da base. Quem sai na
+próxima virada fica marcado como **último ano**.
+
+- **Promover:** leva o jovem ao elenco profissional, com o contrato inicial (o salário e a duração
+  aparecem antes de confirmar). Dá para promover a qualquer momento, menos durante uma partida, e
+  só com vaga no elenco.
+- **Dispensar:** o jovem deixa o clube e vira **jogador livre** no mercado. Não dá para desfazer.
+- Os jovens da base não jogam, não recebem salário e não contam no limite do elenco. Eles evoluem
+  como quem joga pouco.
+- **Idade-limite:** na virada, quem chega aos 20 anos sai da base. Se você não o promoveu, ele vira
+  jogador livre. O jogo avisa quando abre a última janela de transferências e antes do último jogo
+  da temporada.
+
+O jogo **não completa o elenco sozinho**. Se o elenco ficar abaixo do mínimo (por exemplo, com
+contratos que venceram na virada) ou se a base passar das 15 vagas, a próxima partida fica
+impedida até você promover, dispensar ou contratar. A Início mostra o que falta, com o caminho para
+a base e para o mercado. Os clubes do computador seguem as mesmas regras.
+
+Quem subiu da base aparece como **cria da base** no detalhe do jogador.
+
 ## 5. Escalação
 
 - **Esquema:**
@@ -294,7 +318,8 @@ Quando a temporada acaba, a tela de fim de temporada mostra:
 
 Ao começar a **próxima temporada**, o mundo se renova:
 - os jogadores evoluem ou declinam com a idade;
-- alguns se aposentam, e aparecem jovens da base;
+- alguns se aposentam, e chegam jovens à base (aba Base do Elenco);
+- quem chegou aos 20 anos sai da base (promova antes para não perdê-lo);
 - os contratos vencem;
 - as metas da diretoria são refeitas.
 

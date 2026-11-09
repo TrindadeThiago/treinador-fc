@@ -58,7 +58,8 @@ Também na virada: `graduates` é podado, e `promotedThisSeason` e `releasedThis
 
 - Evolução do meio da temporada: evolui a base dos clubes da liga da rodada, inclusive em liga estrangeira (R4).
 - `aiMarketRound`: antes dos livres por carência, um clube da IA abaixo do mínimo promove da base (FR-013).
-- `advanceCareerSeason` e o início da rodada ao vivo no save: com `rosterIssues` de gravidade `error`, devolvem `{ ok: false, error: "roster.blocked", issues }` sem avançar. A web mostra o diálogo de bloqueio.
+- Antes da partida do técnico, o provider da web lê `rosterIssuesOf(save)` (save) no mesmo ponto de `validateLineup`: erro impede a rodada (diálogo de bloqueio) e aviso pede confirmação (research I1).
+- Virada: `advanceCareerSeason(save, now, { passiveManager })` e `TurnoverOptions.passiveManager` só para simulações (research I2).
 
 ## Medidas
 

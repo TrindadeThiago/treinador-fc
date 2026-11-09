@@ -1,9 +1,11 @@
 import {
   type BoardState,
+  clubUnavailability,
   completeCareerRound,
   finishRound,
   isLeagueSeasonOver,
   startLeagueRound,
+  validateLineup,
 } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import {
@@ -24,10 +26,21 @@ import { defaultBank, SERIE_A, validSave } from "./fixtures";
 /** Uma rodada pelo mesmo caminho do provider (direto, sem escalação quando desempregado). */
 function playRound(save: SaveFile): SaveFile {
   const managed = managedClubId(save);
+  // Sem a reposição automática (036 FR-011b), o elenco pode ficar curto depois da virada: aqui o
+  // técnico joga sem completá-lo, e a escalação é a automática, como na rodada com elenco curto.
+  const squad = save.bank.players.filter((player) => player.clubId === managed);
+  const season = save.league.divisions.find((entry) => entry.clubIds.includes(managed));
+  const validation =
+    managed && season
+      ? validateLineup(save.lineup, squad, clubUnavailability(season, save.bank, managed))
+      : undefined;
+  // Como o provider: com elenco curto, a escalação da rodada é a automática.
+  const usable =
+    validation?.valid && !validation.issues.some((issue) => issue.code === "short_squad");
   const started = startLeagueRound(
     save.league,
     save.bank,
-    managed ? { [managed]: save.lineup } : undefined,
+    usable ? { [managed]: save.lineup } : undefined,
   );
   if (!started.ok) throw new Error(JSON.stringify(started.error));
   const result = completeCareerRound(

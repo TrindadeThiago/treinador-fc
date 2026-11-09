@@ -20,7 +20,7 @@ import { evolutionText, lastEvolution } from "./evolution-text";
 import { Meter } from "./Meter";
 import { NegotiationDialog, type NegotiationTarget } from "./market/NegotiationDialog";
 import { conditionText } from "./PlayerCondition";
-import { PlayerStats } from "./PlayerDetails";
+import { academyOriginText, PlayerStats } from "./PlayerDetails";
 import styles from "./PlayerModal.module.css";
 
 type Game = ReturnType<typeof useGame>;
@@ -95,6 +95,8 @@ export function PlayerModal({
     ["player.evolution", evolutionText(lastEvolution(save, player.id))],
     ["player.condition", conditionText(t, condition)],
   ];
+  const origin = academyOriginText(save, player.id, t);
+  if (origin) facts.push(["player.origin", origin]);
   const fit = fitness(player.id);
   const reason = locked ? t("player.lockedLive") : undefined;
   const renewReason = reason ?? (onLoan ? t("player.loanNoRenew") : undefined);

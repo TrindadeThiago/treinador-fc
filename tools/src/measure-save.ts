@@ -99,7 +99,7 @@ report("início", save);
 for (let season = 1; season <= Number(values.seasons); season++) {
   while (!isCareerSeasonOver(save)) save = playDay(save);
   report(`fim da temporada ${season}`, save);
-  const turned = advanceCareerSeason(save, "2026-10-24T12:00:00.000Z");
+  const turned = advanceCareerSeason(save, "2026-10-24T12:00:00.000Z", { passiveManager: true });
   if (!turned.ok) throw new Error(JSON.stringify(turned.error));
   save = turned.save;
   report(`início da temporada ${season + 1}`, save);

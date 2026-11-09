@@ -586,6 +586,29 @@ export {
 } from "./regional/scope";
 export type { RegionalDivisionResult, RegionalEdition } from "./regional/types";
 export { REGIONAL_DEFAULT_WEIGHT, regionalWeightFor, weighted } from "./regional/weight";
+export type {
+  AcademyError,
+  AcademyResult,
+  AcademyStatus,
+  RosterIssue,
+  RosterIssueCode,
+} from "./renewal/academy";
+export {
+  academyIdsProblem,
+  academyOf,
+  academyState,
+  academyStatus,
+  academyWarning,
+  asClubPlayer,
+  emptyAcademy,
+  evolveAcademy,
+  graduateOf,
+  promoteFromAcademy,
+  promotionContract,
+  releaseFromAcademy,
+  rosterIssues,
+  squadShortage,
+} from "./renewal/academy";
 export {
   evolutionDelta,
   evolvePlayers,
@@ -598,6 +621,7 @@ export { DEFAULT_NAME_BANK, nameBankFor } from "./renewal/names";
 export { regulate } from "./renewal/regulator";
 export { retirementChance, retirePlayers } from "./renewal/retirement";
 export {
+  ACADEMY_RULES,
   EVOLUTION_RULES,
   PROSPECT_POTENTIAL,
   REGULATOR_RULES,
@@ -608,6 +632,9 @@ export {
 } from "./renewal/rules";
 export { balanceSquads, squadProblems } from "./renewal/squads";
 export type {
+  AcademyGraduate,
+  AcademyPlayer,
+  AcademyState,
   EvolutionRecord,
   PlayerDelta,
   PlayerRef,

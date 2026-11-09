@@ -37,7 +37,7 @@ describe("virada no mundo compacto (024 US1)", () => {
     const brazilBefore = save.league.divisions.map((d) => [...d.clubIds].sort());
     for (let season = 0; season < 2; season++) {
       while (!isCareerSeasonOver(save)) save = playDay(save);
-      const turned = advanceCareerSeason(save, NOW);
+      const turned = advanceCareerSeason(save, NOW, { passiveManager: true });
       if (!turned.ok) throw new Error(JSON.stringify(turned));
       save = turned.save;
     }

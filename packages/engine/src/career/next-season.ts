@@ -35,9 +35,12 @@ export function startNextSeason(
   careerSeed: string,
   history: CareerHistory = EMPTY_HISTORY,
   managerClubId?: string,
+  /** Técnico passivo (036): padrão nas simulações; `false` reproduz o jogo (elenco à mão). */
+  passiveManager = true,
 ): NextSeason {
   const turned = seasonTurnover(end.league, end.world, history.history, {
     careerSeed,
+    passiveManager,
     finances: end.finances,
     managerClubId: managerClubId ?? (end.board ? managerClubOf(end.board) : ""),
     ...(end.renewal ? { renewal: end.renewal } : {}),

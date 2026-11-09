@@ -1,6 +1,6 @@
 "use client";
 
-import { ageOn, clubUnavailability, seasonStats } from "@brasfoot-like/engine";
+import { ageOn, clubUnavailability, graduateOf, seasonStats } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
 import { clubSeasonRatings } from "../game/selectors";
 import { formatRating, label, useT } from "../i18n";
@@ -22,6 +22,19 @@ const STATS = [
 ] as const;
 
 /** Estatísticas do jogador na temporada, com o aviso de quem ainda não jogou (compartilhada com o modal do Elenco). */
+/** Origem "cria da base" (036 FR-015): clube e ano da promoção, quando o jogador subiu da base. */
+export function academyOriginText(
+  save: SaveFile,
+  playerId: string,
+  t: ReturnType<typeof useT>,
+): string | undefined {
+  const origin = graduateOf(save.renewal, playerId);
+  if (!origin) return undefined;
+  const club = save.bank.clubs.find((entry) => entry.id === origin.clubId)?.name ?? origin.clubId;
+  const year = save.league.year - (save.league.number - origin.season);
+  return t("player.academyGraduate", { club, year });
+}
+
 export function PlayerStats({ save, playerId }: { save: SaveFile; playerId: string }) {
   const t = useT();
   const stats = seasonStats(userSeason(save)).find((entry) => entry.playerId === playerId);
@@ -90,6 +103,8 @@ export function PlayerDetails({
     ],
     ["player.condition", conditionText(t, condition)],
   ];
+  const origin = academyOriginText(save, player.id, t);
+  if (origin) visible.push(["player.origin", origin]);
   return (
     <Dialog
       open

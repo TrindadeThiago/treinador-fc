@@ -21,6 +21,7 @@ import {
   type Place,
   type Posture,
   placePlayer as placeLineupPlayer,
+  type RosterIssue,
   type StartInput,
   squadWithFitness,
   startCareerDay,
@@ -48,8 +49,11 @@ import {
   type MarketSaveResult,
   managedClubId,
   nextFixture,
+  promoteYouth as promoteSavedYouth,
   proposeManagerContract,
+  releaseYouth as releaseSavedYouth,
   repayManagerLoan,
+  rosterIssuesOf,
   type SaveError,
   type SaveFile,
   seasonStateOf,
@@ -97,8 +101,11 @@ export interface GameState {
   conflict: boolean;
   /** Chave de i18n do erro ao abrir. */
   error?: string;
-  /** Problemas que impediram (`blocked`) ou pedem confirmação (`confirm`) para jogar a rodada. */
-  simulateIssues?: { kind: "blocked" | "confirm"; issues: LineupIssue[]; mode: RoundMode };
+  /**
+   * Problemas que impediram (`blocked`) ou pedem confirmação (`confirm`) para jogar a rodada: da
+   * escalação e, desde a 036, do elenco e da base (`roster`).
+   */
+  simulateIssues?: SimulateIssues;
   /** Rodada ao vivo preparada (só em memória; descartada ao sair). */
   live?: LiveRound;
   /** Rodada direta em cálculo (016 FR-029: "Simulando…"). */
@@ -114,7 +121,7 @@ export type GameAction =
   | { type: "update"; save: SaveFile }
   | {
       type: "simulateIssues";
-      value?: { kind: "blocked" | "confirm"; issues: LineupIssue[]; mode: RoundMode };
+      value?: SimulateIssues;
     }
   | { type: "live"; value?: LiveRound }
   | { type: "simulating"; value: boolean }
@@ -243,6 +250,9 @@ interface GameContextValue {
   /** Venda imediata a um clube da IA e rescisão de contrato (010): validam no motor e salvam. */
   sellPlayer(playerId: string): DisposalActionResult;
   terminateContract(playerId: string): DisposalActionResult;
+  /** Base (036): promover ao elenco e dispensar (vira livre). */
+  promoteYouth(playerId: string): AcademyActionResult;
+  releaseYouth(playerId: string): AcademyActionResult;
   /** Carreira do técnico (012): aceitar/recusar proposta de emprego e dispensar o aviso. */
   acceptJobOffer(offerId: string): boolean;
   declineJobOffer(offerId: string): void;
@@ -250,6 +260,17 @@ interface GameContextValue {
 }
 
 export type DisposalActionResult = { ok: true } | { ok: false; error: MarketError };
+
+export interface SimulateIssues {
+  kind: "blocked" | "confirm";
+  issues: LineupIssue[];
+  /** Problemas do elenco e da base (036): base acima do limite, elenco incompleto, último ano. */
+  roster?: RosterIssue[];
+  mode: RoundMode;
+}
+
+/** Ações da base (036): validam no motor, salvam e devolvem o erro. */
+export type AcademyActionResult = { ok: true } | { ok: false; error: string };
 
 export type IncomingActionResult =
   | { ok: true; response?: "accepted" | "refused" }
@@ -324,6 +345,8 @@ export function GameProvider({
   const openId = useRef<string | undefined>(undefined);
   const latestSave = useRef<SaveFile | undefined>(undefined);
   latestSave.current = state.save;
+  const liveRef = useRef<LiveRound | undefined>(undefined);
+  liveRef.current = state.live;
 
   /** Gravações em fila: cada uma espera a anterior e usa o `savedAt` que ela deixou. */
   const queue = useRef<Promise<unknown>>(Promise.resolve());
@@ -530,6 +553,16 @@ export function GameProvider({
         }
         return simulateDirect(live);
       }
+      // Base acima do limite e elenco incompleto impedem a partida (036 FR-009a, FR-011b).
+      const roster = rosterIssuesOf(save);
+      const rosterErrors = roster.filter((issue) => issue.severity === "error");
+      if (rosterErrors.length > 0) {
+        dispatch({
+          type: "simulateIssues",
+          value: { kind: "blocked", mode, issues: [], roster: rosterErrors },
+        });
+        return "blocked";
+      }
       const { squad, unavailable } = lineupContext(save);
       const validation = validateLineup(save.lineup, squad, unavailable);
       if (!validation.valid) {
@@ -544,10 +577,16 @@ export function GameProvider({
         return "blocked";
       }
       const confirmations = validation.issues.filter((issue) => issue.code === "no_goalkeeper");
-      if (confirmations.length > 0 && !options?.confirmed) {
+      const rosterWarnings = roster.filter((issue) => issue.severity === "warning");
+      if ((confirmations.length > 0 || rosterWarnings.length > 0) && !options?.confirmed) {
         dispatch({
           type: "simulateIssues",
-          value: { kind: "confirm", mode, issues: confirmations },
+          value: {
+            kind: "confirm",
+            mode,
+            issues: confirmations,
+            ...(rosterWarnings.length > 0 ? { roster: rosterWarnings } : {}),
+          },
         });
         return "confirm";
       }
@@ -774,6 +813,31 @@ export function GameProvider({
     (playerId: string) => disposePlayer(sellManagerPlayer, playerId),
     [disposePlayer],
   );
+
+  const academyAction = useCallback(
+    (action: typeof promoteSavedYouth, playerId: string): AcademyActionResult => {
+      const save = latestSave.current;
+      if (!save) return { ok: false, error: "academy.not_found" };
+      // Nada muda no elenco com uma partida ao vivo em andamento (036).
+      if (liveRef.current) return { ok: false, error: "academy.match_in_progress" };
+      const result = action(save, playerId);
+      if (!result.ok) return result;
+      const next = touch(result.save, new Date().toISOString());
+      latestSave.current = next;
+      dispatch({ type: "update", save: next });
+      void persist(next);
+      return { ok: true };
+    },
+    [persist],
+  );
+  const promoteYouth = useCallback(
+    (playerId: string) => academyAction(promoteSavedYouth, playerId),
+    [academyAction],
+  );
+  const releaseYouth = useCallback(
+    (playerId: string) => academyAction(releaseSavedYouth, playerId),
+    [academyAction],
+  );
   const terminateContract = useCallback(
     (playerId: string) => disposePlayer(terminateManagerContract, playerId),
     [disposePlayer],
@@ -882,6 +946,8 @@ export function GameProvider({
       answerIncomingOffer,
       sellPlayer,
       terminateContract,
+      promoteYouth,
+      releaseYouth,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,
@@ -920,6 +986,8 @@ export function GameProvider({
       answerIncomingOffer,
       sellPlayer,
       terminateContract,
+      promoteYouth,
+      releaseYouth,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,

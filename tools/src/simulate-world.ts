@@ -9,6 +9,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
+  ACADEMY_RULES,
   advanceCareer,
   ageOn,
   type BoardState,
@@ -91,6 +92,10 @@ export interface WorldSeason {
   problems: string[];
   gaps: number[];
   freeAgents: number;
+  /** Jovens na base de todos os clubes (036). */
+  academy: number;
+  /** Safras de emergência da virada (036 R6). */
+  emergencies: number;
   /** Compras entre clubes da IA na temporada e quantas foram para clube de reputação maior. */
   transfers: number;
   upward: number;
@@ -194,10 +199,17 @@ export function simulateWorld(options: SimulateWorldOptions): WorldSeason[] {
     finances = turned.finances;
     renewal = turned.renewal;
     result.push({
-      measure: measureWorld(world, league, seasonDate(world.manifest.referenceDate, league.year)),
+      measure: measureWorld(
+        world,
+        league,
+        seasonDate(world.manifest.referenceDate, league.year),
+        renewal.academy,
+      ),
       problems: squadProblems(world, league),
       gaps,
       freeAgents: market.freeAgents.length,
+      academy: renewal.academy?.players.length ?? 0,
+      emergencies: renewal.academy?.emergencies ?? 0,
       transfers: purchases.length,
       upward,
       coachChanges,
@@ -242,6 +254,16 @@ export function runSimulateWorld(options: SimulateWorldOptions): {
       `${seasonOk ? "✓" : "✗"} ${String(index + 1).padStart(3)}  ${m.mean.toFixed(1).padStart(5)} ${String(m.p10).padStart(4)} ${String(m.p50).padStart(4)} ${String(m.p90).padStart(4)} ${String(m.max).padStart(4)} ${String(m.stars).padStart(8)}  ${m.meanAge.toFixed(1).padStart(5)} ${String(season.problems.length).padStart(8)} ${String(season.freeAgents).padStart(7)} ${String(season.transfers).padStart(8)} ${(season.transfers ? (100 * season.upward) / season.transfers : 0).toFixed(0).padStart(5)}% ${String(season.coachChanges).padStart(9)} ${season.mood.toFixed(0).padStart(8)} ${String(season.headlineTypes).padStart(10)}`,
     );
   }
+  // Base (036 R6): safras de emergência por clube e temporada, com o teto declarado no motor.
+  const clubCount = seasons[0]?.clubs ?? 1;
+  const emergencies = seasons.reduce((sum, season) => sum + season.emergencies, 0);
+  const emergencyRate = seasons.length ? emergencies / (clubCount * seasons.length) : 0;
+  const emergencyOk = emergencyRate <= ACADEMY_RULES.emergencyLimitPerClubSeason;
+  ok &&= emergencyOk;
+  lines.push(
+    "",
+    `${emergencyOk ? "✓" : "✗"} safras de emergência: ${emergencies} (${emergencyRate.toFixed(3)} por clube e temporada, ≤ ${ACADEMY_RULES.emergencyLimitPerClubSeason}); base no fim: ${seasons.at(-1)?.academy ?? 0} jovens`,
+  );
   const gaps = seasons.flatMap((season) => season.gaps);
   const perSeason = gaps.length ? (2 * gaps.reduce((sum, gap) => sum + gap, 0)) / gaps.length : 0;
   const gapOk = perSeason >= WORLD_LIMITS.minYouthMinutesGain;

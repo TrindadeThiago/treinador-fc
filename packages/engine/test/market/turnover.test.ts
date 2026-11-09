@@ -99,8 +99,13 @@ describe("expire-contracts (SC-003, FR-004)", () => {
       expect(player.contract?.untilYear ?? 0).toBeGreaterThan(YEAR);
     }
     expect(result.market.freeAgents.length).toBeGreaterThan(0);
-    expect(squadProblems(result.world, result.league)).toEqual([]);
+    // O elenco do técnico só é completado por ele (036 FR-011b): os da IA ficam válidos.
+    expect(
+      squadProblems(result.world, result.league).filter((problem) => !problem.startsWith(MANAGER)),
+    ).toEqual([]);
+    expect(ownPlayers(result.world)).toEqual([]);
     for (const clubId of result.league.divisions.flatMap((season) => season.clubIds)) {
+      if (clubId === MANAGER) continue;
       const size = result.world.players.filter((player) => player.clubId === clubId).length;
       expect(size).toBeGreaterThanOrEqual(SQUAD_RULES.min);
       expect(size).toBeLessThanOrEqual(SQUAD_RULES.max);

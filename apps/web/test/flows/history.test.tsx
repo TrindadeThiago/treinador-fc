@@ -14,7 +14,9 @@ function afterSeasons(save: SaveFile, seasons: number): SaveFile {
   for (let index = 0; index < seasons; index++) {
     const played = advanceLeague(current.league, current.bank, { toEnd: true });
     if (!played.ok) throw new Error("falhou");
-    const turned = advanceCareerSeason({ ...current, league: played.league }, current.savedAt);
+    const turned = advanceCareerSeason({ ...current, league: played.league }, current.savedAt, {
+      passiveManager: true,
+    });
     if (!turned.ok) throw new Error("falhou");
     current = turned.save;
   }

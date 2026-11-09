@@ -7,7 +7,8 @@ import {
   type Position,
   slotPosition,
 } from "@brasfoot-like/engine";
-import { currentDate, type SaveFile } from "@brasfoot-like/save";
+import { academyWarningOf, currentDate, isEmployed, type SaveFile } from "@brasfoot-like/save";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { GameLayout } from "../../../game/GameLayout";
 import { lineupContext, type useGame } from "../../../game/GameProvider";
@@ -19,6 +20,7 @@ import {
   type SquadSector,
   writePreferences,
 } from "../../../storage/preferences";
+import { AcademyTab } from "../../../ui/AcademyTab";
 import { Button } from "../../../ui/Button";
 import { type Column, DataTable } from "../../../ui/DataTable";
 import { EmptyState } from "../../../ui/EmptyState";
@@ -27,6 +29,7 @@ import { FitnessMeter } from "../../../ui/FitnessMeter";
 import { conditionText, HangingBadge } from "../../../ui/PlayerCondition";
 import { PlayerModal } from "../../../ui/PlayerModal";
 import { SquadCounter } from "../../../ui/SquadCounter";
+import { Tabs } from "../../../ui/Tabs";
 import styles from "./page.module.css";
 
 const SECTORS: readonly SquadSector[] = ["all", "GK", "DEF", "MID", "ATT"];
@@ -279,6 +282,31 @@ function SquadScreen({ save, game }: { save: SaveFile; game: Game }) {
   );
 }
 
+/** Elenco com as abas Profissional e Base (036); `?aba=base` abre a base (avisos e bloqueios). */
+function SquadTabs({ save, game }: { save: SaveFile; game: Game }) {
+  const t = useT();
+  const requested = useSearchParams()?.get("aba");
+  const warning = isEmployed(save) ? academyWarningOf(save) : undefined;
+  return (
+    <Tabs
+      label={t("squad.tabs")}
+      initial={requested === "base" ? "academy" : "professional"}
+      tabs={[
+        {
+          id: "professional",
+          label: t("squad.tab.professional"),
+          content: <SquadScreen save={save} game={game} />,
+        },
+        {
+          id: "academy",
+          label: t("squad.tab.academy"),
+          content: <AcademyTab save={save} game={game} warning={warning} />,
+        },
+      ]}
+    />
+  );
+}
+
 export default function SquadPage() {
-  return <GameLayout>{(save, game) => <SquadScreen save={save} game={game} />}</GameLayout>;
+  return <GameLayout>{(save, game) => <SquadTabs save={save} game={game} />}</GameLayout>;
 }

@@ -1,4 +1,5 @@
 import {
+  academyIdsProblem,
   advanceSeason,
   type CompletedBank,
   clubUnavailability,
@@ -10,6 +11,7 @@ import {
   DEFAULT_BANK_SEED,
   DEFAULT_NEWS,
   economyRules,
+  emptyAcademy,
   emptyMarket,
   ensureContracts,
   type FinanceState,
@@ -361,6 +363,22 @@ const addPlayExtras: Migration = {
   },
 };
 
+/**
+ * v20 → v21: elencos de base (036). Cada clube começa com a base vazia; os jovens que já estão nos
+ * elencos ficam onde estão.
+ */
+const addAcademy: Migration = {
+  from: 20,
+  migrate(raw) {
+    const save = raw as { renewal: { academy?: unknown } };
+    return {
+      ...(raw as object),
+      formatVersion: 21,
+      renewal: { ...save.renewal, academy: save.renewal.academy ?? emptyAcademy() },
+    };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -382,6 +400,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addRegional,
   addPlays,
   addPlayExtras,
+  addAcademy,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -478,6 +497,26 @@ const envelopeSchema = z.object({
     .object({
       nextPlayerSeq: z.int().min(1),
       regulator: z.object({ strengthOffset: z.number(), potentialBonus: z.number() }).loose(),
+      academy: z
+        .object({
+          players: z.array(
+            z
+              .object({
+                player: z.object({ id: z.string().min(1) }).loose(),
+                clubId: z.string().min(1),
+                joinedSeason: z.int(),
+              })
+              .loose(),
+          ),
+          graduates: z.record(
+            z.string(),
+            z.object({ clubId: z.string().min(1), season: z.int() }).loose(),
+          ),
+          promotedThisSeason: z.array(z.object({ playerId: z.string() }).loose()),
+          releasedThisSeason: z.array(z.object({ playerId: z.string() }).loose()),
+          emergencies: z.int().min(0),
+        })
+        .loose(),
     })
     .loose(),
   market: z
@@ -608,12 +647,22 @@ function financeProblem(save: SaveFile): string | undefined {
   return undefined;
 }
 
-/** Sequência de ids da renovação coerente com os jogadores do mundo. */
+/**
+ * Sequência de ids da renovação coerente com os jogadores do mundo e da base; ids da base, do mundo
+ * e dos livres nunca se repetem, e a base é de clubes que existem (036).
+ */
 function renewalProblem(save: SaveFile): string | undefined {
-  const highest = save.bank.players.reduce((max, player) => Math.max(max, playerSeq(player.id)), 0);
-  return save.renewal.nextPlayerSeq > highest
-    ? undefined
-    : "sequência de ids de jogador repetiria ids";
+  const academy = save.renewal.academy ?? emptyAcademy();
+  const highest = [...save.bank.players, ...academy.players.map((entry) => entry.player)].reduce(
+    (max, player) => Math.max(max, playerSeq(player.id)),
+    0,
+  );
+  if (save.renewal.nextPlayerSeq <= highest) return "sequência de ids de jogador repetiria ids";
+  return academyIdsProblem(
+    save.bank,
+    academy,
+    save.market.freeAgents.map((agent) => agent.player.id),
+  );
 }
 
 /** Livres fora do banco, uma negociação por atleta e contratos em todos os jogadores. */

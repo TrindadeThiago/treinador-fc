@@ -385,8 +385,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 1,
           "top": [
             "clube-fom-005",
-            "clube-fom-010",
             "clube-fom-001",
+            "clube-fom-010",
           ],
         },
       ],
@@ -419,9 +419,9 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           ],
           "level": 1,
           "top": [
-            "clube-jod-011",
-            "clube-jod-001",
-            "clube-jod-014",
+            "clube-jod-002",
+            "clube-jod-009",
+            "clube-jod-015",
           ],
         },
       ],
@@ -479,9 +479,9 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           ],
           "level": 1,
           "top": [
-            "clube-fom-008",
             "clube-fom-005",
             "clube-fom-010",
+            "clube-fom-008",
           ],
         },
         {
@@ -545,8 +545,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 2,
           "top": [
             "clube-jod-001",
-            "clube-jod-015",
             "clube-jod-007",
+            "clube-jod-008",
           ],
         },
       ],
@@ -590,7 +590,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 2,
           "top": [
             "clube-zim-001",
-            "clube-zim-014",
+            "clube-zim-007",
             "clube-zim-003",
           ],
         },
@@ -773,8 +773,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 1,
           "top": [
             "clube-jod-018",
-            "clube-jod-002",
-            "clube-jod-010",
+            "clube-jod-014",
+            "clube-jod-009",
           ],
         },
       ],
@@ -808,8 +808,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 1,
           "top": [
             "clube-zim-002",
-            "clube-zim-004",
             "clube-zim-003",
+            "clube-zim-016",
           ],
         },
       ],
@@ -822,24 +822,24 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
             "clube-fom-001",
             "clube-fom-002",
             "clube-fom-003",
+            "clube-fom-004",
             "clube-fom-005",
             "clube-fom-006",
             "clube-fom-007",
             "clube-fom-008",
-            "clube-fom-009",
             "clube-fom-010",
             "clube-fom-012",
           ],
           "level": 1,
           "top": [
-            "clube-fom-008",
             "clube-fom-001",
-            "clube-fom-005",
+            "clube-fom-004",
+            "clube-fom-007",
           ],
         },
         {
           "clubs": [
-            "clube-fom-004",
+            "clube-fom-009",
             "clube-fom-011",
             "clube-fom-013",
             "clube-fom-014",
@@ -853,8 +853,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 2,
           "top": [
             "clube-fom-016",
-            "clube-fom-004",
-            "clube-fom-019",
+            "clube-fom-009",
+            "clube-fom-013",
           ],
         },
       ],
@@ -879,7 +879,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "top": [
             "clube-jod-002",
             "clube-jod-009",
-            "clube-jod-001",
+            "clube-jod-010",
           ],
         },
         {
@@ -899,7 +899,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "top": [
             "clube-jod-019",
             "clube-jod-006",
-            "clube-jod-014",
+            "clube-jod-011",
           ],
         },
       ],
@@ -924,7 +924,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "top": [
             "clube-zim-002",
             "clube-zim-010",
-            "clube-zim-001",
+            "clube-zim-009",
           ],
         },
         {
@@ -943,8 +943,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "level": 2,
           "top": [
             "clube-zim-016",
-            "clube-zim-013",
             "clube-zim-017",
+            "clube-zim-018",
           ],
         },
       ],
@@ -955,12 +955,12 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
         {
           "clubs": [
             "clube-fom-005",
-            "clube-fom-008",
+            "clube-fom-010",
           ],
           "level": 1,
           "top": [
             "clube-fom-005",
-            "clube-fom-008",
+            "clube-fom-010",
           ],
         },
       ],
@@ -970,13 +970,13 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
       "divisions": [
         {
           "clubs": [
+            "clube-jod-002",
             "clube-jod-010",
-            "clube-jod-011",
           ],
           "level": 1,
           "top": [
+            "clube-jod-002",
             "clube-jod-010",
-            "clube-jod-011",
           ],
         },
       ],
@@ -1004,16 +1004,16 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "clubs": [
             "clube-fom-002",
             "clube-fom-003",
+            "clube-fom-004",
             "clube-fom-005",
-            "clube-fom-008",
-            "clube-fom-009",
+            "clube-fom-010",
             "clube-fom-012",
           ],
           "level": 1,
           "top": [
             "clube-fom-005",
-            "clube-fom-009",
-            "clube-fom-008",
+            "clube-fom-010",
+            "clube-fom-003",
           ],
         },
       ],
@@ -1055,7 +1055,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 3 pa
           "top": [
             "clube-zim-010",
             "clube-zim-007",
-            "clube-zim-014",
+            "clube-zim-001",
           ],
         },
       ],
@@ -1199,7 +1199,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 4 pa
           "top": [
             "clube-dus-001",
             "clube-dus-010",
-            "clube-dus-002",
+            "clube-dus-007",
           ],
         },
       ],
@@ -1280,7 +1280,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 4 pa
           "top": [
             "clube-vua-009",
             "clube-vua-005",
-            "clube-vua-002",
+            "clube-vua-007",
           ],
         },
       ],
@@ -1308,8 +1308,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 4 pa
           "level": 1,
           "top": [
             "clube-dus-010",
+            "clube-dus-004",
             "clube-dus-011",
-            "clube-dus-012",
           ],
         },
       ],
@@ -1363,7 +1363,7 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de 4 pa
           "top": [
             "clube-tom-001",
             "clube-tom-003",
-            "clube-tom-012",
+            "clube-tom-008",
           ],
         },
       ],
@@ -1528,8 +1528,8 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de est�
           "level": 2,
           "top": [
             "clube-028",
+            "clube-025",
             "clube-001",
-            "clube-029",
           ],
         },
       ],
@@ -1541,7 +1541,6 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de est�
       "divisions": [
         {
           "clubs": [
-            "clube-001",
             "clube-002",
             "clube-003",
             "clube-004",
@@ -1558,19 +1557,21 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de est�
             "clube-017",
             "clube-018",
             "clube-019",
+            "clube-025",
             "clube-028",
             "clube-031",
             "clube-032",
           ],
           "level": 1,
           "top": [
-            "clube-005",
-            "clube-011",
             "clube-017",
+            "clube-019",
+            "clube-009",
           ],
         },
         {
           "clubs": [
+            "clube-001",
             "clube-007",
             "clube-010",
             "clube-020",
@@ -1578,7 +1579,6 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de est�
             "clube-022",
             "clube-023",
             "clube-024",
-            "clube-025",
             "clube-026",
             "clube-027",
             "clube-029",
@@ -1594,9 +1594,9 @@ exports[`sem competição entre países nada muda (baseline 022) > banco de est�
           ],
           "level": 2,
           "top": [
-            "clube-021",
+            "clube-022",
             "clube-040",
-            "clube-007",
+            "clube-021",
           ],
         },
       ],

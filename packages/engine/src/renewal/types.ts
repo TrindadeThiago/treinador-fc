@@ -1,4 +1,5 @@
 import type { Position } from "../model/catalogs";
+import type { CompletedPlayer } from "../model/types";
 
 /** Renovação do mundo (data-model.md da 009). */
 
@@ -43,6 +44,35 @@ export interface PlayerDelta extends PlayerRef {
   delta: number;
 }
 
+/** Jovem da base de um clube (036): o jogador do mundo sem clube nem contrato. */
+export interface AcademyPlayer {
+  player: Omit<CompletedPlayer, "clubId" | "contract">;
+  /** Clube dono da base. */
+  clubId: string;
+  /** Temporada (`LeagueSeason.number`) da safra em que chegou. */
+  joinedSeason: number;
+}
+
+/** Origem de um jogador promovido da base. */
+export interface AcademyGraduate {
+  clubId: string;
+  season: number;
+}
+
+/** Bases de todos os clubes (036, data-model.md). */
+export interface AcademyState {
+  /** Em ordem de id. */
+  players: AcademyPlayer[];
+  /** Promovidos da base, por id de jogador; podado na virada. */
+  graduates: Record<string, AcademyGraduate>;
+  /** Promoções do técnico na temporada atual (para o aviso da virada). */
+  promotedThisSeason: PlayerRef[];
+  /** Dispensas do técnico na temporada atual (para o aviso da virada). */
+  releasedThisSeason: PlayerRef[];
+  /** Safras de emergência da última virada (R6). */
+  emergencies: number;
+}
+
 export interface SquadChangeNotice {
   season: number;
   clubId: string;
@@ -50,6 +80,12 @@ export interface SquadChangeNotice {
   arrived: PlayerRef[];
   released: PlayerRef[];
   promoted: PlayerRef[];
+  /** Chegaram à base na safra (036). */
+  academyArrived?: PlayerRef[];
+  /** Saíram da base por idade e viraram livres (036). */
+  academyAgedOut?: PlayerRef[];
+  /** Dispensados da base na temporada (036). */
+  academyReleased?: PlayerRef[];
   risers: PlayerDelta[];
   fallers: PlayerDelta[];
 }
@@ -63,4 +99,6 @@ export interface RenewalState {
   regulators?: Record<string, RegulatorState>;
   lastEvolution?: EvolutionRecord;
   squadNotice?: SquadChangeNotice;
+  /** Elencos de base (036); ausente só em usos sem carreira. */
+  academy?: AcademyState;
 }

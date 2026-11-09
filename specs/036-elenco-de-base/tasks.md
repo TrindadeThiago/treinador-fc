@@ -31,8 +31,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 ## Phase 1: Setup
 
-- [ ] T001 Criar `packages/engine/src/renewal/academy.ts` com os tipos `AcademyPlayer`, `AcademyState` e `RosterIssue` e as assinaturas do contrato `contracts/engine-academy.md` (`academyOf`, `academyStatus`, `promotionContract`, `promoteFromAcademy`, `releaseFromAcademy`, `rosterIssues`, `academyWarning`, `graduateOf`, `evolveAcademy`, `emptyAcademy`), com corpos que lançam "não implementado". Exportar em `packages/engine/src/index.ts`.
-- [ ] T002 Em `packages/engine/src/renewal/rules.ts`, acrescentar `ACADEMY_RULES` (`maxPlayers: 15`, `ageLimit: 20`, `aiTargetSize: 25`, `emergencyLimitPerClubSeason: 0.05`) com comentário apontando para research R2, R5 e R6. Em `packages/engine/src/renewal/types.ts`, acrescentar `academy?: AcademyState` a `RenewalState` e os campos `academyArrived`, `academyAgedOut` e `academyReleased` (`PlayerRef[]`) a `SquadChangeNotice` (data-model.md).
+- [X] T001 Criar `packages/engine/src/renewal/academy.ts` com os tipos `AcademyPlayer`, `AcademyState` e `RosterIssue` e as assinaturas do contrato `contracts/engine-academy.md` (`academyOf`, `academyStatus`, `promotionContract`, `promoteFromAcademy`, `releaseFromAcademy`, `rosterIssues`, `academyWarning`, `graduateOf`, `evolveAcademy`, `emptyAcademy`), com corpos que lançam "não implementado". Exportar em `packages/engine/src/index.ts`.
+- [X] T002 Em `packages/engine/src/renewal/rules.ts`, acrescentar `ACADEMY_RULES` (`maxPlayers: 15`, `ageLimit: 20`, `aiTargetSize: 25`, `emergencyLimitPerClubSeason: 0.05`) com comentário apontando para research R2, R5 e R6. Em `packages/engine/src/renewal/types.ts`, acrescentar `academy?: AcademyState` a `RenewalState` e os campos `academyArrived`, `academyAgedOut` e `academyReleased` (`PlayerRef[]`) a `SquadChangeNotice` (data-model.md).
 
 ---
 
@@ -44,35 +44,35 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 ### Testes primeiro
 
-- [ ] T003 [P] Criar `packages/engine/test/renewal/academy.test.ts` com os casos da estrutura:
+- [X] T003 [P] Criar `packages/engine/test/renewal/academy.test.ts` com os casos da estrutura:
   - `emptyAcademy()` vazio;
   - `academyOf` em ordem de id;
   - `academyStatus`: idade na data da temporada, `leavesSeason` (primeira temporada com 20 anos ou mais na data de início) e `lastYear` (para nascidos perto do corte da data de referência);
   - invariante: um id nunca está ao mesmo tempo em `world.players`, `market.freeAgents` e `academy.players`;
   - isolamento (FR-014a): busca do mercado (`packages/engine/src/market/search.ts`), necessidades da IA e elencos de outros clubes não leem `renewal.academy` (a base fica fora de `world.players`, R1).
-- [ ] T004 [P] Em `packages/engine/test/renewal/youth.test.ts`, trocar as expectativas da safra:
+- [X] T004 [P] Em `packages/engine/test/renewal/youth.test.ts`, trocar as expectativas da safra:
   - `generateYouth` grava em `renewal.academy.players` com `clubId` e `joinedSeason`, e `world.players` não muda;
   - a posição carente conta elenco mais base (um clube com 3 goleiros no elenco e 2 na base não recebe goleiro);
   - na IA, a base acima de 15 manda os de menor utilidade (`SQUAD_RULES.utility`) para os livres, em ordem determinística;
   - no clube do técnico (`managerClubId`), a base fica acima do limite sem perder ninguém;
   - a mesma seed dá a mesma safra.
-- [ ] T005 [P] Em `packages/engine/test/renewal/evolution.test.ts`, acrescentar:
+- [X] T005 [P] Em `packages/engine/test/renewal/evolution.test.ts`, acrescentar:
   - `evolveAcademy` aplica `evolutionDelta` com participação 0 e a seed `${careerSeed}:evolve:${number}:${moment}:${playerId}`;
   - um jovem igual na base e no elenco, sem minutos, evolui igual;
   - na rodada do meio de uma liga estrangeira (`finance/round.ts` com `foreign: true`), a base daquele país evolui e o resultado volta ao estado (research R4).
-- [ ] T006 [P] Em `packages/engine/test/renewal/measure.test.ts`, acrescentar: `measureWorld` com `academy` conta os jovens da base dos clubes da liga uma vez (média, percentis, craques, promessas e idade média), e sem `academy` dá o resultado de hoje (FR-019).
-- [ ] T007 [P] Em `packages/engine/test/renewal/squads.test.ts`, reescrever as expectativas do reequilíbrio (research R5):
+- [X] T006 [P] Em `packages/engine/test/renewal/measure.test.ts`, acrescentar: `measureWorld` com `academy` conta os jovens da base dos clubes da liga uma vez (média, percentis, craques, promessas e idade média), e sem `academy` dá o resultado de hoje (FR-019).
+- [X] T007 [P] Em `packages/engine/test/renewal/squads.test.ts`, reescrever as expectativas do reequilíbrio (research R5):
   - `balanceSquads` não chama `createYouth` e `nextPlayerSeq` não muda;
   - a IA promove o melhor da base (por utilidade, desempate por id) em cada posição abaixo do mínimo, depois até o mínimo total e depois até `aiTargetSize`, respeitando `positionMax`;
   - cada promovido ganha contrato (`ensureContracts`) e entra em `graduates`;
   - no clube do técnico, ninguém é promovido nem criado, e só sai quem passa de 40.
-- [ ] T008 [P] Criar `packages/engine/test/renewal/academy-turnover.test.ts`:
+- [X] T008 [P] Criar `packages/engine/test/renewal/academy-turnover.test.ts`:
   - `academy-age-out`: jovem com 20 anos na data da nova temporada sai. Na IA, vai para o elenco com contrato e `graduates`; no técnico e no clube que ficou sem técnico, a regra muda conforme o caso (técnico: vira livre, `lastClubId` = clube; sem técnico: IA).
   - `complete-squads`: clube da IA abaixo de um mínimo sem a posição na base contrata o livre da posição (o orçamento não barra cobertura de mínimo). Sem livre, recebe a safra de emergência: jovem novo na base, promovido na hora, com `emergencies` somado.
   - Vale para clubes só regionais (`withRegionalClubs`).
   - Ordem das etapas em `DEFAULT_TURNOVER_STEPS`: `academy-age-out` antes de `generate-youth`, e `complete-squads` depois de `balance-squads` e antes de `age-out-free-agents`.
   - Depois de cada virada de teste, nenhum jogador novo em `world.players` sem passar pela base.
-- [ ] T009 [P] Criar `packages/save/test/migrate-v21.test.ts` e a fixture `saveV20` em `packages/save/test/fixtures.ts` (no padrão de `saveV19`):
+- [X] T009 [P] Criar `packages/save/test/migrate-v21.test.ts` e a fixture `saveV20` em `packages/save/test/fixtures.ts` (no padrão de `saveV19`):
   - v20 abre e vira v21 com `renewal.academy` vazio (`players: []`, `graduates: {}`, `promotedThisSeason: []`, `releasedThisSeason: []`, `emergencies: 0`);
   - os jogadores ficam onde estavam;
   - a carreira migrada avança até a virada, e a safra chega à base;
@@ -80,13 +80,13 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 ### Implementação
 
-- [ ] T010 Implementar em `packages/engine/src/renewal/academy.ts`:
+- [X] T010 Implementar em `packages/engine/src/renewal/academy.ts`:
   - `emptyAcademy`, `academyOf`, `academyStatus` (com `ageOn` e `seasonDate`) e `graduateOf`;
   - `evolveAcademy`, reaproveitando `evolutionDelta` exportado de `packages/engine/src/renewal/evolution.ts`;
   - as funções internas `toAcademyPlayer`, `promoteInternal` (contrato por `ensureContracts`, `graduates`) e `toFreeAgentFromAcademy` (`toFreeAgent` de `market/free-agents.ts`).
 
   Faz passar T003 e T005 (parte do motor).
-- [ ] T011 Em `packages/engine/src/renewal/youth.ts`:
+- [X] T011 Em `packages/engine/src/renewal/youth.ts`:
   - `generateYouth` recebe a renovação com `academy` e grava a safra na base;
   - `neediestPosition` recebe também a base do clube;
   - excesso da IA vira livre;
@@ -94,26 +94,26 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - devolve `arrived` (base) e `released` (livres).
 
   Em `packages/engine/src/renewal/turnover.ts`, `generateYouthStep` grava `academyArrived` e `academyReleased` no aviso (`withNotice` aceita os campos novos) e acrescenta os livres ao mercado. Faz passar T004.
-- [ ] T012 Em `packages/engine/src/renewal/measure.ts`, `measureWorld(world, league, date, academy?)` soma os jovens da base dos clubes da liga. Em `regulateWorldStep` (`packages/engine/src/renewal/turnover.ts`), passar `context.renewal.academy`. Faz passar T006.
-- [ ] T013 Evolução da base:
+- [X] T012 Em `packages/engine/src/renewal/measure.ts`, `measureWorld(world, league, date, academy?)` soma os jovens da base dos clubes da liga. Em `regulateWorldStep` (`packages/engine/src/renewal/turnover.ts`), passar `context.renewal.academy`. Faz passar T006.
+- [X] T013 Evolução da base:
   - no fim da temporada: `evolvePlayersStep` (`packages/engine/src/renewal/turnover.ts`) chama `evolveAcademy` para os clubes da liga mais os regionais;
   - no meio da temporada: em `packages/engine/src/finance/round.ts`, na rodada do meio, evoluir a base dos clubes da liga (mais regionais) também quando `foreign` é verdadeiro, e devolver a `academy` atualizada mesmo nesse caso (só `lastEvolution` continua preservado).
 
   Faz passar T005.
-- [ ] T014 Em `packages/engine/src/renewal/squads.ts`:
+- [X] T014 Em `packages/engine/src/renewal/squads.ts`:
   - remover a criação de jovens;
   - promoções da IA da base (mínimos, mínimo total, `aiTargetSize`, `positionMax`) com contrato e `graduates`;
   - liberações por teto e máximo como hoje.
 
   Ajustar `balanceSquadsStep` em `packages/engine/src/renewal/turnover.ts`: `promoted` deixa de receber promoções automáticas do técnico, e o `ensureContracts` continua para os promovidos. Faz passar T007.
-- [ ] T015 Implementar as etapas novas em `packages/engine/src/renewal/turnover.ts`:
+- [X] T015 Implementar as etapas novas em `packages/engine/src/renewal/turnover.ts`:
   - `academyAgeOutStep` (`academy-age-out`): IA promove e técnico vira livre, com `academyAgedOut` no aviso;
   - `completeSquadsStep` (`complete-squads`): livres por posição para a IA abaixo do mínimo, com a mesma regra de `freeAgentFor` (`market/ai/free-agents.ts`) e cobertura sem barrar o orçamento; depois a emergência (R6) e a soma de `emergencies`.
 
   Registrar as duas, com `perCountry`, em `DEFAULT_TURNOVER_STEPS` de `packages/engine/src/career/turnover.ts`. Ao fim da virada, podar `graduates` e zerar `promotedThisSeason` e `releasedThisSeason` depois de copiá-los para `squadNotice.promoted` e `squadNotice.academyReleased`. Faz passar T008.
-- [ ] T016 Em `packages/engine/src/market/ai/round.ts`, antes dos livres por carência, um clube da IA abaixo de um mínimo promove o melhor da base na posição (FR-013, research R5). Teste primeiro, no arquivo de testes de `aiMarketRound` em `packages/engine/test/market/` (localizar com `grep -l aiMarketRound packages/engine/test/market`): um clube forçado abaixo do mínimo no meio da temporada promove da base.
-- [ ] T017 Criar a renovação inicial com `academy: emptyAcademy()` em `initialRenewal` (`packages/engine/src/renewal/measure.ts`) e em `packages/save/src/create.ts`.
-- [ ] T018 Save v21:
+- [X] T016 Em `packages/engine/src/market/ai/round.ts`, antes dos livres por carência, um clube da IA abaixo de um mínimo promove o melhor da base na posição (FR-013, research R5). Teste primeiro, no arquivo de testes de `aiMarketRound` em `packages/engine/test/market/` (localizar com `grep -l aiMarketRound packages/engine/test/market`): um clube forçado abaixo do mínimo no meio da temporada promove da base.
+- [X] T017 Criar a renovação inicial com `academy: emptyAcademy()` em `initialRenewal` (`packages/engine/src/renewal/measure.ts`) e em `packages/save/src/create.ts`.
+- [X] T018 Save v21:
   - `packages/save/src/format.ts`: `SAVE_FORMAT_VERSION = 21`, e `renewal.academy` obrigatório no comentário do tipo;
   - `packages/save/src/migrate.ts`: migração `addAcademy` (`from: 20`) e validação de ids disjuntos e clubes existentes.
 
@@ -129,14 +129,14 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: carreira nova, avançar até a primeira virada, abrir Elenco → Base e ver os jovens da safra (e nenhum deles no Profissional).
 
-- [ ] T019 [P] [US1] Criar `apps/web/src/game/academy-view.ts`, com teste em `apps/web/src/game/academy-view.test.ts`. Seletores:
+- [X] T019 [P] [US1] Criar `apps/web/src/game/academy-view.ts`, com teste em `apps/web/src/game/academy-view.test.ts`. Seletores:
   - `academyRows(save)`: nome, idade, posição, força, características, `leavesSeason` e `lastYear`, ordenáveis;
   - `academyCapacity(save)`: ocupadas, limite e excesso.
 
   Lê do motor (`academyOf`, `academyStatus`), sem regra própria.
-- [ ] T020 [P] [US1] Acrescentar em `packages/i18n/locales/pt-BR/ui.json` as chaves de `contracts/academy-screens.md`: `academy.tab`, `academy.title`, `academy.capacity`, `academy.excess`, `academy.empty`, colunas, `academy.lastYear`, `academy.leavesIn`, `squad.tabProfessional` e `squad.tabAcademy`, com plural ICU.
-- [ ] T021 [US1] Criar `apps/web/src/ui/AcademyTab.tsx` e `AcademyTab.module.css`: cabeçalho com `SquadCounter` ("{n} de {limite} vagas" e excesso em texto), `DataTable` ordenável por idade, posição e força, `Badge` "Último ano" em texto e estado vazio. Teste de componente em `apps/web/src/ui/AcademyTab.test.tsx`.
-- [ ] T022 [US1] Em `apps/web/src/app/jogo/elenco/page.tsx`, acrescentar `Tabs` Profissional e Base, com a aba em `?aba=base`, os atalhos de teclado das outras abas e, sem emprego, a base do clube em foco só para leitura.
+- [X] T020 [P] [US1] Acrescentar em `packages/i18n/locales/pt-BR/ui.json` as chaves de `contracts/academy-screens.md`: `academy.tab`, `academy.title`, `academy.capacity`, `academy.excess`, `academy.empty`, colunas, `academy.lastYear`, `academy.leavesIn`, `squad.tabProfessional` e `squad.tabAcademy`, com plural ICU.
+- [X] T021 [US1] Criar `apps/web/src/ui/AcademyTab.tsx` e `AcademyTab.module.css`: cabeçalho com `SquadCounter` ("{n} de {limite} vagas" e excesso em texto), `DataTable` ordenável por idade, posição e força, `Badge` "Último ano" em texto e estado vazio. Teste de componente em `apps/web/src/ui/AcademyTab.test.tsx`.
+- [X] T022 [US1] Em `apps/web/src/app/jogo/elenco/page.tsx`, acrescentar `Tabs` Profissional e Base, com a aba em `?aba=base`, os atalhos de teclado das outras abas e, sem emprego, a base do clube em foco só para leitura.
 
 **Checkpoint**: US1 funciona sozinha (ver a base).
 
@@ -148,21 +148,21 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: no meio da temporada, promover um jovem, confirmar e escalá-lo no próximo jogo; o detalhe mostra "cria da base".
 
-- [ ] T023 [P] [US2] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
+- [X] T023 [P] [US2] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
   - `promotionContract` igual ao contrato que `ensureContracts` daria;
   - `promoteFromAcademy` move o jovem para `world.players` com `clubId` e contrato, registra `graduates` e `promotedThisSeason`, e recusa `academy.squad_full` com o elenco no máximo do técnico (`squadLimit`) e `academy.not_found` para id fora da base do clube;
   - o promovido entra na folha (`annualWageBill`) e pode ser escalado (`validateLineup` aceita).
-- [ ] T024 [P] [US2] Criar `packages/save/test/academy.test.ts` com `promoteYouth(save, playerId)`:
+- [X] T024 [P] [US2] Criar `packages/save/test/academy.test.ts` com `promoteYouth(save, playerId)`:
   - usa `save.clubId`;
   - recusa com o técnico desempregado e durante uma partida ao vivo em andamento (`academy.match_in_progress`);
   - a escalação automática (`withAdjustedLineup`) continua válida.
-- [ ] T025 [US2] Implementar `promotionContract` e `promoteFromAcademy` em `packages/engine/src/renewal/academy.ts`, e `promoteYouth` em `packages/save/src/academy.ts` (exportado por `packages/save/src/index.ts`). Faz passar T023 e T024.
-- [ ] T026 [US2] Na web:
+- [X] T025 [US2] Implementar `promotionContract` e `promoteFromAcademy` em `packages/engine/src/renewal/academy.ts`, e `promoteYouth` em `packages/save/src/academy.ts` (exportado por `packages/save/src/index.ts`). Faz passar T023 e T024.
+- [X] T026 [US2] Na web:
   - comando `promoteYouth` em `apps/web/src/game/GameProvider.tsx` (salva e atualiza);
   - em `AcademyTab.tsx`, o botão Promover com `Dialog` de confirmação ("Promover {nome}?", salário por mês e ano final por `formatMoney`);
   - desabilitado com `aria-describedby` quando o elenco está no máximo ou há partida ao vivo;
   - chaves `academy.promote*` em `ui.json`.
-- [ ] T027 [US2] Em `apps/web/src/ui/PlayerDetails.tsx`, a linha "Cria da base do {clube} (temporada {n})" via `graduateOf`, com a chave `player.academyGraduate` em `ui.json` e um teste de componente.
+- [X] T027 [US2] Em `apps/web/src/ui/PlayerDetails.tsx`, a linha "Cria da base do {clube} (temporada {n})" via `graduateOf`, com a chave `player.academyGraduate` em `ui.json` e um teste de componente.
 
 **Checkpoint**: US1 e US2 entregam o MVP (ver e promover).
 
@@ -174,15 +174,15 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: com jovem no último ano, ver o aviso na abertura da última janela e antes do último jogo; na virada, ele sai como livre e aparece em "Saíram da base por idade".
 
-- [ ] T028 [P] [US3] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
+- [X] T028 [P] [US3] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
   - `academyWarning` devolve `{ kind: "last_window", count }` só com a última janela da temporada aberta (`isWindowOpen` e a última de `transferWindows`) e jovens no último ano; sem nenhuma janela, nunca devolve aviso;
   - `rosterIssues` devolve `academy_last_year` (gravidade `warning`, `count`) só quando o próximo jogo do clube é o último dele na temporada (`nextClubFixture` e calendário).
-- [ ] T029 [US3] Implementar `academyWarning` e o caso `academy_last_year` de `rosterIssues` em `packages/engine/src/renewal/academy.ts`. Faz passar T028.
-- [ ] T030 [US3] Na web:
+- [X] T029 [US3] Implementar `academyWarning` e o caso `academy_last_year` de `rosterIssues` em `packages/engine/src/renewal/academy.ts`. Faz passar T028.
+- [X] T030 [US3] Na web:
   - `apps/web/src/ui/home/NoticeStrip.tsx` mostra o aviso da última janela com link para `/jogo/elenco?aba=base`, e `AcademyTab.tsx` mostra o mesmo `Notice`;
   - `apps/web/src/ui/SimulateDialogs.tsx` e `GameProvider.tsx` tratam `academy_last_year` como `confirm` ("Jogar" e "Ir para a base");
   - chaves `academy.warning*` e `simulate.academyLastYear*` em `ui.json`.
-- [ ] T031 [US3] Em `apps/web/src/ui/SquadChangeNotice.tsx` (e na tela de fim de temporada que o usa), seções "Chegaram à base", "Saíram da base por idade (agora livres)", "Promovidos da base" e "Dispensados da base" (FR-016), sem "promovidos automáticos" no clube do técnico. Chaves `squadNotice.academy*` em `ui.json` e teste de componente.
+- [X] T031 [US3] Em `apps/web/src/ui/SquadChangeNotice.tsx` (e na tela de fim de temporada que o usa), seções "Chegaram à base", "Saíram da base por idade (agora livres)", "Promovidos da base" e "Dispensados da base" (FR-016), sem "promovidos automáticos" no clube do técnico. Chaves `squadNotice.academy*` em `ui.json` e teste de componente.
 
 ---
 
@@ -192,17 +192,17 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: dispensar e achar o jovem entre os livres. Com a base acima do limite, ou o elenco abaixo do mínimo, tentar jogar e ser impedido até resolver.
 
-- [ ] T032 [P] [US4] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
+- [X] T032 [P] [US4] Em `packages/engine/test/renewal/academy.test.ts`, acrescentar:
   - `releaseFromAcademy` tira da base, põe em `market.freeAgents` (`lastClubId`, `sinceYear`) e registra em `releasedThisSeason`, e um clube da IA pode contratá-lo depois (`freeAgentFor`);
   - `rosterIssues`: `academy_over_limit` (erro, `excess`, `limit`) com a base do técnico acima de 15;
   - `rosterIssues`: `squad_below_minimum` (erro, `missing` e `positions`) com o elenco abaixo do mínimo total ou de posição;
   - nada disso para o técnico desempregado.
-- [ ] T033 [P] [US4] Em `packages/save/test/academy.test.ts`, acrescentar:
+- [X] T033 [P] [US4] Em `packages/save/test/academy.test.ts`, acrescentar:
   - `releaseYouth`;
   - `advanceCareerSeason` (e o início da rodada ao vivo) recusa avançar com `roster.blocked` e os problemas quando há erro, e volta a avançar depois de promover ou dispensar;
   - um técnico com caixa negativo consegue sair do `squad_below_minimum` promovendo da base ou contratando livre.
-- [ ] T034 [US4] Implementar `releaseFromAcademy` e os casos de erro de `rosterIssues` em `packages/engine/src/renewal/academy.ts`; `releaseYouth` em `packages/save/src/academy.ts`; e a recusa em `advanceCareerSeason` (`packages/save/src/career.ts`) e no caminho ao vivo. Faz passar T032 e T033.
-- [ ] T035 [US4] Na web:
+- [X] T034 [US4] Implementar `releaseFromAcademy` e os casos de erro de `rosterIssues` em `packages/engine/src/renewal/academy.ts`; `releaseYouth` em `packages/save/src/academy.ts`; e a recusa em `advanceCareerSeason` (`packages/save/src/career.ts`) e no caminho ao vivo. Faz passar T032 e T033.
+- [X] T035 [US4] Na web:
   - comando `releaseYouth` no `GameProvider.tsx` e o botão Dispensar com `Dialog` ("Ele deixa o clube e vira jogador livre. Não dá para desfazer");
   - em `SimulateDialogs.tsx`, os bloqueios `academy_over_limit` ("Ir para a base") e `squad_below_minimum` ("Ir para a base" e "Ir para o mercado"), lidos de `rosterIssues` no fluxo `blocked` que já existe em `GameProvider.tsx`;
   - chaves `academy.release*`, `simulate.academyOverLimit*` e `simulate.squadBelowMinimum*` em `ui.json`.
@@ -215,7 +215,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: `pnpm sim:world --seasons 30` e o teste de longo prazo verdes com os critérios novos.
 
-- [ ] T036 [US5] Em `packages/engine/test/renewal/long-run.ts`, acrescentar os critérios do research R10 com limites declarados:
+- [X] T036 [US5] Em `packages/engine/test/renewal/long-run.ts`, acrescentar os critérios do research R10 com limites declarados:
   - base de cada clube ≤ 15 em toda temporada;
   - zero jogadores criados direto (delta de `nextPlayerSeq` = safra + emergências);
   - média de emergências ≤ `ACADEMY_RULES.emergencyLimitPerClubSeason`, e 0 no mundo padrão;
@@ -223,10 +223,10 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - tamanho médio dos elencos da IA entre 23 e 28.
 
   Manter `RANGES` e, se a idade média sair da faixa por causa da base, revisar a faixa no mesmo commit com a justificativa.
-- [ ] T037 [US5] Calibrar `YOUTH_RULES.perClub` e, se preciso, `ACADEMY_RULES.aiTargetSize` em `packages/engine/src/renewal/rules.ts` até `long-run-1` e `long-run-2` passarem. Registrar os valores e as medições (antes e depois) em `specs/036-elenco-de-base/research.md`, numa seção "Calibragem".
-- [ ] T038 [US5] Em `tools/src/simulate-world.ts`, acrescentar ao relatório e aos `WORLD_LIMITS`: jogadores na base, emergências por temporada, população e tamanho médio dos elencos da IA. Rodar `pnpm sim:gates` (mundo completo por 10 temporadas e escala com 3 países por 30 temporadas) e ajustar a calibragem até passar.
-- [ ] T039 [US5] Regravar as linhas de base que mudam por causa da safra na base e do reequilíbrio sem criação: `packages/engine/test/career/__snapshots__/*.snap`, `packages/save/test/equivalence.test.ts` e os demais que falharem só por resultado. Antes, conferir que cada diferença vem da base (e não de um erro), e explicar no commit (FR-018).
-- [ ] T040 [US5] Desempenho: rodar `packages/engine/test/renewal/performance.test.ts` e `packages/engine/test/career/performance.test.ts`; a virada do mundo padrão e da escala continua dentro das metas da 020. Se não, otimizar (índices por clube na base) sem mudar resultados.
+- [X] T037 [US5] Calibrar `YOUTH_RULES.perClub` e, se preciso, `ACADEMY_RULES.aiTargetSize` em `packages/engine/src/renewal/rules.ts` até `long-run-1` e `long-run-2` passarem. Registrar os valores e as medições (antes e depois) em `specs/036-elenco-de-base/research.md`, numa seção "Calibragem".
+- [X] T038 [US5] Em `tools/src/simulate-world.ts`, acrescentar ao relatório e aos `WORLD_LIMITS`: jogadores na base, emergências por temporada, população e tamanho médio dos elencos da IA. Rodar `pnpm sim:gates` (mundo completo por 10 temporadas e escala com 3 países por 30 temporadas) e ajustar a calibragem até passar.
+- [X] T039 [US5] Regravar as linhas de base que mudam por causa da safra na base e do reequilíbrio sem criação: `packages/engine/test/career/__snapshots__/*.snap`, `packages/save/test/equivalence.test.ts` e os demais que falharem só por resultado. Antes, conferir que cada diferença vem da base (e não de um erro), e explicar no commit (FR-018).
+- [X] T040 [US5] Desempenho: rodar `packages/engine/test/renewal/performance.test.ts` e `packages/engine/test/career/performance.test.ts`; a virada do mundo padrão e da escala continua dentro das metas da 020. Se não, otimizar (índices por clube na base) sem mudar resultados.
 
 ---
 
@@ -236,7 +236,7 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
 
 **Independent Test**: abrir a fixture v20 no jogo e avançar até a virada.
 
-- [ ] T041 [US6] Em `packages/save/test/migrate-v21.test.ts`, acrescentar uma carreira longa v20 (fixture gerada em `packages/save/test/fixtures.ts` por `saveV20({ seasons: 2 })`, que joga duas temporadas na v20 antes de gravar) que migra e passa por duas viradas com elencos válidos (inclusive o do técnico, que pode ficar bloqueado e ser resolvido promovendo). Em `apps/web/e2e/save-file.spec.ts`, importar um arquivo v20 e conferir que abre.
+- [X] T041 [US6] Em `packages/save/test/migrate-v21.test.ts`, acrescentar uma carreira longa v20 (fixture gerada em `packages/save/test/fixtures.ts` por `saveV20({ seasons: 2 })`, que joga duas temporadas na v20 antes de gravar) que migra e passa por duas viradas com elencos válidos (inclusive o do técnico, que pode ficar bloqueado e ser resolvido promovendo). Em `apps/web/e2e/save-file.spec.ts`, importar um arquivo v20 e conferir que abre.
 
 ---
 
@@ -252,8 +252,8 @@ A Foundational leva a estrutura da base e a virada da IA (age-out, promoções, 
   - SC-008: promover e dispensar com no máximo três ações (foco no jovem, ação e confirmação), contadas no teste pelo teclado.
 
   Incluir a aba Base em `apps/web/e2e/a11y.spec.ts` (dois temas) e em `apps/web/e2e/screens-list.ts`.
-- [ ] T043 [P] Medir o tamanho do save com a base em `packages/save/test/long-career.test.ts` (teto de 5,5 MB) e `packages/save/test/football-world-scale.test.ts` (`SCALE_LIMITS`, 42 MB). Registrar no PR os valores antes e depois.
-- [ ] T044 [P] Documentação:
+- [X] T043 [P] Medir o tamanho do save com a base em `packages/save/test/long-career.test.ts` (teto de 5,5 MB) e `packages/save/test/football-world-scale.test.ts` (`SCALE_LIMITS`, 42 MB). Registrar no PR os valores antes e depois.
+- [X] T044 [P] Documentação:
   - `docs/guia-do-jogador.md`: base, promoção, dispensa, idade-limite, bloqueios e o fim da reposição automática do elenco;
   - `docs/glossario.md`: base, safra, cria da base, safra de emergência;
   - `docs/arquitetura.md`: `renewal/academy.ts`, as etapas novas da virada e `RenewalState.academy`;

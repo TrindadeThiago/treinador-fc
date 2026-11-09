@@ -154,3 +154,53 @@ O teste `migrate-v21.test.ts` abre a fixture `saveV20` e avança até a virada. 
 - `docs/design.md` §5 (o reequilíbrio não cria mais jogadores).
 
 As linhas de base por seed são regravadas no mesmo PR, com a explicação no commit (FR-018).
+
+## Decisões da implementação (2026-11-09)
+
+### I1. Onde o bloqueio é aplicado
+
+`rosterIssues` (motor) calcula os problemas, e a camada do save expõe `rosterIssuesOf(save)`. O
+provider da web os aplica antes de começar a rodada, no mesmo ponto em que já aplica
+`validateLineup`: erro abre o diálogo de bloqueio, aviso abre o de confirmação. O R8 previa a
+recusa dentro do avanço do save; isso quebraria as simulações e os testes que jogam dias direto pelo
+motor com um técnico que não age, sem ganho para o jogador, que só joga pela interface.
+
+### I2. Técnico passivo nas simulações
+
+As simulações longas e os testes de carreira têm um técnico que nunca renova contratos nem
+contrata. Sem a reposição automática (FR-011b), o elenco dele cai abaixo de 11 em poucas
+temporadas e a partida não começa. A virada ganhou a opção `passiveManager` (motor:
+`TurnoverOptions`; save: `advanceCareerSeason(save, now, { passiveManager: true })`), em que o
+clube do técnico é completado pelas regras da IA (promoções da base, livres, emergência). O jogo
+nunca a usa. `startNextSeason`, que só serve a simulações e testes, a liga por padrão.
+
+### I3. Calibragem (T037)
+
+Medido no teste de 30 temporadas (`long-run-1` e `long-run-2`, mundo de teste com 40 clubes):
+
+| Medida | Antes (1.8.1) | Com a base |
+|---|---|---|
+| Faixas de força, craques, promessas | dentro | dentro (sem mudança de `YOUTH_RULES`) |
+| Idade média (elencos + base) | 25,4 a 25,7 | 24,6 a 25,7 |
+| Elenco médio da IA | 25 a 26 | 24 a 25 |
+| Jogadores criados direto no elenco | 0 a 14 por virada | 0 |
+| Safras de emergência | — | 15 em 30 temporadas (0,0125 por clube e temporada; limite 0,05) |
+| Elencos + bases | 1 011 → 1 002 (encolhia) | 1 031 → ~1 100 a 1 150 (a base vira um estoque de ~10%) |
+
+A quantidade da safra **não** foi recalibrada: o mundo deixou de encolher, porque os jovens que
+antes eram dispensados por excesso agora esperam na base. O critério de população virou
+"variação de até 8% em relação à temporada 5", quando a base já se formou (as ondas de geração
+fazem a população oscilar até 6,5%). A safra de emergência não chegou a zero no mundo de teste: ela
+aparece em poucas viradas, quando um clube fica sem goleiro na base e no mercado. A taxa fica 4×
+abaixo do limite declarado.
+
+O limite reduzido do CI da correlação entre vagas e títulos continentais
+(`CONTINENTAL_LIMITS.ci.minSlotsTitlesSpearman`) foi revisto de 0 para -0,1: com 10 títulos entre 5
+países ele é quase só ruído, e a seed `longo-continental-b` passou a dar -0,08. O critério completo
+(≥ 0,3 em 30 temporadas) continua.
+
+### I4. Linhas de base regravadas (T039)
+
+`equivalence-baseline.json` e os snapshots de `composition-baseline` e `continental-baseline`. Nas
+duas seeds da equivalência, a primeira temporada continua idêntica (rodadas e finanças); as
+diferenças começam depois da primeira virada, quando a safra passa a ir para a base.

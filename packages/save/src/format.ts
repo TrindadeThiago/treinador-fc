@@ -19,7 +19,7 @@ import type {
 } from "@brasfoot-like/engine";
 
 /** Versão atual do formato do save (Princípio VI). */
-export const SAVE_FORMAT_VERSION = 20;
+export const SAVE_FORMAT_VERSION = 21;
 
 export const MANAGER_NAME_MAX = 40;
 
@@ -59,7 +59,10 @@ export interface SaveFile {
   regionalHistory?: RegionalEdition[];
   /** Finanças de todos os clubes da competição (v4). */
   finances: FinanceState;
-  /** Estado da renovação do mundo (v5). `bank` é o mundo vivo da carreira desde a 009. */
+  /**
+   * Estado da renovação do mundo (v5). `bank` é o mundo vivo da carreira desde a 009. Desde a v21
+   * (036) traz os elencos de base em `renewal.academy`, fora de `bank.players`.
+   */
   renewal: RenewalState;
   /** Livres, negociações, propostas (v6) e resumos de janela (v7) do mercado. Contratos ficam em `bank.players[].contract`. */
   market: MarketState;

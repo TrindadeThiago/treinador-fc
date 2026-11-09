@@ -238,7 +238,7 @@ export function runSimulateScale(options: SimulateScaleOptions): ScaleReport {
       for (const league of [state.league, ...state.competitions].filter((entry) =>
         isCountryMain(save.bank, entry.competitionId),
       )) {
-        const m = measureWorld(save.bank, league, date);
+        const m = measureWorld(save.bank, league, date, save.renewal.academy);
         const label = league.competitionId;
         if (!within(m.mean, COUNTRY_LIMITS.mean))
           problems.push(`${label}: média ${m.mean.toFixed(1)}`);
@@ -307,7 +307,8 @@ export function runSimulateScale(options: SimulateScaleOptions): ScaleReport {
       exported = gzipSync(JSON.stringify(save), { level: 6 }).length;
     }
     const t1 = performance.now();
-    const turned = advanceCareerSeason(save, NOW);
+    // Técnico passivo (036): o elenco dele é completado como o da IA.
+    const turned = advanceCareerSeason(save, NOW, { passiveManager: true });
     if (!turned.ok) throw new Error(JSON.stringify(turned.error));
     save = turned.save;
     const turnoverMs = performance.now() - t1;

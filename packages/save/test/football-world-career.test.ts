@@ -57,7 +57,7 @@ describe("carreira no mundo compacto (024 US1)", () => {
       expect.arrayContaining(["copa-bra", estadual?.id, "continental-conmebol-maior"]),
     );
     const end = playSeason(save);
-    const turned = advanceCareerSeason(end, NOW);
+    const turned = advanceCareerSeason(end, NOW, { passiveManager: true });
     if (!turned.ok) throw new Error(JSON.stringify(turned));
     expect(turned.save.league.number).toBe(2);
     expect(turned.save.regionalHistory?.length).toBeGreaterThan(0);
@@ -92,7 +92,7 @@ describe("carreira em outros continentes (024 US1)", () => {
       const ids = [save.league, ...save.competitions].map((league) => league.competitionId);
       expect(ids).toContain(`continental-${confederation}-maior`);
       const end = playSeason(save);
-      const turned = advanceCareerSeason(end, NOW);
+      const turned = advanceCareerSeason(end, NOW, { passiveManager: true });
       if (!turned.ok) throw new Error(JSON.stringify(turned));
       expect(
         turned.save.continentalHistory?.some(

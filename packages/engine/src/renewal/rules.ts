@@ -55,6 +55,21 @@ export const YOUTH_RULES = {
   potentialMargin: [10, 30] as const,
 };
 
+/**
+ * Elenco de base (036, research.md R2, R5, R6). Constantes do jogo, como `SQUAD_RULES`; os limites
+ * de equilíbrio ficam no teste de longo prazo.
+ */
+export const ACADEMY_RULES = {
+  /** Vagas na base de cada clube. */
+  maxPlayers: 15,
+  /** Quem tem esta idade ou mais na data de início da nova temporada sai da base na virada. */
+  ageLimit: 20,
+  /** Tamanho do elenco a que a IA chega promovendo da base (mantém os elencos de hoje). */
+  aiTargetSize: 25,
+  /** Teto da média de safras de emergência por clube e temporada (teste longo). */
+  emergencyLimitPerClubSeason: 0.05,
+};
+
 export const SQUAD_RULES = {
   min: 22,
   /** Máximo dos clubes da IA (a economia e o mundo são calibrados com ele). */

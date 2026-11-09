@@ -44,7 +44,8 @@
 
 ## 5. Renovação do mundo
 
-- Novos jovens gerados conforme estrutura/reputação do clube, com nomes de bancos de nomes por país.
+- Novos jovens gerados conforme estrutura/reputação do clube, com nomes de bancos de nomes por país. Desde a 036 eles chegam ao **elenco de base** (sub-20, até 15 vagas), e o técnico promove ou dispensa.
+- **Nenhum jogador nasce direto num elenco** (036): a IA completa os elencos promovendo da base e contratando livres; a safra de emergência (um jovem na base, promovido na hora) é a garantia final, medida e limitada. O elenco do técnico só é completado por ele.
 - **Regulador global:** a cada temporada verifica a distribuição de forças do mundo e ajusta a geração, mantendo poucos craques e muitos medianos.
 - **Teste automatizado de 30 temporadas** sem interação: média, extremos e economia devem permanecer em faixas saudáveis.
 

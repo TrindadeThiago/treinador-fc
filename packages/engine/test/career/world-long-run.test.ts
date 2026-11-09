@@ -46,7 +46,7 @@ describe("temporadas de vários países (020 SC-001, em escala reduzida)", () =>
       for (const league of [end.league, ...end.competitions].filter((entry) =>
         isCountryMain(end.world, entry.competitionId),
       )) {
-        const measure = measureWorld(end.world, league, date);
+        const measure = measureWorld(end.world, league, date, end.renewal?.academy);
         const label = `${league.competitionId} temporada ${season}`;
         if (!within(measure.mean, LIMITS.mean)) problems.push(`${label}: média ${measure.mean}`);
         if (!within(measure.p10, LIMITS.p10)) problems.push(`${label}: p10 ${measure.p10}`);
