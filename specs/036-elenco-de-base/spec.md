@@ -13,6 +13,10 @@
 ### Session 2026-11-09
 
 - Q: Quando a safra encontra a base do técnico cheia, o que acontece? → A: A base aceita a safra inteira e fica acima do limite. O técnico não joga a próxima partida até promover ou dispensar o suficiente para voltar ao limite (mesmo caminho do bloqueio da escalação inválida).
+- Q: Como o elenco principal é completado quando falta jogador? → A: O jogo não gera mais jogadores direto em nenhum elenco principal. No clube do técnico, o elenco só é completado por ele, de forma manual (promoção da base ou contratação); abaixo do mínimo, a próxima partida fica impedida até ele completar. Os clubes da IA completam pelas mesmas regras: promovendo da base e, se faltar, contratando no mercado (livres e transferências). A geração de jogadores novos acontece só na safra da base.
+- Q: Para onde vai o jovem que deixa a base sem ser promovido (dispensa ou idade-limite)? → A: Vira jogador livre no mercado, pelas regras atuais dos livres (qualquer clube pode contratá-lo, e ele se aposenta se ficar tempo demais sem clube).
+- Q: O técnico vê a base dos outros clubes? → A: Não. Nesta feature só a base do clube do técnico é visível. A base dos outros clubes fica para uma feature futura (olheiros e compra de jovens).
+- Q: Quando chega o aviso dos jovens no último ano? → A: Duas vezes: na abertura da última janela de transferências da temporada e antes do último jogo do clube na temporada. A marcação "último ano" na aba Base fica visível o tempo todo.
 
 ## Contexto
 
@@ -24,8 +28,9 @@ Decisões tomadas com o usuário (2026-11-09):
 
 - A primeira entrega do marco é o **elenco de base separado**. A base não disputa partidas.
 - A safra continua **uma vez por temporada, na virada**.
-- Esta feature **não muda quantos jovens chegam nem a qualidade deles**. O nível da academia fica para a 037.
+- Esta feature **não muda a qualidade dos jovens**. O nível da academia fica para a 037. A quantidade da safra só pode ser recalibrada para repor os jogadores que o reequilíbrio deixa de criar (ver FR-002).
 - O potencial continua **oculto** nesta feature. A faixa estimada fica para a 038.
+- O jogo **deixa de criar jogadores direto no elenco principal** de qualquer clube. Todo jogador novo nasce na base, e o elenco principal só cresce por promoção ou contratação.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -75,9 +80,10 @@ Como técnico, quero ser avisado quando um jovem chega ao último ano na base, p
 **Acceptance Scenarios**:
 
 1. **Given** um jovem que vai passar da idade-limite na próxima virada, **When** o técnico abre a aba Base, **Then** ele aparece marcado em texto como "último ano".
-2. **Given** jovens no último ano, **When** falta pouco para o fim da temporada, **Then** o jogo dá um aviso com quantos são e o caminho para a aba Base.
-3. **Given** um jovem do meu clube que passou da idade-limite e não foi promovido, **When** a virada acontece, **Then** ele deixa o clube, e o aviso de mudanças do elenco o lista como "saiu da base por idade".
-4. **Given** um jovem de um clube da IA que passou da idade-limite, **When** a virada acontece, **Then** o clube o promove, e o reequilíbrio dos elencos decide como com qualquer jogador.
+2. **Given** jovens no último ano, **When** abre a última janela de transferências da temporada, **Then** o jogo dá um aviso com quantos são e o caminho para a aba Base.
+3. **Given** jovens ainda no último ano, **When** chega o último jogo do clube na temporada, **Then** o jogo dá o aviso de novo, antes da partida.
+4. **Given** um jovem do meu clube que passou da idade-limite e não foi promovido, **When** a virada acontece, **Then** ele deixa o clube e vira jogador livre, e o aviso de mudanças do elenco o lista como "saiu da base por idade".
+5. **Given** um jovem de um clube da IA que passou da idade-limite, **When** a virada acontece, **Then** o clube o promove, e o reequilíbrio dos elencos decide como com qualquer jogador.
 
 ---
 
@@ -92,9 +98,10 @@ Como técnico, quero dispensar um jovem que não vai vingar, para abrir vaga na 
 **Acceptance Scenarios**:
 
 1. **Given** um jovem na base, **When** o técnico escolhe Dispensar e confirma, **Then** o jovem deixa o clube e a vaga na base fica livre.
-2. **Given** a confirmação de dispensa, **When** ela é exibida, **Then** diz que a ação não pode ser desfeita.
+2. **Given** a confirmação de dispensa, **When** ela é exibida, **Then** diz que a ação não pode ser desfeita e que o jovem vira jogador livre.
 3. **Given** a safra deixou a base do meu clube acima do limite, **When** tento jogar a próxima partida, **Then** o jogo impede, diz quantos jovens estão acima do limite e leva à aba Base.
 4. **Given** a base acima do limite, **When** promovo ou dispenso até ela ficar no limite, **Then** consigo jogar a próxima partida normalmente.
+5. **Given** um jovem dispensado, **When** o técnico abre os jogadores livres do mercado, **Then** o jovem aparece lá e pode ser contratado por qualquer clube.
 
 ---
 
@@ -110,7 +117,8 @@ Como jogador de carreiras longas, quero que a base não desequilibre o mundo: os
 
 1. **Given** 30 temporadas simuladas sem interação, **When** o mundo é medido a cada temporada, **Then** a média de força, os percentis, os craques, as promessas, a idade média e o tamanho dos elencos ficam nas faixas atuais.
 2. **Given** a mesma simulação, **When** cada clube é conferido em cada temporada, **Then** todos têm elenco principal válido (mínimos por posição e total) e base dentro do limite.
-3. **Given** um clube da IA com falta de jogadores numa posição, **When** o reequilíbrio roda, **Then** o clube promove primeiro o melhor jovem da base naquela posição, e só cria um jogador novo se a base não tiver a posição.
+3. **Given** um clube da IA com falta de jogadores numa posição, **When** o reequilíbrio roda, **Then** o clube promove primeiro o melhor jovem da base naquela posição e, se a base não tiver a posição, contrata no mercado. Nenhum jogador é criado direto no elenco principal.
+4. **Given** 30 temporadas simuladas sem interação, **When** os jogadores novos são contados, **Then** todos nasceram na base (safra), e nenhum foi criado direto num elenco principal.
 
 ---
 
@@ -133,11 +141,12 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 
 - **Base cheia na virada, clube da IA**: os jovens excedentes de menor utilidade (a mesma regra de utilidade do reequilíbrio dos elencos) deixam o clube, de forma automática e determinística.
 - **Base cheia na virada, clube do técnico**: a safra entra inteira e a base fica acima do limite. O técnico não pode jogar a próxima partida até deixar a base dentro do limite, promovendo ou dispensando. O bloqueio segue o mesmo caminho da escalação inválida: uma mensagem diz quantos jovens estão acima do limite e leva à aba Base. As outras telas e ações (mercado, finanças, escalação) continuam disponíveis.
-- **Elenco principal abaixo do mínimo, clube do jogador**: o reequilíbrio da virada promove primeiro o melhor jovem da base na posição carente, como na IA, e o aviso de mudanças do elenco lista a promoção como automática.
+- **Elenco principal abaixo do mínimo, clube do técnico**: o jogo não promove nem cria ninguém. Antes de qualquer partida, se o elenco estiver abaixo do mínimo total ou de algum mínimo por posição, a próxima partida fica impedida pelo mesmo caminho da escalação inválida. A mensagem diz quantos jogadores e quais posições faltam e leva à aba Base e ao mercado. A única saída automática do clube do técnico continua sendo a do jovem que passa da idade-limite sem ser promovido.
+- **Clube da IA sem base nem mercado para completar a posição**: o elenco da IA precisa ficar válido em toda partida. O plano calibra a safra e o mercado de livres para que isso não falte, e a simulação de 30 temporadas confere. Nenhum jogador pode ser criado direto num elenco principal.
 - **Promover com o elenco no máximo**: a ação fica indisponível com a explicação. Não há troca automática.
 - **Promover durante a rodada ao vivo**: a ação não fica disponível durante uma partida em andamento, como as outras ações do elenco.
 - **Jovem de 16 anos promovido**: pode ser promovido. Depois disso segue as regras do elenco principal e não volta à base.
-- **Jogador dispensado da base**: deixa o clube. Se o mundo tiver jogadores livres no mercado, ele entra como livre pelas mesmas regras dos dispensados do reequilíbrio. O plano decide se isso vale para a base ou se ele sai do mundo.
+- **Jogador que deixa a base sem ser promovido** (dispensa, idade-limite ou excesso na base da IA): vira jogador livre no mercado, pelas mesmas regras dos livres de hoje. Qualquer clube pode contratá-lo, inclusive o antigo, e ele se aposenta se passar do tempo máximo sem clube.
 - **Troca de clube do técnico** (demissão ou nova proposta): a base fica com o clube. O técnico passa a ver a base do clube novo.
 - **Aposentadoria**: jogador da base nunca se aposenta (todos estão abaixo da idade mínima de aposentadoria).
 - **Clubes só de estadual**: têm base e seguem as mesmas regras dos clubes das divisões nacionais.
@@ -151,7 +160,7 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 **Elenco de base**
 
 - **FR-001**: Todo clube do mundo DEVE ter um elenco de base, com um limite de vagas (cerca de 15), igual para todos os clubes.
-- **FR-002**: Os jovens gerados na virada DEVEM chegar à base do clube, e não ao elenco principal. A quantidade, as idades, a força, o potencial e as características dos jovens da safra seguem as regras de hoje.
+- **FR-002**: Os jovens gerados na virada DEVEM chegar à base do clube, e não ao elenco principal. As idades, a força, o potencial e as características seguem as regras de hoje. A quantidade por clube pode ser recalibrada para repor os jogadores que o reequilíbrio deixa de criar, para manter estáveis o número de jogadores do mundo e o tamanho dos elencos. A geração do mundo inicial de uma carreira nova não muda.
 - **FR-003**: Jogador da base NÃO PODE ser escalado, ser relacionado para partidas, receber salário, contar para o mínimo ou o máximo do elenco principal, nem entrar em mercado, propostas, empréstimos ou listas de jogadores livres enquanto está na base.
 - **FR-004**: Jogador da base DEVE evoluir nos mesmos momentos da evolução do mundo (meio e fim da temporada), com as mesmas regras de idade, tratado como um jogador sem minutos em partidas.
 - **FR-005**: A base DEVE ter uma idade-limite (sub-20). Na virada, um jovem que estaria acima da idade-limite na nova temporada deixa a base: nos clubes da IA ele é promovido; no clube do técnico, se não foi promovido, deixa o clube.
@@ -161,21 +170,25 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 - **FR-006**: O técnico DEVE poder promover um jovem da base do seu clube ao elenco principal a qualquer momento fora de uma partida em andamento, com confirmação.
 - **FR-007**: O jovem promovido DEVE assinar o contrato inicial de profissional (salário e duração) pelas regras de contrato da competição do clube, e a confirmação DEVE mostrar esse salário e essa duração.
 - **FR-008**: A promoção NÃO PODE deixar o elenco principal acima do máximo do clube do técnico. Quando estiver no máximo, a ação fica indisponível com uma explicação.
-- **FR-009**: O técnico DEVE poder dispensar um jovem da base do seu clube, com confirmação que avisa que a ação não pode ser desfeita.
+- **FR-009**: O técnico DEVE poder dispensar um jovem da base do seu clube, com confirmação que avisa que a ação não pode ser desfeita e que o jovem vira jogador livre.
+- **FR-009b**: Todo jovem que deixa a base sem ser promovido (dispensa, idade-limite ou excesso na base da IA) DEVE virar jogador livre no mercado, pelas regras atuais dos livres. Contratado por um clube, ele entra no elenco principal desse clube como qualquer contratação.
 - **FR-009a**: Se a safra deixar a base do clube do técnico acima do limite, a base DEVE aceitar a safra inteira, e o jogo DEVE impedir a próxima partida até a base voltar ao limite. A mensagem do bloqueio diz quantos jovens estão acima do limite e leva à aba Base, e as demais telas e ações continuam disponíveis. A aba Base mostra o excesso em texto.
-- **FR-010**: Durante a temporada, a aba Base DEVE marcar em texto os jovens no último ano, e o jogo DEVE dar um aviso antes do fim da temporada com quantos são.
+- **FR-010**: Durante a temporada, a aba Base DEVE marcar em texto os jovens no último ano. O jogo DEVE dar um aviso com quantos são e o caminho para a aba Base em dois momentos: na abertura da última janela de transferências da temporada e antes do último jogo do clube na temporada. Sem jovens no último ano, não há aviso.
 
 **Clubes da IA e reequilíbrio**
 
-- **FR-011**: Quando faltar jogador no elenco principal (mínimos por posição ou mínimo total), o reequilíbrio da virada DEVE promover primeiro o melhor jovem da base naquela posição, e só criar um jogador novo quando a base não tiver ninguém na posição. Isso vale para todos os clubes, inclusive o do técnico.
+- **FR-011**: O jogo NÃO PODE criar jogadores direto no elenco principal de nenhum clube. Todo jogador novo do mundo nasce na base, pela safra.
+- **FR-011a**: Quando faltar jogador no elenco principal de um clube da IA (mínimos por posição ou mínimo total), o clube DEVE promover primeiro o melhor jovem da base naquela posição e, se a base não tiver a posição, contratar no mercado (livres e transferências) pelas mesmas regras do técnico. Todo clube da IA DEVE ter elenco válido em toda partida.
+- **FR-011b**: O elenco principal do clube do técnico só DEVE ser completado por ações dele (promoção ou contratação). Se, antes de uma partida, o elenco estiver abaixo do mínimo total ou de um mínimo por posição, o jogo DEVE impedir a partida pelo mesmo caminho da escalação inválida. A mensagem diz quantos jogadores e quais posições faltam e leva à aba Base e ao mercado.
 - **FR-012**: Quando a safra encontra a base de um clube da IA cheia, os excedentes de menor utilidade DEVEM deixar o clube, de forma determinística.
-- **FR-013**: Os clubes da IA NÃO promovem jovens durante a temporada. As promoções da IA acontecem só na virada, por idade-limite ou por falta no elenco.
+- **FR-013**: Os clubes da IA só promovem jovens durante a temporada quando precisam completar o elenco (FR-011a). As demais promoções da IA acontecem na virada, por idade-limite.
 
 **Avisos e interface**
 
 - **FR-014**: O Elenco DEVE ter uma aba Base com a lista dos jovens (nome, idade, posição, força, características, temporada em que precisa sair), as vagas ocupadas e o limite, ordenação e as ações Promover e Dispensar. Também DEVE ter um estado vazio desenhado.
+- **FR-014a**: Só a base do clube do técnico DEVE ser visível. Nenhuma tela mostra a lista, a quantidade ou os jogadores da base de outros clubes.
 - **FR-015**: O detalhe do jogador DEVE indicar a origem "cria da base" e o clube, para quem foi promovido da base de um clube.
-- **FR-016**: O aviso de mudanças do elenco na virada e o fim de temporada DEVEM separar, para o clube do técnico: quem chegou à base, quem foi promovido (pelo técnico ou automaticamente), quem saiu da base por idade, quem foi dispensado e quem foi criado para completar o elenco.
+- **FR-016**: O aviso de mudanças do elenco na virada e o fim de temporada DEVEM separar, para o clube do técnico: quem chegou à base, quem foi promovido (pelo técnico ou automaticamente), quem saiu da base por idade e quem foi dispensado.
 - **FR-017**: Todo texto novo DEVE estar nas traduções, com plural e formatos pelo i18n. As novas telas e ações DEVEM ser acessíveis por teclado e leitor de tela, como as outras abas do Elenco, e a cor nunca pode ser o único sinal de "último ano".
 
 **Determinismo, equilíbrio e saves**
@@ -191,7 +204,7 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 - **Jovem da base**: um jogador do mundo (nome, idade, posição, força, características, potencial oculto) ligado à base de um clube. Não tem contrato profissional nem salário.
 - **Idade-limite da base**: a idade a partir da qual o jovem não pode continuar na base na temporada seguinte. Dela vem a temporada em que cada jovem precisa sair.
 - **Origem "cria da base"**: o registro de que um jogador profissional subiu da base de um clube, com o clube e a temporada da promoção.
-- **Movimentos da base na virada**: chegadas à base, promoções (do técnico ou automáticas), saídas por idade, dispensas e jogadores criados para completar o elenco. Alimentam o aviso de mudanças do elenco e o fim de temporada.
+- **Movimentos da base na virada**: chegadas à base, promoções (do técnico ou da IA), saídas por idade e dispensas. Alimentam o aviso de mudanças do elenco e o fim de temporada.
 
 ## Success Criteria *(mandatory)*
 
@@ -199,9 +212,10 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 
 - **SC-001**: Em 100% das viradas, todos os jovens da safra do clube do técnico estão na base, e nenhum está no elenco principal.
 - **SC-002**: Um jovem promovido no meio da temporada pode ser escalado na partida seguinte em 100% dos casos com vaga no elenco.
-- **SC-003**: 100% dos jovens do clube do técnico que saem da base por idade estavam marcados como "último ano" e foram contados no aviso antes do fim da temporada.
+- **SC-003**: 100% dos jovens do clube do técnico que saem da base por idade estavam marcados como "último ano" e foram contados nos dois avisos (abertura da última janela e antes do último jogo do clube).
 - **SC-004**: Em 30 temporadas simuladas sem interação, todo clube tem elenco principal válido e base dentro do limite em todas as temporadas. A média de força, os percentis, os craques, as promessas e a idade média ficam nas faixas já declaradas no teste de 30 temporadas.
-- **SC-005**: Na mesma simulação, a quantidade de jogadores criados do nada para completar elencos cai em relação à versão atual, porque a base supre parte das faltas.
+- **SC-005**: Na mesma simulação, nenhum jogador é criado direto num elenco principal (0 casos). Todos os clubes da IA completam os elencos pela base ou pelo mercado e têm elenco válido em 100% das partidas.
+- **SC-005a**: No clube do técnico, 100% das partidas com o elenco abaixo de algum mínimo ficam impedidas, com a mensagem dos jogadores e das posições que faltam.
 - **SC-006**: A virada do mundo padrão, com a base de todos os clubes, fica dentro das metas de tempo da 020.
 - **SC-007**: 100% dos saves de teste da versão anterior abrem, migram e chegam à virada seguinte sem erro.
 - **SC-007a**: Em 100% das viradas em que a safra enche a base do técnico além do limite, a próxima partida fica impedida até a base voltar ao limite, e nenhum jovem do técnico sai sem uma ação dele (exceto por idade-limite).
@@ -214,8 +228,10 @@ Como jogador com uma carreira salva na versão anterior, quero abri-la e continu
 - O contrato inicial do promovido usa as mesmas regras dos jovens que hoje chegam ao elenco (salário e duração da competição do clube, 010).
 - "Utilidade" para escolher quem sai é a mesma regra que o reequilíbrio dos elencos já usa (força mais uma parte da margem até 22 anos).
 - O jovem promovido não volta à base.
+- Hoje o reequilíbrio cria jogadores para completar os mínimos dos elencos. Isso deixa de existir. O reequilíbrio continua dispensando quem passa do máximo do elenco e dos tetos por posição da IA.
+- Para os clubes da IA completarem pelo mercado, eles podem contratar fora das janelas apenas jogadores livres, se as regras atuais de mercado exigirem. O plano decide, sem criar jogadores direto num elenco.
 - O bloqueio por base acima do limite só se aplica ao clube do técnico e só depois da virada. Durante a temporada a base nunca passa do limite, porque nada entra nela fora da virada.
 - Se o técnico for demitido ou trocar de clube com a base acima do limite, o clube antigo passa a seguir a regra da IA na virada seguinte, e o bloqueio deixa de valer para o técnico.
-- Os jovens da base não aparecem na busca do mercado, nas listas de outros clubes nem nas notícias nesta feature. Manchetes de revelação ficam para a 038.
+- Os jovens da base não aparecem na busca do mercado, nas telas de outros clubes nem nas notícias nesta feature. Manchetes de revelação ficam para a 038.
 - Nenhuma regra nova entra no formato de mod nesta feature: limite de vagas e idade-limite ficam como regras do jogo, com valores padrão. A 037 decide se viram regras de mod.
 - A versão sobe de 1.8.1 para 1.9.0.
