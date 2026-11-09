@@ -14,6 +14,9 @@
 
 - Q: O limite de vagas da base muda com o nível da academia? → A: Sim. Níveis 1 a 3 têm 15 vagas, o nível 4 tem 20 e o nível 5 tem 25.
 - Q: Como a base começa? → A: Todo clube começa com a base cheia, com 15 jovens (a quantidade-base da categoria). Isso vale para as carreiras novas e para os saves migrados.
+- Q: Quanto a academia pesa no caixa? → A: Moderado. A manutenção mensal vai de cerca de 2% da folha salarial (nível 1) a 10% (nível 5), e a obra para subir um nível custa de 2 a 6 folhas mensais, crescendo com o nível de destino.
+- Q: O que o painel mostra sobre o efeito do nível? → A: A quantidade de jovens por safra em número e a qualidade numa escala de texto (modesta, boa, muito boa, excelente, de elite), com o efeito do próximo nível ao lado para comparar. Força e potencial esperados não aparecem em número.
+- Q: O que acontece com a academia do clube que o técnico deixou? → A: Sem técnico, o clube segue a regra da IA: a partir da virada seguinte, o nível anda um degrau por virada até o nível que a reputação dá. Uma obra já paga ainda termina, e uma redução pendente é cancelada.
 
 ## Contexto
 
@@ -40,7 +43,7 @@ Como técnico, quero ver o nível da academia do meu clube, o que ele rende (qua
 
 **Acceptance Scenarios**:
 
-1. **Given** uma carreira nova, **When** o técnico abre a aba Base, **Then** a base já tem 15 jovens, e o painel da academia mostra o nível atual (de 1 a 5), o custo mensal de manutenção e o efeito esperado do nível: a faixa de jovens por safra e a qualidade em texto (por exemplo, "jovens medianos" ou "jovens promissores").
+1. **Given** uma carreira nova, **When** o técnico abre a aba Base, **Then** a base já tem 15 jovens, e o painel da academia mostra o nível atual (de 1 a 5), o custo mensal de manutenção e o efeito esperado do nível: a faixa de jovens por safra em número e a qualidade em texto (modesta, boa, muito boa, excelente ou de elite), com o efeito do próximo nível ao lado.
 2. **Given** o painel da academia, **When** o técnico olha a manutenção, **Then** o valor aparece em dinheiro na escala do país do clube.
 3. **Given** um clube de reputação alta e outro de reputação baixa em carreiras novas, **When** o técnico abre a academia de cada um, **Then** o clube de reputação alta começa com nível maior ou igual ao do de reputação baixa.
 
@@ -143,7 +146,7 @@ Como jogador com uma carreira salva na 1.9.0, quero abri-la e continuar, com a a
 
 ### Edge Cases
 
-- **Técnico troca de clube** (demissão ou proposta aceita): a academia, a obra e a redução pendentes ficam com o clube. Sem técnico, o clube passa a seguir a regra da IA a partir da virada seguinte: o nível vai na direção do nível da reputação, um degrau por virada, e a obra paga ainda termina.
+- **Técnico troca de clube** (demissão ou proposta aceita): a academia, a obra e a redução pendentes ficam com o clube. Sem técnico, o clube passa a seguir a regra da IA a partir da virada seguinte: o nível anda um degrau por virada até o nível que a reputação dá. Uma obra paga ainda termina, e uma redução pendente é cancelada.
 - **Obra e reputação mudando na mesma virada** (clube do técnico): só a obra conta. O clube do técnico não segue a reputação.
 - **Caixa negativo ou crise**: a manutenção continua sendo cobrada, como os salários. Baixar é o caminho para cortar.
 - **Baixar no nível 1**: indisponível.
@@ -180,14 +183,14 @@ Como jogador com uma carreira salva na 1.9.0, quero abri-la e continuar, com a a
 **Custos e finanças**
 
 - **FR-010**: Todo clube DEVE pagar a manutenção mensal da academia pelo nível, numa categoria nova do livro-caixa, nos mesmos momentos em que paga salários.
-- **FR-011**: Custos de obra e de manutenção DEVEM seguir a escala econômica do país do clube, como os salários.
+- **FR-011**: Custos de obra e de manutenção DEVEM seguir a escala econômica do país do clube, como os salários, com peso moderado: a manutenção mensal vai de cerca de 2% da folha salarial de referência do clube (nível 1) a 10% (nível 5), e a obra para subir um nível custa de 2 (para o nível 2) a 6 folhas mensais (para o nível 5). A folha de referência é a que o plano define a partir da escala do país e da reputação, para o custo não mudar a cada contratação.
 - **FR-012**: A manutenção DEVE entrar na previsão financeira, no resumo da temporada, no extrato das finanças e nas metas financeiras da diretoria, como as outras despesas.
 
 **Interface**
 
 - **FR-013**: A aba Base DEVE ter um painel da academia com:
   - o nível;
-  - o efeito esperado em texto (faixa de jovens por safra e qualidade);
+  - o efeito esperado: a faixa de jovens por safra em número e a qualidade numa escala de texto (modesta, boa, muito boa, excelente, de elite), com o efeito do próximo nível ao lado para comparar. Força e potencial esperados nunca aparecem em número (o potencial continua oculto até a 038);
   - o custo mensal;
   - a mudança pendente;
   - as ações Melhorar e Baixar com confirmação;
@@ -230,7 +233,7 @@ Como jogador com uma carreira salva na 1.9.0, quero abri-la e continuar, com a a
 
 - As faixas de reputação para o nível inicial ficam perto dos degraus de hoje, distribuídas em 5 níveis (por exemplo: até 30 → 1, até 45 → 2, até 60 → 3, até 75 → 4, acima → 5). O plano calibra os valores.
 - A quantidade da safra por nível fica perto da de hoje para os níveis que a reputação dá, para não mexer no total de jovens do mundo (a 036 mostrou que isso afeta a economia e o equilíbrio continental). Por exemplo: nível 1 → 1 jovem, nível 3 → 2, nível 5 → 4.
-- O custo da obra e a manutenção são proporcionais à escala de salários do país. A calibragem faz o nível que a reputação dá custar à IA perto do que os jovens rendem.
+- A calibragem confere que a manutenção do nível que a reputação dá não leva os clubes da IA à crise (SC-004).
 - A IA não investe, mas o nível dela muda com a reputação na virada, sem pagar obra. Só paga manutenção.
 - A comparação da divisão mostra só o nível, não os jovens.
 - A obra fica pronta na virada, sem contagem por rodadas (diferente da obra do estádio).
