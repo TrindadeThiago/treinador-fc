@@ -222,7 +222,7 @@ A fundação leva as regras, os níveis, os custos, a manutenção e o save v22 
 
 ## Phase 9: User Story 7 - Continuar uma carreira da 1.9.0 (Priority: P3)
 
-- [ ] T031 [US7] Em `packages/save/test/migrate-v22.test.ts`, acrescentar uma carreira longa v21 (`saveV21({ seasons: 1 })`) que migra e passa por duas viradas. Em `apps/web/e2e/save-file.spec.ts`, conferir que o save antigo importado abre com a academia.
+- [x] T031 [US7] Em `packages/save/test/migrate-v22.test.ts`, acrescentar uma carreira longa v21 (`saveV21({ seasons: 1 })`) que migra e passa por duas viradas. Em `apps/web/e2e/save-file.spec.ts`, conferir que o save antigo importado abre com a academia.
 
 ---
 
