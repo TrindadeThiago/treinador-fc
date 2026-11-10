@@ -1,7 +1,7 @@
 [
   {
     "version": "1.10.0",
-    "date": "2026-11-09",
+    "date": "2026-11-10",
     "changes": [
       "Chegou a academia da base: no topo da aba Base do Elenco, cada clube tem uma academia de nível 1 a 5. O nível decide quantos jovens chegam por safra, a qualidade deles (de modesta a de elite), o quanto evoluem na base e as vagas: 15 até o nível 3, 20 no nível 4 e 25 no nível 5.",
       "Investir é uma decisão de caixa: Melhorar paga a obra na hora e o nível sobe na virada da temporada; Baixar vale na virada, corta a manutenção e pode ser cancelado até lá. A manutenção mensal aparece em Finanças como \"Academia\", na previsão e no resumo da temporada.",
