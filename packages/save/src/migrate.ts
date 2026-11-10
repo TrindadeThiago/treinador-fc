@@ -16,6 +16,7 @@ import {
   economyRules,
   emptyAcademy,
   emptyMarket,
+  emptyScouting,
   ensureContracts,
   type FinanceState,
   FORMATION_IDS,
@@ -28,6 +29,7 @@ import {
   leagueCalendar,
   leagueSeasonSeed,
   MAX_ACADEMY_LEVEL,
+  MAX_SCOUTING_LEVEL,
   POSTURES,
   playerSeq,
   type Season,
@@ -463,6 +465,15 @@ const addPotentialEstimates: Migration = {
   },
 };
 
+/** v23 → v24: olheiros (039). O departamento começa fechado, sem observações nem relatórios. */
+const addScouting: Migration = {
+  from: 23,
+  migrate(raw) {
+    const save = raw as { scouting?: unknown };
+    return { ...(raw as object), formatVersion: 24, scouting: save.scouting ?? emptyScouting() };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -487,6 +498,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addAcademy,
   addAcademyLevels,
   addPotentialEstimates,
+  addScouting,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -663,6 +675,30 @@ const envelopeSchema = z.object({
       z.object({ mood: z.int().min(0).max(100), recent: z.array(z.unknown()) }).loose(),
     ),
   }),
+  scouting: z
+    .object({
+      level: z.int().min(0).max(MAX_SCOUTING_LEVEL),
+      clubId: z.string().min(1).optional(),
+      watch: z.array(
+        z.object({
+          playerId: z.string().min(1),
+          since: z.object({ season: z.int(), round: z.int() }),
+        }),
+      ),
+      reports: z.record(
+        z.string(),
+        z
+          .object({
+            estimate: z.object({ low: z.int(), high: z.int() }),
+            steps: z.int().min(0),
+            temperament: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+            injury: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+            updated: z.object({ season: z.int(), round: z.int() }),
+          })
+          .loose(),
+      ),
+    })
+    .loose(),
   news: z
     .object({
       feed: z.array(
@@ -751,6 +787,16 @@ function renewalProblem(save: SaveFile): string | undefined {
     save.market.freeAgents.map((agent) => agent.player.id),
   );
   if (ids) return ids;
+  // Olheiros (039): observação sem repetição e faixas em ordem.
+  const watched = save.scouting.watch.map((entry) => entry.playerId);
+  if (new Set(watched).size !== watched.length) return "observação repetida";
+  if (
+    Object.values(save.scouting.reports).some(
+      (report) => report.estimate.low > report.estimate.high,
+    )
+  ) {
+    return "relatório com faixa invertida";
+  }
   // Faixa de potencial (038): limites em ordem.
   const inverted = academy.players.find(
     (entry) => entry.estimate && entry.estimate.low > entry.estimate.high,

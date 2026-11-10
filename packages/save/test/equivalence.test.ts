@@ -76,6 +76,9 @@ function capture(seed: string): Capture {
   }
   const finances = save.finances.seasons.map((summary) => {
     const totals = Object.entries(summary.totals)
+      // Olheiros (039): categoria nova, sempre zero sem o departamento aberto; a linha de base
+      // continua a mesma (os valores não mudam, só a lista de categorias cresceu).
+      .filter(([category, value]) => !(category === "scouting" && value === 0))
       .map(([category, value]) => `${category}=${value}`)
       .join(",");
     return `${summary.clubId}|${summary.season}|${totals}|${summary.startCash}->${summary.endCash}`;

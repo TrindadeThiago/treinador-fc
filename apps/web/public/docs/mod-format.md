@@ -706,6 +706,14 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   base). A largura nunca fica abaixo de 4. Sem os campos, valem os padrões: 20/2, 18/2, 16/2, 14/3 e
   12/3, do nível 1 ao 5. Uma largura que cresce do nível 1 ao 5 gera aviso
   (`economy.estimate_width_order`). A faixa é só informação: não muda nenhum resultado do jogo.
+  Olheiros (039, opcional): `economy.scouting` com `levels` (exatamente 5 entradas, do nível 1 ao 5:
+  `slots` de 1 a 50, vagas de observação; `costPct` de 0 a 50, custo mensal em % da folha de
+  referência; `shrink` de 1 a 20, quanto a faixa do relatório estreita por etapa; `minWidth` de 4 a 60,
+  a largura mínima), `initialWidth` (8 a 60, a largura de quem começa a ser observado) e `reportCap`
+  (10 a 2000, relatórios guardados). Sem a seção, valem os padrões: vagas 3/5/8/12/16, custo 1 a 5%,
+  redução 1 a 5, largura mínima 14/12/10/8/6, largura inicial 24 e 300 relatórios. Uma largura mínima
+  que cresce do nível 1 ao 5 gera aviso (`economy.scouting_width_order`). Os clubes da IA não usam
+  olheiros.
 - `market` — janelas (`windows[]` com `fromRound`/`toRound`), anos de contrato (`contractYears`),
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de
@@ -849,6 +857,7 @@ Fora do jogo, `pnpm validate-bank <pasta|arquivo.zip>` faz a mesma validação n
 | `economy.price_range` | O preço mínimo do ingresso ({min}) é maior que o máximo ({max}). |
 | `country.names_too_few` | O banco de nomes do país tem {count, plural, one {# {kind, select, firstNames {nome} other {sobrenome}}} other {# {kind, select, firstNames {nomes} other {sobrenomes}}}}; são necessários ao menos {min}. |
 | `economy.unknown_division` | As regras econômicas citam a divisão de nível {level}, que não existe na competição. |
+| `economy.scouting_width_order` | A largura mínima do relatório dos olheiros no nível {level} ({width}) é maior que a do nível anterior ({previous}): departamentos melhores deveriam estimar melhor. |
 | `economy.estimate_width_order` | A largura da faixa de potencial do nível {level} da academia ({width}) é maior que a do nível anterior ({previous}): academias melhores deveriam estimar melhor. |
 | `squad.size` | O clube {clubId} tem {count, plural, =0 {nenhum jogador} one {# jogador} other {# jogadores}}; o elenco deve ter entre {min} e {max}. |
 | `squad.min_goalkeepers` | O clube {clubId} {count, plural, =0 {não tem goleiros} one {tem apenas # goleiro} other {tem apenas # goleiros}}; o mínimo é {min}. |

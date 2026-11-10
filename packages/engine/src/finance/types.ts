@@ -12,6 +12,7 @@ export const LEDGER_CATEGORIES = [
   "transfer_purchase",
   "transfer_sale",
   "academy",
+  "scouting",
 ] as const;
 
 export type LedgerCategory = (typeof LEDGER_CATEGORIES)[number];

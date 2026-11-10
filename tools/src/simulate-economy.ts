@@ -18,6 +18,7 @@ import {
   generateDefaultBank,
   initialCareerRenewal,
   type SeasonHistoryEntry,
+  scoutingCost,
   seasonFinanceSummary,
   seasonTurnover,
   spearman,
@@ -316,6 +317,94 @@ export function runAcademyScenario(seed: string, seasons = 10): SimulateEconomyO
   return { exitCode: ok ? 0 : 1, lines };
 }
 
+/** Limites do cenário dos olheiros (039 T030, Princípio V). */
+export const SCOUTING_SCENARIO_LIMITS = {
+  /** Custo anual do nível 5 sobre a receita da temporada do clube de menor reputação. */
+  maxRevenueShare: 0.06,
+} as const;
+
+/**
+ * Cenário dos olheiros (039): o clube de menor reputação por `seasons` temporadas, com o custo do
+ * departamento no nível 5 calculado à parte. O limite é o peso do custo na receita de cada
+ * temporada. A linha do caixa é só informativa: a IA gasta a sobra em contratações e termina as
+ * temporadas com o caixa perto de zero, então somar um custo que ela nunca pagou não mede crise
+ * (research.md, "Medidas").
+ */
+export function runScoutingScenario(seed: string, seasons = 10): SimulateEconomyOutput {
+  const bank = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  let world: CompletedBank = ensureContracts(bank, created.league.year, seed);
+  const club = [...world.clubs].sort(
+    (a, b) => a.reputation - b.reputation || (a.id < b.id ? -1 : 1),
+  )[0];
+  if (!club) throw new Error("sem clubes");
+  let market = emptyMarket();
+  let league = created.league;
+  let finances: FinanceState = createFinances(world, league);
+  let renewal = initialCareerRenewal(world, seed, world.manifest.referenceDate);
+  let fans = createFans(world, league);
+  let history: SeasonHistoryEntry[] = [];
+  let worstShare = 0;
+  let paid = 0;
+  let lowestEndCash = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < seasons; index++) {
+    const played = advanceCareer(
+      league,
+      finances,
+      world,
+      { toEnd: true },
+      "",
+      undefined,
+      { state: renewal, careerSeed: seed },
+      { state: market, careerSeed: seed },
+      undefined,
+      { state: fans },
+    );
+    if (!played.ok) throw new Error(JSON.stringify(played.error));
+    const totals = seasonFinanceSummary(played.finances, club.id).totals;
+    const revenue = totals.gate + totals.sponsorship + totals.prize + totals.transfer_sale;
+    const annual = 12 * scoutingCost(played.world, club.id, 5);
+    paid += annual;
+    if (revenue > 0) worstShare = Math.max(worstShare, annual / revenue);
+    lowestEndCash = Math.min(lowestEndCash, played.finances.clubs[club.id]?.cash ?? 0);
+    const turned = seasonTurnover(played.league, played.world, history, {
+      careerSeed: seed,
+      finances: played.finances,
+      managerClubId: "",
+      renewal: played.renewal ?? renewal,
+      market: played.market ?? market,
+      fans: played.fans ?? fans,
+    });
+    if (!turned.ok || !turned.finances) throw new Error(JSON.stringify(turned));
+    market = turned.market ?? market;
+    fans = turned.fans ?? fans;
+    league = turned.league;
+    history = turned.history;
+    finances = turned.finances;
+    world = turned.world;
+    renewal = turned.renewal ?? renewal;
+  }
+  const checks: [boolean, string][] = [
+    [
+      worstShare <= SCOUTING_SCENARIO_LIMITS.maxRevenueShare,
+      `olheiros no nível 5 custam no máximo ${(100 * worstShare).toFixed(1)}% da receita da temporada (≤ ${100 * SCOUTING_SCENARIO_LIMITS.maxRevenueShare}%)`,
+    ],
+  ];
+  const lines = [`Olheiros — ${seasons} temporadas, clube de menor reputação, seed "${seed}"`];
+  lines.push(
+    `  (informativo) custo de ${millions(paid)} em ${seasons} temporadas; menor caixa da IA no fim de uma temporada: ${millions(lowestEndCash)}`,
+  );
+  let ok = true;
+  for (const [passed, text] of checks) {
+    ok &&= passed;
+    lines.push(`${passed ? "✓" : "✗"} ${text}`);
+  }
+  return { exitCode: ok ? 0 : 1, lines };
+}
+
 const invokedDirectly =
   process.argv[1] !== undefined &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -332,5 +421,8 @@ if (invokedDirectly) {
   const academy = runAcademyScenario(values.seed ?? "economia");
   console.log("");
   for (const line of academy.lines) console.log(line);
-  process.exit(output.exitCode || academy.exitCode);
+  const scouting = runScoutingScenario(values.seed ?? "economia");
+  console.log("");
+  for (const line of scouting.lines) console.log(line);
+  process.exit(output.exitCode || academy.exitCode || scouting.exitCode);
 }

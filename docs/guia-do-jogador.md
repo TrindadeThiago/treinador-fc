@@ -288,10 +288,36 @@ abre e quando fecha.
 | Negociações | As propostas que você fez, com contrapropostas do clube e a resposta do jogador (salário e tempo de contrato). |
 | Propostas recebidas | Ofertas de outros clubes pelos seus jogadores: aceitar, recusar ou negociar. |
 | Contratos | Renovações e os contratos que terminam nesta temporada. |
+| Observação | O departamento de olheiros e os jogadores em observação, com o andamento de cada relatório. |
 | Resumo da janela | O que entrou e saiu do seu clube e as maiores transferências do mundo. |
 
 Também há **empréstimos** e **rescisão** de contrato. A IA monta os elencos dos outros clubes,
 compra, vende e renova durante as janelas.
+
+### Olheiros
+
+O potencial, o temperamento e a propensão a lesões dos jogadores são escondidos. Os **olheiros**
+ajudam a conhecê-los antes de contratar:
+- O **departamento** começa fechado e sem custo. Na aba Observação, abra-o num nível de 1 a 5:
+  - o nível decide as **vagas** (3 a 16 jogadores observados ao mesmo tempo), a **precisão** e o
+    **custo mensal**, que aparece em Finanças como "Olheiros";
+  - mudar de nível ou fechar vale na hora, e o custo novo vale a partir da próxima cobrança.
+- Para mandar observar, use **Observar** no detalhe de um jogador de outro clube ou de um livre.
+  O relatório avança a cada rodada da liga do país dele:
+  - **potencial estimado:** uma faixa (por exemplo, "62–78") que estreita até a observação ficar
+    completa. O valor de verdade está sempre dentro dela;
+  - **temperamento e lesões:** depois de metade das etapas, em texto (tranquilo, normal ou
+    esquentado; resistente, normal ou propenso a lesões);
+  - a **confiança** (inicial, parcial ou completa) e a data da última atualização.
+- Cancelar libera a vaga e guarda o relatório. Os relatórios ficam com você mesmo se você trocar de
+  clube.
+- Os jogadores do **seu elenco** ganham relatório sozinhos com o tempo, sem gastar vagas, mesmo com
+  o departamento fechado. As crias da base partem da faixa que tinham na promoção.
+- Na busca, as colunas **Observado** e **Potencial** e o filtro **Só observados** mostram os
+  relatórios; dá para ordenar pela faixa.
+
+Os relatórios são só informação: não mudam nenhum resultado do jogo. Os clubes do computador não
+usam olheiros.
 
 ## 11. Carreira: diretoria, propostas, técnicos e torcida
 

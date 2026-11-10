@@ -24,6 +24,7 @@ const base: CashForecast = {
   wages: -6_000_000,
   wageRounds: 20,
   academy: 0,
+  scouting: 0,
   interest: 0,
   prize: 900_000,
   position: 8,

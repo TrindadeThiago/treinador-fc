@@ -2,6 +2,7 @@
 
 import { ageOn, clubUnavailability, graduateOf, seasonStats } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
+import { scoutReport } from "../game/scouting-view";
 import { clubSeasonRatings } from "../game/selectors";
 import { formatRating, label, useT } from "../i18n";
 import { Button } from "./Button";
@@ -9,6 +10,7 @@ import { Dialog } from "./Dialog";
 import { evolutionText, lastEvolution } from "./evolution-text";
 import { conditionText } from "./PlayerCondition";
 import styles from "./PlayerDetails.module.css";
+import { ScoutReport } from "./ScoutReport";
 
 const STATS = [
   ["player.matches", "matches"],
@@ -120,7 +122,10 @@ export function PlayerDetails({
   ];
   const origin = academyOriginText(save, player.id, t);
   if (origin) visible.push(["player.origin", origin]);
-  const estimate = promotionEstimateText(save, player.id, t);
+  // Com relatório do olheiro (039), ele já parte da faixa da promoção e a substitui.
+  const estimate = scoutReport(save, player.id)
+    ? undefined
+    : promotionEstimateText(save, player.id, t);
   if (estimate) visible.push(["player.estimatePromotion", estimate]);
   return (
     <Dialog
@@ -137,6 +142,7 @@ export function PlayerDetails({
           </div>
         ))}
       </dl>
+      <ScoutReport save={save} playerId={player.id} />
       <PlayerStats save={save} playerId={player.id} />
     </Dialog>
   );

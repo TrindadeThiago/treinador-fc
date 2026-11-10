@@ -11,6 +11,7 @@ import {
 } from "@brasfoot-like/save";
 import { useMemo, useState } from "react";
 import type { useGame } from "../game/GameProvider";
+import { scoutReport } from "../game/scouting-view";
 import { fitnessAt } from "../game/selectors";
 import { formatMoney, label, useT } from "../i18n";
 import { Button } from "./Button";
@@ -22,6 +23,7 @@ import { NegotiationDialog, type NegotiationTarget } from "./market/NegotiationD
 import { conditionText } from "./PlayerCondition";
 import { academyOriginText, PlayerStats, promotionEstimateText } from "./PlayerDetails";
 import styles from "./PlayerModal.module.css";
+import { ScoutReport } from "./ScoutReport";
 
 type Game = ReturnType<typeof useGame>;
 
@@ -97,7 +99,9 @@ export function PlayerModal({
   ];
   const origin = academyOriginText(save, player.id, t);
   if (origin) facts.push(["player.origin", origin]);
-  const estimate = promotionEstimateText(save, player.id, t);
+  const estimate = scoutReport(save, player.id)
+    ? undefined
+    : promotionEstimateText(save, player.id, t);
   if (estimate) facts.push(["player.estimatePromotion", estimate]);
   const fit = fitness(player.id);
   const reason = locked ? t("player.lockedLive") : undefined;
@@ -173,6 +177,7 @@ export function PlayerModal({
             {note}
           </p>
         ))}
+        <ScoutReport save={save} playerId={player.id} />
         <PlayerStats save={save} playerId={player.id} />
       </Dialog>
       <DisposalDialog

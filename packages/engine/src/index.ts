@@ -701,6 +701,40 @@ export type {
 export { generateYouth, youthCount } from "./renewal/youth";
 export type { Rng, RngState, WeightedItem } from "./rng/xoshiro";
 export { createRng, restoreRng } from "./rng/xoshiro";
+export type { ScoutingRoundContext } from "./scouting/round";
+export { advanceReport, gradeOf, pruneScouting, scoutingAfterRound } from "./scouting/round";
+export type { ScoutingLevelRule, ScoutingRules } from "./scouting/rules";
+export {
+  attributeSteps,
+  DEFAULT_SCOUTING,
+  MAX_SCOUTING_LEVEL,
+  scoutingCost,
+  scoutingLevelRule,
+  scoutingRules,
+  scoutingSlots,
+  stepsToComplete,
+  targetWidth,
+} from "./scouting/rules";
+export type { ScoutingError, ScoutingResult } from "./scouting/state";
+export {
+  closeScouting,
+  effectiveScoutingLevel,
+  emptyScouting,
+  scoutingManagerClub,
+  setScoutingLevel,
+  settledScouting,
+  unwatchPlayer,
+  watchPlayer,
+} from "./scouting/state";
+export type {
+  Observation,
+  ScoutGrade,
+  ScoutingMoment,
+  ScoutingState,
+  ScoutReport,
+} from "./scouting/types";
+export type { ScoutConfidence, ScoutingPanel, ScoutReportView } from "./scouting/view";
+export { scoutingPanel, scoutReportOf } from "./scouting/view";
 export { fixtureSeed, generateCalendar } from "./season/calendar";
 export type { CredibilityCheck } from "./season/credibility";
 export {

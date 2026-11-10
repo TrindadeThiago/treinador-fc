@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.12.0",
+    "date": "2026-11-10",
+    "changes": [
+      "Chegaram os olheiros: no Mercado, a aba Observação tem o departamento de olheiros do seu clube. Ele começa fechado e sem custo; aberto num nível de 1 a 5, decide quantos jogadores dá para observar ao mesmo tempo (de 3 a 16), a precisão dos relatórios e o custo mensal, que aparece em Finanças como \"Olheiros\".",
+      "Mande observar jogadores de outros clubes, de qualquer país, ou livres, pelo botão Observar no detalhe do jogador. A cada rodada da liga dele, o relatório fica mais preciso: a faixa de potencial estreita e sempre contém o valor de verdade, e depois de algumas rodadas aparecem o temperamento e a propensão a lesões, em texto.",
+      "Na busca do mercado, as colunas Observado e Potencial e o filtro Só observados mostram os relatórios, e dá para ordenar pela faixa. Os jogadores do seu elenco ganham relatório sozinhos com o tempo, sem gastar vagas, e os relatórios ficam com você se trocar de clube.",
+      "Os relatórios são só informação: sem abrir o departamento, a mesma seed dá a mesma carreira da 1.11.0. Os saves da 1.11 abrem com o departamento fechado. O formato do save mudou (versão 24), e o formato de mod ganhou a seção opcional economy.scouting."
+    ]
+  },
+  {
     "version": "1.11.0",
     "date": "2026-11-10",
     "changes": [

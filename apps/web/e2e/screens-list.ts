@@ -147,6 +147,16 @@ export const SCREENS: ScreenCase[] = [
     },
   },
   {
+    // Aba Observação do Mercado (039): departamento de olheiros fechado e lista vazia.
+    label: "/jogo/mercado/ (observação)",
+    group: "club",
+    path: "/jogo/mercado/",
+    open: async (page) => {
+      await page.getByRole("tab", { name: t("market.tab.scouting") }).click();
+      await expect(page.getByRole("region", { name: t("scouting.title") })).toBeVisible();
+    },
+  },
+  {
     label: "/jogo/mercado/ (modal)",
     group: "club",
     path: "/jogo/mercado/",

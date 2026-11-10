@@ -2,7 +2,8 @@
 
 import { ageOn, clubUnavailability, type MarketRow } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { watchBlock } from "../../game/scouting-view";
 import { fitnessAt } from "../../game/selectors";
 import { formatMoney, label, useT } from "../../i18n";
 import { Button } from "../Button";
@@ -11,6 +12,7 @@ import { evolutionText, lastEvolution } from "../evolution-text";
 import { Meter } from "../Meter";
 import { conditionText } from "../PlayerCondition";
 import { PlayerStats } from "../PlayerDetails";
+import { ScoutReport } from "../ScoutReport";
 import styles from "./MarketPlayerModal.module.css";
 
 export type MarketAction = "buy" | "loan" | "free";
@@ -28,6 +30,7 @@ export function MarketPlayerModal({
   compareFull,
   onAction,
   onToggleCompare,
+  onScout,
   onClose,
 }: {
   save: SaveFile;
@@ -38,10 +41,14 @@ export function MarketPlayerModal({
   compareFull: boolean;
   onAction: (row: MarketRow, action: MarketAction) => void;
   onToggleCompare: (playerId: string) => void;
+  /** Olheiros (039): manda observar o jogador; o resultado aparece escrito no modal. */
+  onScout?: ((playerId: string) => string) | undefined;
   onClose: () => void;
 }) {
   const t = useT();
   const fitness = useMemo(() => fitnessAt(save), [save]);
+  // A mensagem de "entrou na observação" é de um jogador só: guarda de quem é.
+  const [scoutStatus, setScoutStatus] = useState<{ playerId: string; text: string } | undefined>();
   if (!row) return null;
   const player =
     save.bank.players.find((entry) => entry.id === row.playerId) ??
@@ -100,6 +107,17 @@ export function MarketPlayerModal({
               </Button>
             </>
           ) : null}
+          {own || !onScout ? null : (
+            <Button
+              disabled={locked || watchBlock(save, row.playerId) !== undefined}
+              aria-label={t("scouting.watchAria", { name: row.displayName })}
+              onClick={() =>
+                setScoutStatus({ playerId: row.playerId, text: onScout(row.playerId) })
+              }
+            >
+              {t("scouting.watch")}
+            </Button>
+          )}
           {own ? null : (
             <Button
               aria-pressed={compared}
@@ -136,6 +154,11 @@ export function MarketPlayerModal({
           </div>
         ))}
       </dl>
+      {!own && onScout && watchBlock(save, row.playerId) ? (
+        <p className={styles.note}>{t(watchBlock(save, row.playerId) ?? "")}</p>
+      ) : null}
+      {scoutStatus?.playerId === row.playerId ? <p role="status">{scoutStatus.text}</p> : null}
+      <ScoutReport save={save} playerId={row.playerId} />
       {row.onLoan && !own ? <p className={styles.note}>{t("market.onLoan")}</p> : null}
       {locked && canOffer ? <p className={styles.note}>{t("market.liveLocked")}</p> : null}
       {!own && compareFull && !compared ? (

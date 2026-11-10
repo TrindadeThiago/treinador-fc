@@ -898,6 +898,22 @@ export const RULE_CASES: RuleCase[] = [
     },
   },
   {
+    code: "economy.scouting_width_order",
+    description: "relatório dos olheiros que alarga com o nível (aviso, 039)",
+    mutate: (bank) => {
+      const level = (minWidth: number) => ({ slots: 3, costPct: 1, shrink: 2, minWidth });
+      at(bank.competitions, 0).economy = {
+        scouting: { levels: [level(14), level(12), level(16), level(8), level(6)] },
+      };
+    },
+    expect: {
+      section: "competitions",
+      path: [0, "economy", "scouting", "levels", 2, "minWidth"],
+      entityId: "liga",
+      params: { level: 3, width: 16, previous: 12 },
+    },
+  },
+  {
     code: "country.names_too_few",
     description: "banco de nomes com poucos sobrenomes",
     mutate: (bank) => {

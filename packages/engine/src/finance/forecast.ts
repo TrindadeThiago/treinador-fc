@@ -4,6 +4,8 @@ import { type CareerSeasonState, calendarNext } from "../career/season-state";
 import type { LeagueSeason } from "../career/types";
 import { neutralCapacityOf } from "../knockout/prizes";
 import { academyClub, academyMaintenance } from "../renewal/academy-levels";
+import { scoutingCost } from "../scouting/rules";
+import { effectiveScoutingLevel } from "../scouting/state";
 import { standings } from "../season/standings";
 import type { Fixture } from "../season/types";
 import { interestFor } from "./actions";
@@ -24,6 +26,8 @@ export interface CashForecast {
   wageRounds: number;
   /** Manutenção da academia que falta na temporada (negativo, 037). */
   academy: number;
+  /** Custo dos olheiros que falta na temporada (negativo, 039); 0 com o departamento fechado. */
+  scouting: number;
   /** Juros da dívida de hoje nas rodadas que faltam (negativo). */
   interest: number;
   /**
@@ -93,6 +97,14 @@ export function seasonCashForecast(
   let wages = 0;
   let wageRounds = 0;
   let academy = 0;
+  let scouting = 0;
+  const scoutingAnnual =
+    12 *
+    scoutingCost(
+      world,
+      clubId,
+      clubId === state.board?.manager.clubId ? effectiveScoutingLevel(state.scouting, clubId) : 0,
+    );
   const academyAnnual =
     12 * academyMaintenance(world, clubId, academyClub(state.renewal, world, clubId).level);
   let interest = 0;
@@ -170,6 +182,9 @@ export function seasonCashForecast(
         const maintenance = wageInstalment(academyAnnual, slot.round, total);
         academy -= maintenance;
         cash -= maintenance;
+        const scouts = wageInstalment(scoutingAnnual, slot.round, total);
+        scouting -= scouts;
+        cash -= scouts;
       }
       interest -= instalment;
       cash -= instalment;
@@ -206,6 +221,7 @@ export function seasonCashForecast(
     wages,
     wageRounds,
     academy,
+    scouting,
     interest,
     prize,
     position,
