@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageOn, seasonDate } from "../../src/calendar/date";
+import { ageOn } from "../../src/calendar/date";
 import type { CareerSeasonState } from "../../src/career/season-state";
 import { emptyAcademy } from "../../src/renewal/academy";
 import {
@@ -60,7 +60,7 @@ describe("regras e níveis da academia (037)", () => {
     expect(rules).toEqual(DEFAULT_ACADEMY_LEVELS);
     expect(
       [0, 29, 30, 44, 45, 64, 65, 79, 80, 100].map((rep) => levelForReputation(rules, rep)),
-    ).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+    ).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 4, 4]);
   });
 
   it("vagas 15, 15, 15, 20 e 25; sem registro, o nível da reputação", () => {

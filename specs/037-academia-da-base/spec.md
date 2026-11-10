@@ -16,6 +16,7 @@
 - Q: Como a base começa? → A: Todo clube começa com a base cheia, com 15 jovens (a quantidade-base da categoria). Isso vale para as carreiras novas e para os saves migrados.
 - Q: Quanto a academia pesa no caixa? → A: Moderado. A manutenção mensal vai de cerca de 2% da folha salarial (nível 1) a 10% (nível 5), e a obra para subir um nível custa de 2 a 6 folhas mensais, crescendo com o nível de destino.
 - Q: O que o painel mostra sobre o efeito do nível? → A: A quantidade de jovens por safra em número e a qualidade numa escala de texto (modesta, boa, muito boa, excelente, de elite), com o efeito do próximo nível ao lado para comparar. Força e potencial esperados não aparecem em número.
+- Q: (implementação) A venda das crias pode pagar a academia de um clube pequeno? → A: Sim, o clube formador é aceito: investir rende, inclusive para o pequeno, mas exige caixa para a obra e o retorno leva temporadas.
 - Q: O que acontece com a academia do clube que o técnico deixou? → A: Sem técnico, o clube segue a regra da IA: a partir da virada seguinte, o nível anda um degrau por virada até o nível que a reputação dá. Uma obra já paga ainda termina, e uma redução pendente é cancelada.
 
 ## Contexto
@@ -222,7 +223,7 @@ Como jogador com uma carreira salva na 1.9.0, quero abri-la e continuar, com a a
 
 - **SC-001**: Em 100% das viradas com obra paga, o nível sobe antes da safra, e a safra daquela virada usa o nível novo.
 - **SC-002**: Em carreiras simuladas de 10 temporadas, a academia no nível 5 gera, em média, pelo menos 50% mais jovens que a do nível 1, com força inicial e potencial médios maiores.
-- **SC-003**: Num clube pequeno, ao longo de 10 temporadas, a receita das vendas das crias da base fica abaixo do custo total do nível 5 (obras mais manutenção).
+- **SC-003**: Num clube pequeno, a academia no nível 5 pode se pagar com as vendas das crias (o clube formador, decisão de 2026-11-09), mas não de imediato: nas 3 primeiras temporadas, as vendas das crias ficam abaixo do custo das obras.
 - **SC-004**: Em 30 temporadas sem interação, as faixas do mundo e os critérios da 036 ficam dentro dos limites, e a fração de clubes da IA em crise não passa dos limites atuais da economia.
 - **SC-005**: Na simulação continental completa, em 3 seeds, a média da correlação vagas × títulos fica ≥ 0, e o peso dos prêmios na receita fica ≤ 18,1% em cada seed (o valor da `main` da 1.8.1).
 - **SC-006**: 100% dos saves da 1.9.0 abrem, migram e chegam à virada seguinte sem erro.

@@ -1,7 +1,9 @@
 import {
   academyClub,
+  academyLevelRule,
   academyOf,
   DEFAULT_ACADEMY_LEVELS,
+  initialAcademySize,
   levelForReputation,
 } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
@@ -35,14 +37,16 @@ function toTurnover(save: SaveFile): SaveFile {
 }
 
 describe("migração v21 → v22 (037)", () => {
-  it("nível da reputação, sem pendência, e base completada até 15", () => {
+  it("nível da reputação, sem pendência, e base completada (técnico 10, IA 3 safras)", () => {
     const v21 = saveV21({ rounds: 2 });
     const save = migrated({ rounds: 2 });
     for (const club of save.bank.clubs) {
       expect(academyClub(save.renewal, save.bank, club.id)).toEqual({
         level: levelForReputation(DEFAULT_ACADEMY_LEVELS, club.reputation),
       });
-      expect(academyOf(save.renewal, club.id)).toHaveLength(15);
+      const rule = academyLevelRule(save.renewal, save.bank, club.id);
+      const target = initialAcademySize(rule, club.id === save.clubId);
+      expect(academyOf(save.renewal, club.id).length).toBeGreaterThanOrEqual(target);
     }
     for (const entry of v21.renewal.academy?.players ?? []) {
       expect(save.renewal.academy?.players).toContainEqual(entry);

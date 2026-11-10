@@ -6,7 +6,7 @@ import { DEFAULT_TURNOVER_STEPS, seasonTurnover } from "../../src/career/turnove
 import type { CompletedPlayer } from "../../src/model/types";
 import { academyOf, emptyAcademy, graduateOf } from "../../src/renewal/academy";
 import { academyLimit } from "../../src/renewal/academy-levels";
-import { ACADEMY_RULES, SQUAD_RULES } from "../../src/renewal/rules";
+import { SQUAD_RULES } from "../../src/renewal/rules";
 import { squadProblems } from "../../src/renewal/squads";
 import type { AcademyPlayer } from "../../src/renewal/types";
 import { squadOf } from "../../src/world/squads";

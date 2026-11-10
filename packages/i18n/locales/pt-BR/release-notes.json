@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.10.0",
+    "date": "2026-11-09",
+    "changes": [
+      "Chegou a academia da base: no topo da aba Base do Elenco, cada clube tem uma academia de nível 1 a 5. O nível decide quantos jovens chegam por safra, a qualidade deles (de modesta a de elite), o quanto evoluem na base e as vagas: 15 até o nível 3, 20 no nível 4 e 25 no nível 5.",
+      "Investir é uma decisão de caixa: Melhorar paga a obra na hora e o nível sobe na virada da temporada; Baixar vale na virada, corta a manutenção e pode ser cancelado até lá. A manutenção mensal aparece em Finanças como \"Academia\", na previsão e no resumo da temporada.",
+      "A base agora começa com jovens: seu clube começa a carreira com 10 jovens na base, e os clubes do computador com uma base do tamanho da academia deles. Os clubes do computador têm a academia pela reputação.",
+      "O painel mostra o efeito do nível atual e do próximo, e compara a academia dos clubes da divisão. Uma academia forte pode render boas vendas de crias da base, mas o retorno leva algumas temporadas.",
+      "Ajustes de equilíbrio: os clubes do computador promovem da base só quem cabe no elenco e reservam um pouco menos de caixa antes de comprar.",
+      "As carreiras continuam de onde pararam: os saves da 1.9.0 abrem com a academia de cada clube pela reputação e a base completada. O formato do save mudou (versão 22) e o formato de mod ganhou a seção opcional economy.academy. A mesma seed dá uma carreira diferente da versão anterior."
+    ]
+  },
+  {
     "version": "1.9.0",
     "date": "2026-11-09",
     "changes": [

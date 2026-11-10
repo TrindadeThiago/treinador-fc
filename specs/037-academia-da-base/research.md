@@ -219,3 +219,47 @@ equivalência:
   compras da IA na janela de abertura.
 
 A 1ª rodada continua idêntica.
+
+## Cenário da academia (T024) e o clube formador
+
+`runAcademyScenario` (`pnpm sim:economy`): o clube de menor reputação do mundo padrão, com a
+academia fixa no nível 1 ou no nível 5, por 10 temporadas.
+
+| Medida | Nível 1 | Nível 5 |
+|---|---|---|
+| Jovens nas safras | 10 | 30 (3×) |
+| Força média | 41,4 | 45,5 |
+| Potencial médio | 54,5 | 67,8 |
+| Vendas de crias em 10 temporadas | — | 19,0 mi |
+| Custo (obras + manutenção) | — | 7,0 mi |
+
+O requisito original era que as vendas não pagassem o nível 5 num clube pequeno. Elas pagam: o
+custo acompanha a folha do clube, e o preço de um jovem bom não. Decisão do usuário: **aceitar o
+clube formador**. O SC-003 passou a medir o retorno lento: nas 3 primeiras temporadas, as vendas
+das crias ficam abaixo do custo das obras.
+
+## Nível 5 só por obra e as simulações completas (T027, T028)
+
+Na primeira rodada das simulações completas, os clubes grandes da IA (reputação ≥ 80) ganhavam o
+nível 5 de graça e viravam formadores ricos. Os números:
+- caixa dos assíduos na continental entre 19 e 28 folhas acima da mediana (limite 4);
+- caixa máximo de 30 temporadas fora da faixa;
+- vagas × títulos entre 0 e −0,57.
+
+`MAX_REPUTATION_LEVEL = 4`: pela reputação nenhum clube passa do nível 4, e o 5 só vem por obra
+(também para o nível inicial do técnico).
+
+| Simulação | Resultado |
+|---|---|
+| `long-run-1`, `long-run-2`, estaduais, mercado, economia, diretoria, vários países, continental do CI | 49 testes passam |
+| `sim:world --seasons 30` | tudo ✓; emergências 0 |
+| `sim:economy` | tudo ✓; cenário da academia ✓ (3,75× jovens; retorno lento) |
+| `sim:gates` | ✓ |
+| Continental completa, seed padrão | vagas × títulos 0,36 ✓; prêmios 19,3% ✗ |
+| Continental completa, seed var-a | −0,05; caixa dos assíduos 4,30 (limite 4) ✗; prêmios 18,9% ✗ |
+| Continental completa, seed var-b | 0,50 ✓; prêmios 18,1% ✗ |
+
+A média da correlação nas 3 seeds é 0,27 e passa a tolerância do SC-005 (≥ 0). O peso dos prêmios
+fica entre 18,1% e 19,3%, até 1,2 ponto acima do valor da `main` da 1.8.1 (18,1%, que já passava do
+limite de 15%). O caixa dos assíduos passa do limite por 0,3 folha numa seed. Ficam como pendências
+conhecidas do critério da continental completa, que não roda no CI.

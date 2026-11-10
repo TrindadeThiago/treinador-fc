@@ -1,7 +1,7 @@
 import { generateWorldBank } from "@brasfoot-like/engine";
 import { writeModPackage } from "@brasfoot-like/modkit";
 import { expect, test } from "@playwright/test";
-import { E2E_SEED, skipTips, t } from "./helpers";
+import { confirmLastYear, E2E_SEED, skipTips, t } from "./helpers";
 
 // 022 (T066): competições entre países pela interface — a aba da taça ao lado das do país, os
 // grupos sem repetir país, o jogo até o fim da temporada, o chaveamento e o histórico.
@@ -64,6 +64,7 @@ test("taça continental: aba, grupos, temporada inteira, chaveamento e históric
   const toEnd = page.getByRole("button", { name: t("home.advanceToEnd") });
   const seasonEnd = /\/jogo\/fim-de-temporada\//;
   for (let step = 0; step < 60 && !seasonEnd.test(page.url()); step++) {
+    if (await confirmLastYear(page)) continue;
     await expect(simulate.or(toEnd)).toBeVisible();
     const button = (await toEnd.isVisible()) ? toEnd : simulate;
     await expect(button).toBeEnabled();

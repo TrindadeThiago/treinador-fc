@@ -137,12 +137,13 @@ export const SCREENS: ScreenCase[] = [
   },
   {
     // Aba Base do Elenco (036): estado vazio na primeira temporada.
+    // Aba Base do Elenco (036) com o painel da academia (037); a base já começa com 10 jovens.
     label: "/jogo/elenco/ (base)",
     group: "club",
     path: "/jogo/elenco/",
     open: async (page) => {
       await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
-      await expect(page.getByText(t("academy.empty.title"))).toBeVisible();
+      await expect(page.getByRole("region", { name: t("academy.panel.title") })).toBeVisible();
     },
   },
   {

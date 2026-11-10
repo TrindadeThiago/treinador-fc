@@ -17,6 +17,8 @@ describe("ídolos (013 R6, US6)", () => {
     const player = world.players.find((entry) => entry.id === playerId);
     if (player) player.clubId = to;
     const market = structuredClone(career.market);
+    // Só a transferência do teste (a IA também negocia na rodada 1 da carreira real).
+    market.log = [];
     market.log.push({
       season: 1,
       round: 1,

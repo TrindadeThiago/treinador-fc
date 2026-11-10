@@ -181,7 +181,14 @@ interface AcademyRun {
   sales: number;
   /** Obras e manutenção da academia pagas pelo clube. */
   cost: number;
+  /** Custo das obras para chegar ao nível. */
+  build: number;
+  /** Vendas de crias nas primeiras temporadas (retorno lento). */
+  earlySales: number;
 }
+
+/** Temporadas em que o retorno ainda não paga a obra (037 SC-003, clube formador). */
+const EARLY_SEASONS = 3;
 
 /**
  * Cenário da academia (037): o clube de menor reputação com a academia fixa num nível por
@@ -209,6 +216,8 @@ function academyRun(seed: string, level: number, seasons: number): AcademyRun {
   let cost = 0;
   for (let next = start + 1; next <= level; next++)
     cost += academyUpgradeCost(world, club.id, next);
+  const build = cost;
+  let earlySales = 0;
   const youths: { strength: number; potential: number }[] = [];
   let sales = 0;
   for (let index = 0; index < seasons; index++) {
@@ -252,6 +261,7 @@ function academyRun(seed: string, level: number, seasons: number): AcademyRun {
           graduates[entry.playerId]?.clubId === club.id,
       )
       .reduce((sum, entry) => sum + (entry.fee ?? 0), 0);
+    if (index === EARLY_SEASONS - 1) earlySales = sales;
     market = turned.market ?? market;
     fans = turned.fans ?? fans;
     league = turned.league;
@@ -273,6 +283,8 @@ function academyRun(seed: string, level: number, seasons: number): AcademyRun {
     potential: mean(youths.map((youth) => youth.potential)),
     sales,
     cost,
+    build,
+    earlySales,
   };
 }
 
@@ -291,8 +303,8 @@ export function runAcademyScenario(seed: string, seasons = 10): SimulateEconomyO
       `força ${high.strength.toFixed(1)} × ${low.strength.toFixed(1)} e potencial ${high.potential.toFixed(1)} × ${low.potential.toFixed(1)}`,
     ],
     [
-      high.sales < high.cost,
-      `clube pequeno no nível 5: vendas de crias ${millions(high.sales)} < custo ${millions(high.cost)}`,
+      high.earlySales < high.build,
+      `clube pequeno no nível 5: o retorno leva tempo — vendas de crias nas ${EARLY_SEASONS} primeiras temporadas ${millions(high.earlySales)} < obra ${millions(high.build)} (em ${seasons}: ${millions(high.sales)} de vendas para ${millions(high.cost)} de custo, o clube formador)`,
     ],
   ];
   const lines = [`Academia — ${seasons} temporadas, clube de menor reputação, seed "${seed}"`];

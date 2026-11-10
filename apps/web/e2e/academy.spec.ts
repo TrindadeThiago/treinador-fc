@@ -18,10 +18,29 @@ test("base: estado vazio, safra na virada, promover pelo teclado e dispensar (03
   test.setTimeout(300_000);
   await createCareer(page, "Ana Souza", 1, undefined, { noFiring: true });
 
-  // Primeira temporada: a base está vazia.
+  // Primeira temporada: a base já tem 10 jovens e o painel da academia (037).
   await page.keyboard.press("2");
   await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
-  await expect(page.getByText(t("academy.empty.title"))).toBeVisible();
+  const panel = page.getByRole("region", { name: t("academy.panel.title") });
+  await expect(panel).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /^Promover .* ao elenco profissional$/ }),
+  ).toHaveCount(10);
+
+  // Melhorar a academia pelo teclado (SC-007): foco, Enter, Enter no diálogo.
+  const upgrade = panel.getByRole("button", { name: t("academy.panel.upgrade") });
+  if (await upgrade.isEnabled()) {
+    await press(page, upgrade);
+    const dialog = page.getByRole("dialog", { name: /^Melhorar a academia para o nível/ });
+    await expect(dialog).toContainText("pago agora");
+    await press(page, dialog.getByRole("button", { name: t("academy.panel.upgrade") }));
+    await expect(page.getByText(t("academy.panel.done.upgrade"))).toBeVisible();
+    // A obra aparece nas Finanças como "Academia".
+    await page.keyboard.press("6");
+    await expect(page.getByText(t("finance.category.academy")).first()).toBeVisible();
+    await page.keyboard.press("2");
+    await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
+  }
 
   // Virada: a safra chega à base.
   await simulateSeason(page);

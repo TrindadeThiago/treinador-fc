@@ -84,7 +84,7 @@ Os módulos ficam em `packages/engine/src`. A API pública é o `index.ts`.
 | `board/` | Diretoria: metas, confiança, avaliação, demissão, propostas de emprego, técnicos da IA e reputação. |
 | `fans/` | Torcida: humor, rivalidades, ídolos. |
 | `news/` | Manchetes: fatos da rodada, recordes, conquistas e o feed por rodada (só dados: tipo, variante e variáveis). |
-| `renewal/` | Virada do mundo: evolução, aposentadoria, regulador de força e nomes novos. O elenco de base (`academy.ts`, 036) vive em `RenewalState.academy`, fora de `world.players`: safra, idade-limite, promoções, dispensas, bloqueios (`rosterIssues`) e as etapas `academy-age-out` e `complete-squads` da virada. |
+| `renewal/` | Virada do mundo: evolução, aposentadoria, regulador de força e nomes novos. O elenco de base (`academy.ts`, 036) vive em `RenewalState.academy`, fora de `world.players`: safra, idade-limite, promoções, dispensas, bloqueios (`rosterIssues`) e as etapas `academy-age-out` e `complete-squads` da virada. A academia (`academy-levels.ts`, 037) guarda o nível de cada clube em `RenewalState.academy.clubs`, com a etapa `academy-levels`, a manutenção na categoria `academy` do livro-caixa e a base inicial (`seedAcademies`). |
 | `rating/` | A nota do jogador (completa e simplificada), a média da temporada e o melhor em campo. É só informativa: o teste de arquitetura impede que outro módulo a importe. |
 | `derived/` | Valores derivados da economia, usados por vários módulos. |
 | `serialize/` | JSON canônico, clonagem e comparação de textos estável. |

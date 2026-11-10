@@ -125,13 +125,19 @@ export function academyRules(world: CompletedBank, clubId: string): readonly Aca
   return rulesCompetitionOf(world, clubId).economy?.academy?.levels ?? DEFAULT_ACADEMY_LEVELS;
 }
 
-/** Nível que a reputação dá (o maior cuja reputação mínima foi atingida). */
+/**
+ * Maior nível que a reputação dá sozinha (037): o 5 só vem por obra. Sem o teto, os clubes grandes da
+ * IA tinham a academia de elite de graça e viravam formadores ricos (caixa e continental fora da faixa).
+ */
+export const MAX_REPUTATION_LEVEL = 4;
+
+/** Nível que a reputação dá (o maior cuja reputação mínima foi atingida), até `MAX_REPUTATION_LEVEL`. */
 export function levelForReputation(rules: readonly AcademyLevelRule[], reputation: number): number {
   let level = 1;
   rules.forEach((rule, index) => {
     if (reputation >= rule.minReputation) level = index + 1;
   });
-  return level;
+  return Math.min(level, MAX_REPUTATION_LEVEL);
 }
 
 function ruleOf(rules: readonly AcademyLevelRule[], level: number): AcademyLevelRule {

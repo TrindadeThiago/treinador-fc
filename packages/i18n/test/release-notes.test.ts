@@ -18,8 +18,12 @@ describe("notas de versão (016 US5)", () => {
     const current = releaseNotes("pt-BR");
     const beta = betaReleaseNotes("pt-BR");
     expect(current.at(-1)?.version).toBe("1.0.0");
-    // Nenhuma versão beta (1.x.0 de 20 a 28 de outubro) entra nas notas atuais além do próprio 1.0.0.
-    expect(current.map((note) => note.version)).not.toContain("1.10.0");
+    // Nenhuma nota beta (1.x.0 de 20 a 28 de outubro) entra nas notas atuais além do próprio 1.0.0.
+    // A 1.10.0 voltou a existir depois do lançamento (037): é outro texto, de outra data.
+    const betaTexts = new Set(beta.map((note) => JSON.stringify(note.changes)));
+    expect(current.slice(0, -1).some((note) => betaTexts.has(JSON.stringify(note.changes)))).toBe(
+      false,
+    );
     expect(beta).toHaveLength(23);
     expect(beta[0]?.version).toBe("1.10.0");
     expect(beta.at(-1)?.version).toBe("1.0.0");

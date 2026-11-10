@@ -127,6 +127,12 @@ export async function simulateSeason(page: Page): Promise<void> {
     await page.keyboard.press("d");
     await page.waitForTimeout(100);
     if (/fim-de-temporada/.test(page.url())) return;
+    // Antes do último jogo, o aviso dos jovens no último ano da base pede confirmação (037).
+    const lastYear = page.getByRole("dialog", { name: t("simulate.lastYearTitle") });
+    if (await lastYear.isVisible().catch(() => false)) {
+      await lastYear.getByRole("button", { name: t("simulate.playAnyway") }).click();
+      continue;
+    }
     const button = page.getByRole("button", { name: t("home.simulate") });
     // Fora da Início não há botão: um respiro basta para a simulação do dia terminar.
     // O botão some se a simulação do dia leva ao fim da temporada: isso também encerra a espera.
@@ -227,4 +233,12 @@ export async function completeSquadFromBase(page: Page): Promise<void> {
     await page.keyboard.press("1");
     await expect(page).toHaveURL(/\/jogo\/\?/);
   }
+}
+
+/** Confirma o aviso de jovens no último ano da base, se ele estiver aberto (037). */
+export async function confirmLastYear(page: Page): Promise<boolean> {
+  const dialog = page.getByRole("dialog", { name: t("simulate.lastYearTitle") });
+  if (!(await dialog.isVisible().catch(() => false))) return false;
+  await dialog.getByRole("button", { name: t("simulate.playAnyway") }).click();
+  return true;
 }
