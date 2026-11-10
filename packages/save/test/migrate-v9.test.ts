@@ -1,7 +1,7 @@
 import { DEFAULT_FANS } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import { migrateSave, type SaveFile } from "../src";
-import { saveV8, validSave } from "./fixtures";
+import { sansAcademy, saveV8, validSave } from "./fixtures";
 
 describe("migração v8 → v9 (013 R11, FR-019, SC-008)", () => {
   it("torcidas neutras e rivalidades do banco padrão", () => {
@@ -10,7 +10,7 @@ describe("migração v8 → v9 (013 R11, FR-019, SC-008)", () => {
     const result = migrateSave(v8);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(8);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(
       Object.values(result.save.fans.clubs).every((club) => club.mood === DEFAULT_FANS.neutral),
     ).toBe(true);
@@ -29,7 +29,7 @@ describe("migração v8 → v9 (013 R11, FR-019, SC-008)", () => {
       ...rest
     } = result.save;
     const { formatVersion: _v8, bank: bankV8, ...restV8 } = v8;
-    expect(rest).toEqual(restV8);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV8));
     const { rivalries: _rivalries, ...bankRest } = bank;
     expect(bankRest).toEqual(bankV8);
   });

@@ -21,3 +21,18 @@ export async function roundPlayed(round: number): Promise<HTMLElement> {
   );
   return item as HTMLElement;
 }
+
+/**
+ * Antes do último jogo da temporada, o jogo pede confirmação quando há jovens no último ano da base
+ * (037: a base começa com jovens de 19 anos). Confirma, se o diálogo aparecer.
+ */
+export async function confirmLastYearIfAsked(user: { click(element: Element): Promise<void> }) {
+  const { screen } = await import("@testing-library/react");
+  const { t } = await import("../../src/i18n");
+  const dialog = await screen
+    .findByRole("dialog", { name: t("simulate.lastYearTitle") }, { timeout: 1500 })
+    .catch(() => null);
+  if (!dialog) return;
+  const { within } = await import("@testing-library/react");
+  await user.click(within(dialog).getByRole("button", { name: t("simulate.playAnyway") }));
+}

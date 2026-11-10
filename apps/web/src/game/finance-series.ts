@@ -20,6 +20,7 @@ export const DESTINATION_CATEGORIES = [
   "interest",
   "loan_out",
   "stadium",
+  "academy",
   "transfer_purchase",
 ] as const satisfies readonly LedgerCategory[];
 

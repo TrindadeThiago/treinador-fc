@@ -1,7 +1,7 @@
 import type { MatchRecord } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import { exportSave, importSave, migrateSave, SAVE_FORMAT_VERSION, type SaveFile } from "../src";
-import { playDay, saveV18 } from "./fixtures";
+import { playDay, sansAcademy, saveV18 } from "./fixtures";
 
 // 033 (T010): a migração v18 → v19 só sobe a versão; as partidas antigas ficam sem jogadas e as
 // novas passam a tê-las. Jogadas inválidas num save importado são rejeitadas (FR-014).
@@ -37,7 +37,7 @@ describe("migração v18 → v19 (033 FR-012, SC-005)", () => {
     const save = migrated(5);
     const { formatVersion: _a, ...rest } = save;
     const { formatVersion: _b, ...restV18 } = v18;
-    expect(rest).toEqual(restV18);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV18));
     const before = records(save).length;
     expect(before).toBeGreaterThan(0);
     expect(records(save).some(hasPlays)).toBe(false);

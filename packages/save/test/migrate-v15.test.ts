@@ -8,7 +8,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SaveFile,
 } from "../src";
-import { playDay, type SaveV11Step, saveV14 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV14 } from "./fixtures";
 
 // 020 (T024): a migração v14 → v15 só sobe a versão; um save antigo é um mundo de um país.
 const STEPS: [string, SaveV11Step][] = [
@@ -29,7 +29,7 @@ describe("migração v14 → v15 (020 R11, FR-021)", () => {
       expect(result.save.formatVersion).toBe(SAVE_FORMAT_VERSION);
       const { formatVersion: _a, ...rest } = result.save;
       const { formatVersion: _b, ...restV14 } = v14;
-      expect(rest).toEqual(restV14);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV14));
       // Um país só: a liga em foco é a principal e as outras competições são do mesmo país.
       const countries = new Set(
         [result.save.league, ...result.save.competitions].map(

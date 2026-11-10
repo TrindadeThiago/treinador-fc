@@ -49,7 +49,7 @@ describe("séries de Finanças (028)", () => {
       destination
         ?.map((row) => row.category)
         .every((c) =>
-          ["wages", "interest", "loan_out", "stadium", "transfer_purchase"].includes(c),
+          ["wages", "interest", "loan_out", "stadium", "academy", "transfer_purchase"].includes(c),
         ),
     ).toBe(true);
     for (const rows of [origin, destination]) {

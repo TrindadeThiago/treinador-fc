@@ -36,6 +36,7 @@ import {
   answerManagerIncomingOffer,
   answerManagerPlayerDemand,
   cancelManagerNegotiation,
+  cancelYouthAcademyChange,
   createSave,
   currentDayOf,
   type DisposalSaveResult,
@@ -43,6 +44,7 @@ import {
   dismissBoardNotice as dismissSavedBoardNotice,
   dismissSquadNotice as dismissSavedSquadNotice,
   dismissWindowReport as dismissSavedWindowReport,
+  downgradeYouthAcademy,
   emergencyYouth as emergencySavedYouth,
   type FinanceSaveResult,
   type IncomingSaveResult,
@@ -66,6 +68,7 @@ import {
   takeManagerLoan,
   terminateManagerContract,
   touch,
+  upgradeYouthAcademy,
   userSeasonFor,
   withAdjustedLineup,
   withDayResult,
@@ -257,6 +260,10 @@ interface GameContextValue {
   releaseYouth(playerId: string): AcademyActionResult;
   /** Safra de emergência (036): só sem nenhum candidato para o mínimo da posição. */
   emergencyYouth(position: Position): AcademyActionResult;
+  /** Academia (037): melhorar (paga a obra), baixar e cancelar a redução. */
+  upgradeAcademy(): AcademyActionResult;
+  downgradeAcademy(): AcademyActionResult;
+  cancelAcademyChange(): AcademyActionResult;
   /** Carreira do técnico (012): aceitar/recusar proposta de emprego e dispensar o aviso. */
   acceptJobOffer(offerId: string): boolean;
   declineJobOffer(offerId: string): void;
@@ -842,6 +849,27 @@ export function GameProvider({
     (playerId: string) => academyAction(releaseSavedYouth, playerId),
     [academyAction],
   );
+  const levelAction = useCallback(
+    (action: typeof upgradeYouthAcademy): AcademyActionResult => {
+      const save = latestSave.current;
+      if (!save) return { ok: false, error: "academy.not_found" };
+      if (liveRef.current) return { ok: false, error: "academy.match_in_progress" };
+      const result = action(save);
+      if (!result.ok) return { ok: false, error: result.error };
+      const next = touch(result.save, new Date().toISOString());
+      latestSave.current = next;
+      dispatch({ type: "update", save: next });
+      void persist(next);
+      return { ok: true };
+    },
+    [persist],
+  );
+  const upgradeAcademy = useCallback(() => levelAction(upgradeYouthAcademy), [levelAction]);
+  const downgradeAcademy = useCallback(() => levelAction(downgradeYouthAcademy), [levelAction]);
+  const cancelAcademyChange = useCallback(
+    () => levelAction(cancelYouthAcademyChange),
+    [levelAction],
+  );
   const emergencyYouth = useCallback(
     (position: Position) =>
       academyAction((save, value) => emergencySavedYouth(save, value as Position), position),
@@ -958,6 +986,9 @@ export function GameProvider({
       promoteYouth,
       releaseYouth,
       emergencyYouth,
+      upgradeAcademy,
+      downgradeAcademy,
+      cancelAcademyChange,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,
@@ -999,6 +1030,9 @@ export function GameProvider({
       promoteYouth,
       releaseYouth,
       emergencyYouth,
+      upgradeAcademy,
+      downgradeAcademy,
+      cancelAcademyChange,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,

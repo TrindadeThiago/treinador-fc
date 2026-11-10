@@ -167,6 +167,16 @@ describe("safra de emergência do técnico no save (036)", () => {
         ),
       },
       market: { ...start.market, freeAgents: [] },
+      // Sem goleiro na base também (037: a base começa com jovens).
+      renewal: {
+        ...start.renewal,
+        academy: {
+          ...(start.renewal.academy ?? emptyAcademy()),
+          players: (start.renewal.academy?.players ?? []).filter(
+            (entry) => !(entry.clubId === start.clubId && entry.player.position === "GK"),
+          ),
+        },
+      },
     };
     expect(emergencyPositionsOf(stuck)).toEqual(["GK"]);
     let save = stuck;

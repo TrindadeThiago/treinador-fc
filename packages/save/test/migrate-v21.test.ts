@@ -30,10 +30,11 @@ function toTurnover(save: SaveFile): SaveFile {
 }
 
 describe("migração v20 → v21 (036)", () => {
-  it("abre com a base vazia e os jogadores onde estavam", () => {
+  it("abre com os jogadores onde estavam (a base inicial chega pela v22)", () => {
     const v20 = saveV20({ rounds: 3 });
     const save = migrated({ rounds: 3 });
-    expect(save.renewal.academy).toEqual(emptyAcademy());
+    // Na v21 a base nascia vazia; a migração seguinte (v22, 037) a completa até 15 jovens.
+    expect(save.renewal.academy?.players.every((entry) => entry.joinedSeason === 1)).toBe(true);
     expect(save.bank.players).toEqual(v20.bank.players);
   }, 300_000);
 

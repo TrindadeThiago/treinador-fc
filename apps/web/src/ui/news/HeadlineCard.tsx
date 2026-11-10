@@ -53,7 +53,8 @@ export function HeadlineCard({
       <p id={titleId} className={styles.text}>
         {t(`news.${headline.type}.${headline.variant}`, vars)}
       </p>
-      {(compact ? headline.extras?.slice(0, 1) : headline.extras)?.map((extra) => (
+      {/* Na Início (037), só o título: os complementos ficam nas Notícias e a grade cabe na tela. */}
+      {(compact ? [] : headline.extras)?.map((extra) => (
         <p key={extra.type} className={styles.extra}>
           {t(`news.extra.${extra.type}`, headlineVars(save, extra.vars))}
         </p>

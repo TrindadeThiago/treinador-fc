@@ -1,7 +1,7 @@
 import { generateStagesBank } from "@brasfoot-like/engine";
 import { writeModPackage } from "@brasfoot-like/modkit";
 import { expect, test } from "@playwright/test";
-import { E2E_SEED, skipTips, t } from "./helpers";
+import { confirmLastYear, E2E_SEED, skipTips, t } from "./helpers";
 
 // 019 (T081): a quarta divisão em fases pela interface — grupos, classificação geral, mata-mata
 // com a origem das vagas e a posição final no resumo da temporada.
@@ -61,6 +61,7 @@ test("divisão em grupos e mata-mata: tabelas, chaveamento e posição final (01
   const toEnd = page.getByRole("button", { name: t("home.advanceToEnd") });
   const seasonEnd = /\/jogo\/fim-de-temporada\//;
   for (let step = 0; step < 40 && !seasonEnd.test(page.url()); step++) {
+    if (await confirmLastYear(page)) continue;
     await expect(simulate.or(toEnd)).toBeVisible();
     const button = (await toEnd.isVisible()) ? toEnd : simulate;
     await expect(button).toBeEnabled();

@@ -40,6 +40,7 @@ import { newsNewSeasonStep, newsQualificationStep, newsRegionalStep } from "../n
 import { applyQualification } from "../qualification/apply";
 import { resolveFinishedSeasons } from "../qualification/finish";
 import { regionalEditions } from "../regional/history";
+import { academyLevelsStep } from "../renewal/academy-levels";
 import {
   academyAgeOutStep,
   academyCloseStep,
@@ -82,6 +83,7 @@ export const TURNOVER_STEP_IDS = [
   "retire-players",
   "expire-contracts",
   "academy-open",
+  "academy-levels",
   "regulate-world",
   "academy-age-out",
   "generate-youth",
@@ -363,6 +365,7 @@ export const DEFAULT_TURNOVER_STEPS: readonly TurnoverStep[] = [
   perCountry(retirePlayersStep),
   expireContractsStep,
   academyOpenStep,
+  perCountry(academyLevelsStep),
   perCountry(regulateWorldStep),
   perCountry(academyAgeOutStep),
   perCountry(generateYouthStep),

@@ -51,8 +51,14 @@ describe("previsão de caixa até o fim da temporada", () => {
     expect(forecast.wages).toBeLessThan(0);
     expect(forecast.interest).toBe(0);
     expect(forecast.endCash).toBe(
-      forecast.cash + forecast.gate + forecast.wages + forecast.interest + forecast.prize,
+      forecast.cash +
+        forecast.gate +
+        forecast.wages +
+        forecast.academy +
+        forecast.interest +
+        forecast.prize,
     );
+    expect(forecast.academy).toBeLessThan(0);
     expect(forecast.lowestCash).toBeLessThanOrEqual(forecast.cash);
     // Sem jogos, a posição da tabela não diz nada: vale o meio dela.
     const clubs = division?.clubIds.length ?? 0;
@@ -68,6 +74,8 @@ describe("previsão de caixa até o fim da temporada", () => {
     const end = ok(advanceCareerDays(state, { toEnd: true }, SEED, MANAGER));
     // Sem renovação nem mercado o elenco não muda: a folha prevista é a cobrada.
     expect(forecast.wages).toBe(total(end, "wages"));
+    // A manutenção da academia prevista é a cobrada (037).
+    expect(forecast.academy).toBe(total(end, "academy"));
     const gate = total(end, "gate");
     // A real tem ruído de ±5% por jogo e a fase do time muda o público.
     expect(Math.abs(forecast.gate - gate) / gate).toBeLessThan(0.2);

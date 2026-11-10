@@ -18,6 +18,7 @@ const EXPENSES: readonly LedgerCategory[] = [
   "interest",
   "loan_out",
   "stadium",
+  "academy",
   "transfer_purchase",
 ];
 

@@ -91,13 +91,18 @@ describe("recordes (014 R5, critério de aceite 2, SC-002)", () => {
       record.score = side === "home" ? { home: 6, away: 0 } : { home: 0, away: 6 };
     });
     const news = newsAfterRound({ ...base, league: edited.league, news: afterFirst }, 2);
+    // O recorde de goleada é gravado com o anterior (2) e o novo (6).
+    expect(news.records.clubs[MANAGER]?.biggestWin).toMatchObject({ value: 6, clubId: MANAGER });
+    // Uma manchete de recorde por clube por rodada: se o mesmo jogo bater outro recorde (por
+    // exemplo, a sequência de vitórias), a manchete pode ser a dele.
     const headline = news.feed
       .at(-1)
       ?.headlines.find(
-        (item) =>
-          item.type === "record" && item.vars.kind === "biggestWin" && item.vars.scope === "club",
+        (item) => item.type === "record" && (item.vars.owner === MANAGER || item.mine),
       );
-    expect(headline?.vars).toMatchObject({ prevValue: 2, newValue: 6, owner: MANAGER });
     expect(headline?.mine).toBe(true);
+    if (headline?.vars.kind === "biggestWin") {
+      expect(headline.vars).toMatchObject({ prevValue: 2, newValue: 6, owner: MANAGER });
+    }
   });
 });

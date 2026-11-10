@@ -4,7 +4,7 @@ import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
 import { createNews } from "../../src/news/create";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 import { createWorldSystems } from "../../src/world/create";
 import { completeHiddenAttributes } from "../../src/worldgen/hidden";
 import { generateWorldBank, type WorldBankOptions } from "../../src/worldgen/world-example";
@@ -51,7 +51,7 @@ export function worldState(
     ...seasons,
     world,
     finances: systems.finances,
-    renewal: initialRenewal(world),
+    renewal: initialCareerRenewal(world, careerSeed, world.manifest.referenceDate),
     market: emptyMarket(),
     board: systems.board,
     fans: systems.fans,

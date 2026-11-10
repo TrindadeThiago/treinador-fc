@@ -49,6 +49,7 @@ describe("pontos de extensão da virada (US6, FR-017 a FR-019)", () => {
       "retire-players",
       "expire-contracts",
       "academy-open",
+      "academy-levels",
       "regulate-world",
       "academy-age-out",
       "generate-youth",

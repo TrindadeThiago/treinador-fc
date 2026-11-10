@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { migrateSave, type SaveFile } from "../src";
-import { saveV10, validSave } from "./fixtures";
+import { sansAcademy, saveV10, validSave } from "./fixtures";
 
 describe("migração v10 → v11 (015 R6, FR-010)", () => {
   it("imagens vazias e o resto preservado", () => {
@@ -8,7 +8,7 @@ describe("migração v10 → v11 (015 R6, FR-010)", () => {
     const result = migrateSave(v10);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(10);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(result.save.assets).toEqual({});
     const {
       formatVersion: _v,
@@ -21,7 +21,7 @@ describe("migração v10 → v11 (015 R6, FR-010)", () => {
       ...rest
     } = result.save;
     const { formatVersion: _v10, ...restV10 } = v10;
-    expect(rest).toEqual(restV10);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV10));
   });
 
   it("v11 sem imagens ⇒ corrupt", () => {

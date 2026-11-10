@@ -23,11 +23,15 @@ import {
   type LeagueSeason,
   leagueCalendar,
   leagueSeasonSeed,
+  MAX_ACADEMY_LEVEL,
   POSTURES,
   playerSeq,
   type Season,
+  seasonDate,
+  seedAcademies,
   validateBank,
   validateLineup,
+  withAcademyClubs,
 } from "@brasfoot-like/engine";
 import { z } from "zod";
 import { MANAGER_NAME_MAX, SAVE_FORMAT_VERSION, type SaveFile } from "./format";
@@ -392,6 +396,27 @@ function liveBankValid(bank: unknown): boolean {
   return result.ok || result.errors.every((issue) => LIVE_SQUAD_RULES.has(issue.code));
 }
 
+/**
+ * v21 → v22: academia (037). Cada clube ganha o nível da reputação, sem pendência, e a base é
+ * completada até 15 jovens (ninguém sai).
+ */
+const addAcademyLevels: Migration = {
+  from: 21,
+  migrate(raw) {
+    const save = raw as SaveFile;
+    const date = seasonDate(save.bank.manifest.referenceDate, save.league.year);
+    const academy = withAcademyClubs(save.bank, save.renewal.academy ?? emptyAcademy());
+    const renewal = seedAcademies(
+      save.bank,
+      { ...save.renewal, academy },
+      save.seed,
+      date,
+      save.clubId,
+    );
+    return { ...(raw as object), formatVersion: 22, renewal };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -414,6 +439,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addPlays,
   addPlayExtras,
   addAcademy,
+  addAcademyLevels,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -671,11 +697,27 @@ function renewalProblem(save: SaveFile): string | undefined {
     0,
   );
   if (save.renewal.nextPlayerSeq <= highest) return "sequência de ids de jogador repetiria ids";
-  return academyIdsProblem(
+  const ids = academyIdsProblem(
     save.bank,
     academy,
     save.market.freeAgents.map((agent) => agent.player.id),
   );
+  if (ids) return ids;
+  // Academias (037): nível de 1 a 5, pendência coerente, clube existente.
+  const clubIds = new Set(save.bank.clubs.map((club) => club.id));
+  for (const [clubId, club] of Object.entries(academy.clubs ?? {})) {
+    if (!clubIds.has(clubId)) return `academia de clube inexistente: ${clubId}`;
+    if (!Number.isInteger(club.level) || club.level < 1 || club.level > MAX_ACADEMY_LEVEL) {
+      return `nível de academia inválido: ${clubId}`;
+    }
+    if (club.pending?.kind === "upgrade" && club.level >= MAX_ACADEMY_LEVEL) {
+      return `obra de academia no nível máximo: ${clubId}`;
+    }
+    if (club.pending?.kind === "downgrade" && club.level <= 1) {
+      return `redução de academia no nível mínimo: ${clubId}`;
+    }
+  }
+  return undefined;
 }
 
 /** Livres fora do banco, uma negociação por atleta e contratos em todos os jogadores. */

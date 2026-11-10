@@ -14,16 +14,20 @@ import {
   academyState,
   agedOut,
   asClubPlayer,
+  byUtilityDesc,
   evolveAcademy,
+  renewalUtility,
   squadShortage,
   withGraduates,
   withoutAcademyPlayers,
 } from "./academy";
+import { academyLevelRule } from "./academy-levels";
 import { evolvePlayers, midSeasonRound } from "./evolution";
 import { measureWorld } from "./measure";
 import { withRegionalClubs } from "./regional";
 import { regulate, regulatorFor, withRegulator } from "./regulator";
 import { playerRef, retirePlayers } from "./retirement";
+import { ACADEMY_RULES } from "./rules";
 import { balanceSquads } from "./squads";
 import type { AcademyPlayer, PlayerDelta, PlayerRef, SquadChangeNotice } from "./types";
 import { createYouth, generateYouth, neediestPosition } from "./youth";
@@ -79,6 +83,7 @@ export const evolvePlayersStep: TurnoverStep = {
       finished.number,
       "end",
       seasonDate(context.world.manifest.referenceDate, finished.year),
+      (clubId) => academyLevelRule(context.renewal, context.world, clubId).evolutionBonus,
     );
     return { ...context, world, renewal: { ...context.renewal, lastEvolution: record, academy } };
   },
@@ -189,7 +194,28 @@ export const academyAgeOutStep: TurnoverStep = {
     if (leaving.length === 0) return context;
     const date = nextSeasonDate(context);
     const toFree = leaving.filter((entry) => entry.clubId === context.managerClubId);
-    const toSquad = leaving.filter((entry) => entry.clubId !== context.managerClubId);
+    // IA (037): sobe quem cabe — elenco abaixo do teto de promoção por idade, ou melhor que o pior
+    // da posição. Os demais saem como livres (com a base cheia, ~3 por clube por virada).
+    const toSquad: AcademyPlayer[] = [];
+    const byClub = new Map<string, AcademyPlayer[]>();
+    for (const entry of leaving) {
+      if (entry.clubId === context.managerClubId) continue;
+      byClub.set(entry.clubId, [...(byClub.get(entry.clubId) ?? []), entry]);
+    }
+    for (const [clubId, entries] of [...byClub.entries()].sort(([a], [b]) => (a < b ? -1 : 1))) {
+      const squad = [...squadOf(context.world, clubId)];
+      for (const entry of [...entries].sort(byUtilityDesc(date))) {
+        const value = renewalUtility(entry.player, date);
+        const rivals = squad.filter((player) => player.position === entry.player.position);
+        const weakest = Math.min(...rivals.map((player) => renewalUtility(player, date)));
+        if (squad.length < ACADEMY_RULES.aiAgeOutSquad || rivals.length === 0 || value > weakest) {
+          toSquad.push(entry);
+          squad.push(asClubPlayer(entry));
+        } else {
+          toFree.push(entry);
+        }
+      }
+    }
     const ids = new Set(leaving.map((entry) => entry.player.id));
     const next = withGraduates(
       withoutAcademyPlayers(academy, ids),
@@ -208,7 +234,7 @@ export const academyAgeOutStep: TurnoverStep = {
       updated,
       "academyAgedOut",
       toFree.map((entry) => playerRef(asClubPlayer(entry), date)),
-      () => context.managerClubId ?? "",
+      (ref) => toFree.find((entry) => entry.player.id === ref.playerId)?.clubId ?? "",
     );
   },
 };

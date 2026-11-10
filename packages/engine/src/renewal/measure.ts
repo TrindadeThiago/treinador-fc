@@ -1,6 +1,7 @@
 import { ageOn } from "../calendar/date";
 import type { LeagueSeason } from "../career/types";
 import type { CompletedBank } from "../model/types";
+import { seedAcademies, withAcademyClubs } from "./academy-levels";
 import { PROSPECT_POTENTIAL, REGULATOR_RULES, STAR_THRESHOLD } from "./rules";
 import type { AcademyState, RenewalState, WorldMeasure } from "./types";
 
@@ -56,12 +57,26 @@ export function initialRenewal(world: CompletedBank): RenewalState {
   return {
     nextPlayerSeq: max + 1,
     regulator: { strengthOffset: 0, potentialBonus: 0 },
-    academy: {
+    // Academia de todos os clubes pelo nível da reputação desde o início (037).
+    academy: withAcademyClubs(world, {
       players: [],
       graduates: {},
       promotedThisSeason: [],
       releasedThisSeason: [],
       emergencies: 0,
-    },
+    }),
   };
+}
+
+/**
+ * Renovação de uma carreira nova (037 FR-004b): o estado inicial com a base de todos os clubes
+ * cheia (15 jovens). Usada pela criação do save e pelas simulações sem interação.
+ */
+export function initialCareerRenewal(
+  world: CompletedBank,
+  careerSeed: string,
+  date: string,
+  managerClubId?: string,
+): RenewalState {
+  return seedAcademies(world, initialRenewal(world), careerSeed, date, managerClubId);
 }

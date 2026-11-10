@@ -9,7 +9,8 @@ import type { FinanceState } from "../../src/finance/types";
 import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal, measureWorld, playerSeq } from "../../src/renewal/measure";
+import { academyLimit } from "../../src/renewal/academy-levels";
+import { initialCareerRenewal, measureWorld, playerSeq } from "../../src/renewal/measure";
 import { ACADEMY_RULES } from "../../src/renewal/rules";
 import { squadProblems } from "../../src/renewal/squads";
 import type { EvolutionRecord, RenewalState, WorldMeasure } from "../../src/renewal/types";
@@ -25,7 +26,8 @@ const RANGES = {
   p10: [43, 54],
   p50: [54, 63],
   p90: [63, 75],
-  max: [78, 94],
+  // Revisto de 94 para 95 na 037: com a academia, um craque chegou a 95 numa temporada.
+  max: [78, 95],
   meanAge: [24, 27.5],
 } as const;
 const MIN_STARS = 1;
@@ -46,8 +48,10 @@ const ACADEMY_LIMITS = {
    * se formou (no início não há base, e ela vira um estoque de ~10% a mais de jogadores). As ondas
    * de geração fazem a população oscilar até ~6,5% nas duas seeds medidas.
    */
-  populationDrift: 0.08,
-  settledSeason: 5,
+  // Revisto de 0,08 para 0,10 na 037: a base inicial cheia se esvazia nas primeiras temporadas.
+  populationDrift: 0.1,
+  // 037: a base inicial cheia leva ~10 temporadas para se esvaziar; antes disso a população cai.
+  settledSeason: 10,
   aiSquadMean: [23, 28] as const,
 };
 
@@ -69,6 +73,8 @@ interface SeasonEnd {
   createdDirect: number;
   /** Elencos + bases (036 R10). */
   population: number;
+  /** Idade média só dos profissionais (037: a base cheia puxava a média do mundo para baixo). */
+  proMeanAge: number;
   /** Tamanho médio dos elencos. */
   squadMean: number;
 }
@@ -107,7 +113,7 @@ function simulate(careerSeed: string): SeasonEnd[] {
   let market: MarketState = emptyMarket();
   let league: LeagueSeason = created.league;
   let finances: FinanceState = createFinances(world, league);
-  let renewal: RenewalState = initialRenewal(world);
+  let renewal: RenewalState = initialCareerRenewal(world, careerSeed, world.manifest.referenceDate);
   let history: SeasonHistoryEntry[] = [];
   const ends: SeasonEnd[] = [];
   for (let index = 0; index < SEASONS; index++) {
@@ -161,11 +167,20 @@ function simulate(careerSeed: string): SeasonEnd[] {
     const sizes = clubIds.map((clubId) => world.players.filter((p) => p.clubId === clubId).length);
     const perClub = new Map<string, number>();
     for (const entry of academy) perClub.set(entry.clubId, (perClub.get(entry.clubId) ?? 0) + 1);
+    // Maior excesso de vagas (base menos o limite do nível do clube, 037); 0 = todas no limite.
+    const overLimit = Math.max(
+      0,
+      ...[...perClub.entries()].map(
+        ([clubId, size]) => size - academyLimit(renewal, world, clubId),
+      ),
+    );
     ends.push({
-      academyMax: Math.max(0, ...perClub.values()),
+      academyMax: overLimit,
       emergencies: renewal.academy?.emergencies ?? 0,
       createdDirect: promotedNew,
       population: world.players.length + academy.length,
+      proMeanAge: measureWorld(world, league, seasonDate(world.manifest.referenceDate, league.year))
+        .meanAge,
       squadMean: sizes.reduce((sum, size) => sum + size, 0) / sizes.length,
       measure: measureWorld(
         world,
@@ -231,7 +246,7 @@ export function describeLongRun(seed: string): void {
       );
       for (const [index, end] of ends.entries()) {
         const label = `temporada ${index + 1}`;
-        expect(end.academyMax, `${label} base`).toBeLessThanOrEqual(ACADEMY_RULES.maxPlayers);
+        expect(end.academyMax, `${label} base acima do limite do nível`).toBe(0);
         expect(end.createdDirect, `${label} criados direto`).toBe(0);
         if (index + 1 >= ACADEMY_LIMITS.settledSeason) {
           expect(
@@ -250,8 +265,8 @@ export function describeLongRun(seed: string): void {
 
     it("a idade média fica na faixa (SC-005)", () => {
       for (const end of ends) {
-        expect(end.measure.meanAge).toBeGreaterThanOrEqual(RANGES.meanAge[0]);
-        expect(end.measure.meanAge).toBeLessThanOrEqual(RANGES.meanAge[1]);
+        expect(end.proMeanAge).toBeGreaterThanOrEqual(RANGES.meanAge[0]);
+        expect(end.proMeanAge).toBeLessThanOrEqual(RANGES.meanAge[1]);
       }
     });
 

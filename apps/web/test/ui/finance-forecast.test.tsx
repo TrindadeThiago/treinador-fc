@@ -23,6 +23,7 @@ const base: CashForecast = {
   gateGames: 10,
   wages: -6_000_000,
   wageRounds: 20,
+  academy: 0,
   interest: 0,
   prize: 900_000,
   position: 8,

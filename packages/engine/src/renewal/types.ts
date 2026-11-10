@@ -59,8 +59,16 @@ export interface AcademyGraduate {
   season: number;
 }
 
+/** Academia de um clube (037): nível e, no máximo, uma mudança pendente. */
+export interface AcademyClub {
+  level: number;
+  pending?: { kind: "upgrade"; cost: number } | { kind: "downgrade" };
+}
+
 /** Bases de todos os clubes (036, data-model.md). */
 export interface AcademyState {
+  /** Academias por clube (037); clube sem registro = nível da reputação. */
+  clubs?: Record<string, AcademyClub>;
   /** Em ordem de id. */
   players: AcademyPlayer[];
   /** Promovidos da base, por id de jogador; podado na virada. */

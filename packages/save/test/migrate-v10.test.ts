@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { migrateSave, type SaveFile } from "../src";
-import { saveV9, validSave } from "./fixtures";
+import { sansAcademy, saveV9, validSave } from "./fixtures";
 
 describe("migração v9 → v10 (014 R10, FR-018, SC-008)", () => {
   it("notícias vazias e o resto preservado", () => {
@@ -8,7 +8,7 @@ describe("migração v9 → v10 (014 R10, FR-018, SC-008)", () => {
     const result = migrateSave(v9);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(9);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(result.save.news.feed).toEqual([]);
     expect(result.save.news.records).toEqual({ league: {}, clubs: {} });
     const {
@@ -23,7 +23,7 @@ describe("migração v9 → v10 (014 R10, FR-018, SC-008)", () => {
       ...rest
     } = result.save;
     const { formatVersion: _v9, ...restV9 } = v9;
-    expect(rest).toEqual(restV9);
+    expect(sansAcademy(rest)).toEqual(sansAcademy(restV9));
   });
 
   it("temporadas já encerradas ganham registro sem artilheiro; campeões continuam no histórico", () => {

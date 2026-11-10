@@ -9,7 +9,7 @@ import {
   migrateSave,
   type SaveFile,
 } from "../src";
-import { playDay, type SaveV11Step, saveV13 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV13 } from "./fixtures";
 
 // 019 (T071): a migração v13 → v14 só sobe a versão; os campos de fases são opcionais.
 const STEPS: [string, SaveV11Step][] = [
@@ -27,10 +27,10 @@ describe("migração v13 → v14 (019 R13, FR-033)", () => {
       const result = migrateSave(v13);
       if (result.status !== "ok") throw new Error(JSON.stringify(result));
       expect(result.migratedFrom).toBe(13);
-      expect(result.save.formatVersion).toBe(21);
+      expect(result.save.formatVersion).toBe(22);
       const { formatVersion: _a, ...rest } = result.save;
       const { formatVersion: _b, ...restV13 } = v13;
-      expect(rest).toEqual(restV13);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV13));
       for (const league of [result.save.league, ...result.save.competitions]) {
         expect(league.divisions.every((season) => season.stages === undefined)).toBe(true);
       }
@@ -54,7 +54,7 @@ describe("migração v13 → v14 (019 R13, FR-033)", () => {
     const result = importSave(bytes);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(13);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
   }, 120_000);
 });
 

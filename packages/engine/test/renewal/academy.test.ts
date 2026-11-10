@@ -26,6 +26,7 @@ import {
   releaseFromAcademy,
   rosterIssues,
 } from "../../src/renewal/academy";
+import { academyLevelRule } from "../../src/renewal/academy-levels";
 import { evolutionDelta, midSeasonRound } from "../../src/renewal/evolution";
 import { ACADEMY_RULES, SQUAD_RULES } from "../../src/renewal/rules";
 import type { AcademyPlayer } from "../../src/renewal/types";
@@ -85,9 +86,9 @@ function ok<T extends { ok: boolean }>(result: T): Extract<T, { ok: true }> {
 }
 
 describe("base: estrutura (036 R1, R2)", () => {
-  it("a base começa vazia e lista os jovens do clube em ordem de id", () => {
+  it("a base começa com os jovens iniciais (037) e lista os jovens do clube em ordem de id", () => {
     const state = baseState();
-    expect(state.renewal?.academy).toEqual(emptyAcademy());
+    expect(state.renewal?.academy?.players.length ?? 0).toBeGreaterThan(0);
     const next = withBase(state, [
       youth(state, "jogador-90002"),
       youth(state, "jogador-90001"),
@@ -336,6 +337,7 @@ describe("base durante a temporada (036 R4, FR-013)", () => {
       state.league.number,
       "mid",
       date,
+      (clubId) => academyLevelRule(state.renewal, state.world, clubId).evolutionBonus,
     );
     expect(applied.renewal?.academy?.players).toEqual(expected.players);
     expect(applied.renewal?.lastEvolution).toEqual(lastEvolution);

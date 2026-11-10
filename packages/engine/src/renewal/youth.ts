@@ -14,10 +14,11 @@ import {
   withAcademyPlayers,
   withoutAcademyPlayers,
 } from "./academy";
+import { type AcademyLevelRule, academyLevelRule } from "./academy-levels";
 import { nameBankFor } from "./names";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
-import { ACADEMY_RULES, EVOLUTION_RULES, YOUTH_RULES } from "./rules";
+import { EVOLUTION_RULES, YOUTH_RULES } from "./rules";
 import type { AcademyPlayer, PlayerRef, RegulatorState, RenewalState } from "./types";
 
 /** Jovens por clube por temporada: base + 1 por degrau de reputação atingido (R6). */
@@ -62,18 +63,33 @@ export function createYouth(
   regulator: RegulatorState,
   date: string,
   rng: Rng,
+  /** Idade fixa (base inicial, 037) e regra do nível da academia (força e potencial). */
+  options: {
+    age?: number;
+    level?: Pick<AcademyLevelRule, "strengthAdjust" | "potentialBonus">;
+    /** Fração da margem de potencial (base inicial, 037: poucas joias). Padrão 1. */
+    marginScale?: number;
+  } = {},
 ): CompletedPlayer {
   const { strength: rules, age, potentialMargin } = YOUTH_RULES;
-  const playerAge = rng.int(age[0], age[1]);
-  const base = rules.base + rules.perReputation * club.reputation + regulator.strengthOffset;
+  const playerAge = options.age ?? rng.int(age[0], age[1]);
+  const base =
+    rules.base +
+    rules.perReputation * club.reputation +
+    (options.level?.strengthAdjust ?? 0) +
+    regulator.strengthOffset;
   const strength = Math.round(
     Math.min(
       EVOLUTION_RULES.maxStrength - 1,
       Math.max(EVOLUTION_RULES.minStrength, base + triangular(rng, -rules.noise, 0, rules.noise)),
     ),
   );
-  const margin =
-    rng.int(potentialMargin[0], potentialMargin[1]) + Math.round(regulator.potentialBonus);
+  const margin = Math.round(
+    (rng.int(potentialMargin[0], potentialMargin[1]) +
+      Math.round(regulator.potentialBonus) +
+      (options.level?.potentialBonus ?? 0)) *
+      (options.marginScale ?? 1),
+  );
   const potential = Math.min(
     EVOLUTION_RULES.maxStrength,
     Math.max(strength + 1, strength + margin),
@@ -129,7 +145,9 @@ export function generateYouth(
     const rng = createRng(`${careerSeed}:youth:${season}:${clubId}`);
     const own = academy.players.filter((entry) => entry.clubId === clubId);
     const base: AcademyPlayer[] = [...own];
-    for (let index = 0; index < youthCount(club.reputation); index++) {
+    // Quantidade, força e potencial pelo nível da academia (037 FR-004).
+    const rule = academyLevelRule(renewal, world, clubId);
+    for (let index = 0; index < rule.youthPerIntake; index++) {
       const pool = [...squadOf(world, clubId), ...base.map(asClubPlayer)];
       const youth = createYouth(
         world,
@@ -139,6 +157,7 @@ export function generateYouth(
         regulatorFor(renewal, world, league),
         date,
         rng,
+        { level: rule },
       );
       seq += 1;
       const { clubId: _clubId, contract: _contract, ...player } = youth;
@@ -147,9 +166,9 @@ export function generateYouth(
       fresh.push(entry);
       arrived.push(playerRef(youth, date));
     }
-    if (clubId !== managerClubId && base.length > ACADEMY_RULES.maxPlayers) {
+    if (clubId !== managerClubId && base.length > rule.slots) {
       const order = [...base].sort(byUtilityDesc(date));
-      released.push(...order.slice(ACADEMY_RULES.maxPlayers));
+      released.push(...order.slice(rule.slots));
     }
   }
   const out = new Set(released.map((entry) => entry.player.id));

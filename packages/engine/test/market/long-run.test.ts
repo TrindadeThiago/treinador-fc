@@ -10,7 +10,7 @@ import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState, type TransferRecord } from "../../src/market/types";
 import { POSITIONS } from "../../src/model/catalogs";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 import { squadProblems } from "../../src/renewal/squads";
 import type { RenewalState } from "../../src/renewal/types";
 import { spearman } from "../../src/season/credibility";
@@ -50,7 +50,7 @@ function simulate(careerSeed: string): Simulation {
   let world: CompletedBank = ensureContracts(base, created.league.year, careerSeed);
   let league: LeagueSeason = created.league;
   let finances: FinanceState = createFinances(world, league);
-  let renewal: RenewalState = initialRenewal(world);
+  let renewal: RenewalState = initialCareerRenewal(world, careerSeed, world.manifest.referenceDate);
   let market: MarketState = emptyMarket();
   let history: SeasonHistoryEntry[] = [];
   const ends: SeasonEnd[] = [];

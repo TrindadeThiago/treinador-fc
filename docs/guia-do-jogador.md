@@ -134,10 +134,23 @@ pagando uma multa pelos meses restantes. A rescisão fica bloqueada com a tempor
 
 ### Base
 
-A aba **Base** do Elenco mostra os jovens da categoria de base do clube (sub-20). Eles chegam na
-virada da temporada, com 16 a 18 anos, e a base tem até **15 vagas**. Para cada jovem aparecem a
-posição, a idade, a força, as características e o ano em que ele precisa sair da base. Quem sai na
-próxima virada fica marcado como **último ano**.
+A aba **Base** do Elenco mostra os jovens da categoria de base do clube (sub-20). A carreira já
+começa com **10 jovens** na base do seu clube, e a cada virada chega uma safra nova, com 16 a 18
+anos. Para cada jovem aparecem a posição, a idade, a força, as características e o ano em que ele
+precisa sair da base. Quem sai na próxima virada fica marcado como **último ano**.
+
+No topo da aba fica a **academia**, com nível de 1 a 5:
+- o nível decide quantos jovens chegam por safra, a qualidade deles (modesta, boa, muito boa,
+  excelente ou de elite), o quanto evoluem na base e as **vagas** (15 até o nível 3, 20 no nível 4
+  e 25 no nível 5);
+- a academia custa uma **manutenção mensal**, que aparece em Finanças como "Academia";
+- **Melhorar** paga a obra na hora (é preciso ter o dinheiro em caixa), e o nível sobe na virada
+  da temporada, já valendo para a safra dela;
+- **Baixar** vale na virada e corta a manutenção. Nada do que foi investido volta, mas dá para
+  cancelar a redução antes da virada;
+- uma mudança por vez; a comparação mostra o nível da academia dos clubes da divisão.
+
+Uma academia forte pode render vendas de crias da base, mas o retorno leva algumas temporadas.
 
 - **Promover:** leva o jovem ao elenco profissional, com o contrato inicial (o salário e a duração
   aparecem antes de confirmar). Dá para promover a qualquer momento, menos durante uma partida, e

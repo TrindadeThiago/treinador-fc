@@ -611,13 +611,39 @@ export {
   rosterIssues,
   squadShortage,
 } from "./renewal/academy";
+export type {
+  AcademyLevelError,
+  AcademyLevelResult,
+  AcademyLevelRule,
+} from "./renewal/academy-levels";
+export {
+  academyClub,
+  academyEffect,
+  academyLevelRule,
+  academyLimit,
+  academyMaintenance,
+  academyRules,
+  academyUpgradeCost,
+  cancelAcademyChange,
+  DEFAULT_ACADEMY_LEVELS,
+  divisionAcademies,
+  downgradeAcademy,
+  INITIAL_ACADEMY_SIZE,
+  initialAcademySize,
+  levelForReputation,
+  MAX_ACADEMY_LEVEL,
+  referenceMonthlyPayroll,
+  seedAcademies,
+  upgradeAcademy,
+  withAcademyClubs,
+} from "./renewal/academy-levels";
 export {
   evolutionDelta,
   evolvePlayers,
   midSeasonRound,
   minutesInRounds,
 } from "./renewal/evolution";
-export { initialRenewal, measureWorld, playerSeq } from "./renewal/measure";
+export { initialCareerRenewal, initialRenewal, measureWorld, playerSeq } from "./renewal/measure";
 export type { CountryNames } from "./renewal/names";
 export { DEFAULT_NAME_BANK, nameBankFor } from "./renewal/names";
 export { regulate } from "./renewal/regulator";
@@ -634,6 +660,7 @@ export {
 } from "./renewal/rules";
 export { balanceSquads, squadProblems } from "./renewal/squads";
 export type {
+  AcademyClub,
   AcademyGraduate,
   AcademyPlayer,
   AcademyState,

@@ -683,6 +683,24 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   Num estadual (`regional`), `economy` vale só para os clubes que não jogam outra competição: o
   `wageFactorPct` dá a folha deles (pagam o ano inteiro; sem ele, 36%, de clube pequeno) e as regras
   por divisão dão o patrocínio de cada temporada.
+  Academia da base (037, opcional): `economy.academy.levels` com **exatamente 5 entradas**, do nível 1
+  ao 5. Cada uma tem `minReputation` (reputação mínima do nível: nível inicial e alvo da IA),
+  `slots` (vagas da base), `youthPerIntake` (jovens por safra), `strengthAdjust` e `potentialBonus`
+  (ajuste da força e da margem de potencial dos jovens), `evolutionBonus` (0 a 1: participação mínima
+  na evolução da base), `maintenancePct` (manutenção mensal em % da folha de referência) e
+  `buildMonths` (obra para chegar ao nível, em folhas mensais de referência; 0 no nível 1). Sem a
+  seção, valem os padrões do jogo:
+
+  | Nível | `minReputation` | `slots` | `youthPerIntake` | `strengthAdjust` | `potentialBonus` | `evolutionBonus` | `maintenancePct` | `buildMonths` |
+  |---|---|---|---|---|---|---|---|---|
+  | 1 | 0 | 15 | 1 | −3 | −4 | 0 | 2 | 0 |
+  | 2 | 30 | 15 | 1 | −1 | −2 | 0 | 4 | 2 |
+  | 3 | 45 | 15 | 2 | 0 | 0 | 0,05 | 6 | 3 |
+  | 4 | 65 | 20 | 3 | +2 | +3 | 0,15 | 8 | 4,5 |
+  | 5 | 80 | 25 | 4 | +4 | +6 | 0,30 | 10 | 6 |
+
+  A folha de referência é a de 18 jogadores típicos da reputação do clube, na escala de salários
+  do país (ou do estadual, para os clubes só regionais).
 - `market` — janelas (`windows[]` com `fromRound`/`toRound`), anos de contrato (`contractYears`),
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de

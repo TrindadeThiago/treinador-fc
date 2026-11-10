@@ -8,7 +8,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SaveFile,
 } from "../src";
-import { playDay, type SaveV11Step, saveV15 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV15 } from "./fixtures";
 
 // 021 (T018): a migração v15 → v16 só sobe a versão; um save antigo é um mundo sem vagas.
 const STEPS: [string, SaveV11Step][] = [
@@ -29,7 +29,7 @@ describe("migração v15 → v16 (021 R11, FR-022)", () => {
       expect(result.save.formatVersion).toBe(SAVE_FORMAT_VERSION);
       const { formatVersion: _a, ...rest } = result.save;
       const { formatVersion: _b, ...restV15 } = v15;
-      expect(rest).toEqual(restV15);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV15));
       // Sem vagas: nada de histórico de classificação nem origens nas temporadas.
       expect(result.save.qualificationHistory).toBeUndefined();
       const leagues = [result.save.league, ...result.save.competitions];

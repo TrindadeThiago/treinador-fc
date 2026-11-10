@@ -8,7 +8,7 @@ import {
   SAVE_FORMAT_VERSION,
   type SaveFile,
 } from "../src";
-import { playDay, type SaveV11Step, saveV17 } from "./fixtures";
+import { playDay, type SaveV11Step, sansAcademy, saveV17 } from "./fixtures";
 
 // 023 (T012): a migração v17 → v18 só sobe a versão; um save antigo é um mundo sem estadual.
 const STEPS: [string, SaveV11Step][] = [
@@ -29,7 +29,7 @@ describe("migração v17 → v18 (023 R11, FR-019)", () => {
       expect(result.save.formatVersion).toBe(SAVE_FORMAT_VERSION);
       const { formatVersion: _a, ...rest } = result.save;
       const { formatVersion: _b, ...restV17 } = v17;
-      expect(rest).toEqual(restV17);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV17));
       // Sem estadual: nada de histórico regional.
       expect(result.save.regionalHistory).toBeUndefined();
       expect(result.save.bank.competitions.every((entry) => entry.regional === undefined)).toBe(

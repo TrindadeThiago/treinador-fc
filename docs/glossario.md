@@ -37,6 +37,8 @@ novo, use estes termos; ao traduzir, mantenha a mesma distinção entre eles.
 | **safra** | os jovens que chegam à base na virada da temporada | geração, fornada |
 | **cria da base** | o jogador profissional que subiu da base de um clube | prata da casa |
 | **safra de emergência** | o jovem criado na base de um clube da IA e promovido na hora, só quando nem a base nem o mercado cobrem um mínimo do elenco (medida e limitada) | — |
+| **academia** | a estrutura da base do clube, com nível de 1 a 5, que decide a safra, a evolução e as vagas da base; tem obra e manutenção | centro de treinamento, CT (outra estrutura) |
+| **nível da academia** | de 1 a 5; na IA segue a reputação, no clube do técnico muda pelas decisões dele | categoria |
 | **promover / dispensar** | levar um jovem da base ao elenco / tirá-lo da base (ele vira livre) | subir, cortar |
 | **escalação** | formação + titulares + reservas para o próximo jogo | — |
 | **jogo** | uma partida, em rótulos e títulos ("Próximo jogo", "Jogos da rodada") | — |

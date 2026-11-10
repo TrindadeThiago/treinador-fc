@@ -12,7 +12,7 @@ import {
   seasonStateOf,
   withDayResult,
 } from "../src";
-import { bankWithCup, playDay, type SaveV11Step, SERIE_A, saveV12 } from "./fixtures";
+import { bankWithCup, playDay, type SaveV11Step, SERIE_A, sansAcademy, saveV12 } from "./fixtures";
 
 const STEPS: [string, SaveV11Step][] = [
   ["início da temporada", { rounds: 0 }],
@@ -29,11 +29,11 @@ describe("migração v12 → v13 (018 R15, FR-029)", () => {
       const result = migrateSave(v12);
       if (result.status !== "ok") throw new Error(JSON.stringify(result));
       expect(result.migratedFrom).toBe(12);
-      expect(result.save.formatVersion).toBe(21);
+      expect(result.save.formatVersion).toBe(22);
       expect(result.save.cupHistory).toEqual([]);
       const { formatVersion: _v, cupHistory: _c, ...rest } = result.save;
       const { formatVersion: _v12, ...restV12 } = v12;
-      expect(rest).toEqual(restV12);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV12));
     },
     120_000,
   );
@@ -63,7 +63,7 @@ describe("migração v12 → v13 (018 R15, FR-029)", () => {
     const result = importSave(bytes);
     if (result.status !== "ok") throw new Error(JSON.stringify(result));
     expect(result.migratedFrom).toBe(12);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
   }, 120_000);
 });
 

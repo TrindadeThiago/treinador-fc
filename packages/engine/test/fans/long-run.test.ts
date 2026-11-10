@@ -12,7 +12,7 @@ import type { FinanceState } from "../../src/finance/types";
 import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 import type { RenewalState } from "../../src/renewal/types";
 import { competitionId, testWorld } from "../career/helpers";
 
@@ -35,7 +35,7 @@ function simulate(careerSeed: string): SeasonEnd[] {
   let world: CompletedBank = ensureContracts(base, created.league.year, careerSeed);
   let league: LeagueSeason = created.league;
   let finances: FinanceState = createFinances(world, league);
-  let renewal: RenewalState = initialRenewal(world);
+  let renewal: RenewalState = initialCareerRenewal(world, careerSeed, world.manifest.referenceDate);
   let market: MarketState = emptyMarket();
   let board: BoardState = createBoard(world, league, finances, careerSeed);
   let fans: FansState = createFans(world, league);

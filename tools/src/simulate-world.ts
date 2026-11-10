@@ -25,7 +25,7 @@ import {
   ensureContracts,
   type FinanceState,
   generateDefaultBank,
-  initialRenewal,
+  initialCareerRenewal,
   type LeagueSeason,
   type MarketState,
   measureWorld,
@@ -123,7 +123,11 @@ export function simulateWorld(options: SimulateWorldOptions): WorldSeason[] {
   let market: MarketState = emptyMarket();
   let league: LeagueSeason = created.league;
   let finances: FinanceState = createFinances(world, league);
-  let renewal: RenewalState = initialRenewal(world);
+  let renewal: RenewalState = initialCareerRenewal(
+    world,
+    options.seed,
+    world.manifest.referenceDate,
+  );
   let history: SeasonHistoryEntry[] = [];
   let board: BoardState = createBoard(world, league, finances, options.seed);
   let fans = createFans(world, league);

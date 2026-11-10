@@ -41,7 +41,9 @@ export const DEFAULT_AI_MARKET: AiMarketRules = {
   targetBase: 56,
   targetPerAmbitionPct: 18,
   oldSquadAge: 28,
-  reserveMonths: 6,
+  // 4 desde a 037 (era 6): a manutenção da academia come parte do caixa, e com 6 a IA ficava sem
+  // orçamento em algumas janelas (research da 037, "Base inicial reduzida").
+  reserveMonths: 4,
   minGain: 2,
   youthBonus: 3,
   maxBuysPerWindow: 2,

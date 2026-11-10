@@ -11,6 +11,7 @@ import { POSITIONS, type Position } from "../model/catalogs";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { createRng } from "../rng/xoshiro";
 import { squadOf } from "../world/squads";
+import { academyLimit } from "./academy-levels";
 import { evolutionDelta } from "./evolution";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
@@ -36,6 +37,7 @@ export function emptyAcademy(): AcademyState {
     promotedThisSeason: [],
     releasedThisSeason: [],
     emergencies: 0,
+    clubs: {},
   };
 }
 
@@ -284,14 +286,12 @@ function lastYearCount(
 export function rosterIssues(state: CareerSeasonState, clubId: string): RosterIssue[] {
   const issues: RosterIssue[] = [];
   const academy = academyOf(state.renewal, clubId);
-  if (academy.length > ACADEMY_RULES.maxPlayers) {
+  const limit = academyLimit(state.renewal, state.world, clubId);
+  if (academy.length > limit) {
     issues.push({
       code: "academy_over_limit",
       severity: "error",
-      params: {
-        excess: academy.length - ACADEMY_RULES.maxPlayers,
-        limit: ACADEMY_RULES.maxPlayers,
-      },
+      params: { excess: academy.length - limit, limit },
     });
   }
   const shortage = squadShortage(squadOf(state.world, clubId));
@@ -339,13 +339,20 @@ export function evolveAcademy(
   seasonNumber: number,
   moment: "mid" | "end",
   date: string,
+  /** Participação mínima pelo nível da academia de cada clube (037 FR-005); padrão 0. */
+  bonusOf: (clubId: string) => number = () => 0,
 ): AcademyState {
   let changed = false;
   const players = academy.players.map((entry) => {
     if (!clubIds.has(entry.clubId)) return entry;
     const { player } = entry;
     const rng = createRng(`${careerSeed}:evolve:${seasonNumber}:${moment}:${player.id}`);
-    const delta = evolutionDelta(asClubPlayer(entry), ageOn(player.birthDate, date), 0, rng);
+    const delta = evolutionDelta(
+      asClubPlayer(entry),
+      ageOn(player.birthDate, date),
+      bonusOf(entry.clubId),
+      rng,
+    );
     const ceiling = Math.max(
       EVOLUTION_RULES.minStrength,
       Math.min(EVOLUTION_RULES.maxStrength, player.hidden.potential),

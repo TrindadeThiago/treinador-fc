@@ -10,7 +10,7 @@ import type { FinanceState } from "../../src/finance/types";
 import { ensureContracts } from "../../src/market/contracts";
 import { emptyMarket, type MarketState } from "../../src/market/types";
 import type { CompletedBank } from "../../src/model/types";
-import { initialRenewal } from "../../src/renewal/measure";
+import { initialCareerRenewal } from "../../src/renewal/measure";
 import type { RenewalState } from "../../src/renewal/types";
 import { spearman } from "../../src/season/credibility";
 import { competitionId } from "../career/helpers";
@@ -51,7 +51,7 @@ function simulate(careerSeed: string): SeasonEnd[] {
   let finances: FinanceState = createFinances(world, league);
   // Desde a 009 toda carreira tem renovação do mundo (evolução, aposentadoria, jovens): a economia
   // é verificada nesse cenário real, não com elencos congelados.
-  let renewal: RenewalState = initialRenewal(world);
+  let renewal: RenewalState = initialCareerRenewal(world, careerSeed, world.manifest.referenceDate);
   let history: SeasonHistoryEntry[] = [];
   // Desde a 013 o humor das torcidas mexe na bilheteria: a economia é verificada com ele.
   let fans: FansState = createFans(world, league);

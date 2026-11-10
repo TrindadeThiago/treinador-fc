@@ -1,7 +1,14 @@
 import { createFinances } from "@brasfoot-like/engine";
 import { describe, expect, it } from "vitest";
 import { migrateSave, type SaveFile } from "../src";
-import { saveV1, saveV3MidSeason, saveV3SeasonOver, validSave, withoutMarket } from "./fixtures";
+import {
+  sansAcademy,
+  saveV1,
+  saveV3MidSeason,
+  saveV3SeasonOver,
+  validSave,
+  withoutMarket,
+} from "./fixtures";
 
 function migrated(raw: unknown) {
   const result = migrateSave(raw);
@@ -19,7 +26,7 @@ describe("migração v3 → v4 (R12, FR-026, SC-008)", () => {
       const v3 = build();
       const result = migrated(v3);
       expect(result.migratedFrom).toBe(3);
-      expect(result.save.formatVersion).toBe(21);
+      expect(result.save.formatVersion).toBe(22);
       expect(result.save.finances).toEqual(createFinances(result.save.bank, v3.league));
       const {
         finances: _finances,
@@ -28,7 +35,7 @@ describe("migração v3 → v4 (R12, FR-026, SC-008)", () => {
         ...rest
       } = withoutMarket(result.save);
       const { formatVersion: _v3, ...restV3 } = v3;
-      expect(rest).toEqual(restV3);
+      expect(sansAcademy(rest)).toEqual(sansAcademy(restV3));
     },
     60000,
   );
@@ -40,7 +47,7 @@ describe("migração v3 → v4 (R12, FR-026, SC-008)", () => {
   it("v1 → v5 em cadeia", () => {
     const result = migrated(saveV1());
     expect(result.migratedFrom).toBe(1);
-    expect(result.save.formatVersion).toBe(21);
+    expect(result.save.formatVersion).toBe(22);
     expect(Object.keys(result.save.finances.clubs)).toHaveLength(40);
   });
 });

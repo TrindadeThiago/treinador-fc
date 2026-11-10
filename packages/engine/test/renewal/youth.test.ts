@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ageOn } from "../../src/calendar/date";
 import type { CompletedBank } from "../../src/model/types";
 import { asClubPlayer, emptyAcademy } from "../../src/renewal/academy";
+import { academyLevelRule } from "../../src/renewal/academy-levels";
 import { initialRenewal } from "../../src/renewal/measure";
 import { nameBankFor } from "../../src/renewal/names";
 import { ACADEMY_RULES, YOUTH_RULES } from "../../src/renewal/rules";
@@ -35,7 +36,7 @@ function arrivals(result: ReturnType<typeof generate>) {
 }
 
 describe("geração de jovens (US3, R6)", () => {
-  it("cada clube recebe 1 a 3 jovens pela reputação, na base, com dados válidos", () => {
+  it("cada clube recebe os jovens do nível da academia, na base, com dados válidos (037)", () => {
     const before = initialRenewal(testWorld());
     const result = generate("jovens");
     const { world, renewal, arrived } = result;
@@ -48,7 +49,7 @@ describe("geração de jovens (US3, R6)", () => {
     );
     for (const club of testWorld().clubs) {
       const own = fresh.filter((player) => player.clubId === club.id);
-      expect(own).toHaveLength(youthCount(club.reputation));
+      expect(own).toHaveLength(academyLevelRule(undefined, testWorld(), club.id).youthPerIntake);
       for (const player of own) {
         const age = ageOn(player.birthDate, DATE);
         expect(age).toBeGreaterThanOrEqual(YOUTH_RULES.age[0]);

@@ -1,4 +1,9 @@
-import { ACADEMY_RULES, type AcademyPlayer, emptyAcademy } from "@brasfoot-like/engine";
+import {
+  ACADEMY_RULES,
+  type AcademyPlayer,
+  academyLimit,
+  emptyAcademy,
+} from "@brasfoot-like/engine";
 import { type SaveFile, withAdjustedLineup } from "@brasfoot-like/save";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -51,13 +56,19 @@ describe("aba Base (036)", () => {
     expect(academyCapacity(save)).toEqual({ count: 2, limit: ACADEMY_RULES.maxPlayers, excess: 0 });
   });
 
-  it("estado vazio antes da primeira virada", async () => {
-    const { store } = await storedCareer(1);
+  it("carreira nova já começa com 10 jovens na base (037)", async () => {
+    const { store, save } = await storedCareer(1);
+    renderApp("/jogo/elenco?c=tela&aba=base", store);
+    const limit = academyLimit(save.renewal, save.bank, save.clubId);
+    expect(await screen.findByText(t("academy.capacity", { count: 10, limit }))).toBeDefined();
+  });
+
+  it("estado vazio quando a base é esvaziada", async () => {
+    const { store, save } = await storedCareer(1, withBase(0));
     renderApp("/jogo/elenco?c=tela&aba=base", store);
     expect(await screen.findByText(t("academy.empty.title"))).toBeDefined();
-    expect(
-      screen.getByText(t("academy.capacity", { count: 0, limit: ACADEMY_RULES.maxPlayers })),
-    ).toBeDefined();
+    const limit = academyLimit(save.renewal, save.bank, save.clubId);
+    expect(screen.getByText(t("academy.capacity", { count: 0, limit }))).toBeDefined();
   });
 
   it("lista os jovens com posição, idade, força, saída e último ano em texto", async () => {
@@ -144,6 +155,8 @@ describe("safra de emergência na aba Base (036)", () => {
           ),
         },
         market: { ...save.market, freeAgents: [] },
+        // Sem jovens na base também (037: ela começa com 10).
+        renewal: withBase(0)(save).renewal,
       }),
     );
     renderApp("/jogo/elenco?c=tela&aba=base", store);
