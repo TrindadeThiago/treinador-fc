@@ -30,6 +30,8 @@ import type { Lineup } from "../match/types";
 import type { CompletedBank, KnockoutFormat } from "../model/types";
 import { newsAfterContinental, newsAfterCup, newsAfterExtraMatches } from "../news/round";
 import { newsRules } from "../news/rules";
+import { scoutingAfterRound } from "../scouting/round";
+import { effectiveScoutingLevel } from "../scouting/state";
 import type { SeasonError } from "../season/errors";
 import { finishRound, type LiveRound } from "../season/live-round";
 import type { MatchRecord, Season, SeasonStep } from "../season/types";
@@ -351,9 +353,11 @@ export function completeCareerDay(
       systems.fans,
       systems.news,
       next.competitions,
+      scoutingOptions(next, managerClubId),
     );
     if (!applied.ok) return applied;
     next = withSystems(next, applied);
+    next = withScoutingRound(next, next.league, principalRound, careerSeed, managerClubId);
     // Fases eliminatórias de divisões em fases da liga principal: prêmios e eliminações (019 R12).
     const knockouts = roundMatches(next.league, principalRound, day.date).filter(
       (match) => match.fixture.stage?.kind === "knockout",
@@ -386,6 +390,13 @@ export function completeCareerDay(
     );
     if (!applied.ok) return applied;
     next = withForeignSystems(next, applied);
+    next = withScoutingRound(
+      next,
+      competitionSeason(next, competitionId),
+      round,
+      careerSeed,
+      managerClubId,
+    );
     const knockouts = roundMatches(league, round, day.date).filter(
       (match) => match.fixture.stage?.kind === "knockout",
     );
@@ -822,6 +833,33 @@ function withCupPrizes(
 /** O clube do técnico: com diretoria, pode mudar no meio do avanço (demissão). */
 function currentManager(state: CareerSeasonState, fallback: string): string {
   return state.board ? managerClubOf(state.board) : fallback;
+}
+
+/** Nível dos olheiros para a cobrança da rodada (039); sem departamento aberto, nada muda. */
+function scoutingOptions(state: CareerSeasonState, managerClubId: string) {
+  const level = effectiveScoutingLevel(state.scouting, currentManager(state, managerClubId));
+  return level > 0 ? { scoutingLevel: level } : {};
+}
+
+/** Relatórios dos olheiros depois da rodada de uma liga principal (039 R2): só informação. */
+function withScoutingRound(
+  state: CareerSeasonState,
+  league: LeagueSeason,
+  round: number,
+  careerSeed: string,
+  managerClubId: string,
+): CareerSeasonState {
+  if (!state.scouting) return state;
+  const scouting = scoutingAfterRound(state.scouting, {
+    world: state.world,
+    league,
+    round,
+    careerSeed,
+    managerClubId: state.board?.manager.clubId ?? (state.board ? "" : managerClubId),
+    renewal: state.renewal,
+    freeAgents: state.market?.freeAgents,
+  });
+  return scouting === state.scouting ? state : { ...state, scouting };
 }
 
 /**

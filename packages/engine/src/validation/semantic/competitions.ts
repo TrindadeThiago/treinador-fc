@@ -146,6 +146,22 @@ function checkEconomy(index: number, competition: Competition): ValidationIssue[
       );
     }
   });
+  // Olheiros (039): a largura mínima não deveria crescer com o nível do departamento (só aviso).
+  const scoutingLevels = economy.scouting?.levels ?? [];
+  scoutingLevels.forEach((rule, position) => {
+    const previous = scoutingLevels[position - 1]?.minWidth;
+    if (previous !== undefined && rule.minWidth > previous) {
+      issues.push(
+        makeIssue(
+          "economy.scouting_width_order",
+          "competitions",
+          [index, "economy", "scouting", "levels", position, "minWidth"],
+          { level: position + 1, width: rule.minWidth, previous },
+          competition.id,
+        ),
+      );
+    }
+  });
   const levels = new Set(competition.divisions.map((division) => division.level));
   (economy.divisions ?? []).forEach((division, position) => {
     if (!levels.has(division.level)) {

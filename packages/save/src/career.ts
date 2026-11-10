@@ -12,12 +12,14 @@ import {
   leagueCalendar,
   managerClubOf,
   nextClubFixture,
+  pruneScouting,
   type QualificationRecord,
   resolveFinishedSeasons,
   type Season,
   type SeasonError,
   seasonDate,
   seasonTurnover,
+  settledScouting,
   upcomingUnavailability,
   withDefaultCupLegs,
   withNationalCup,
@@ -118,6 +120,7 @@ export function seasonStateOf(save: SaveFile): CareerSeasonState {
     board: save.board,
     fans: save.fans,
     news: save.news,
+    scouting: save.scouting,
   };
 }
 
@@ -205,6 +208,7 @@ export function withDayResult(save: SaveFile, state: CareerSeasonState): SaveFil
     board: state.board ?? save.board,
     fans: state.fans ?? save.fans,
     news: state.news ?? save.news,
+    scouting: state.scouting ?? save.scouting,
   });
 }
 
@@ -278,6 +282,13 @@ export function advanceCareerSeason(
       board: turned.board ?? save.board,
       fans: turned.fans ?? save.fans,
       news: turned.news ?? save.news,
+      // Olheiros (039 R6): fora da virada do motor; aqui só a limpeza de aposentados e o teto.
+      scouting: pruneScouting(
+        settledScouting(save.scouting, managerClubOf(turned.board ?? save.board)),
+        turned.world,
+        managerClubOf(turned.board ?? save.board),
+        (turned.market ?? save.market).freeAgents,
+      ),
       savedAt: now,
     }),
   );

@@ -177,3 +177,28 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
 }
+
+/* Olheiros (039): painel do departamento na aba Observação. */
+.scoutingPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scoutingPanel h3,
+.scoutingPanel p {
+  margin: 0;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.checkField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}

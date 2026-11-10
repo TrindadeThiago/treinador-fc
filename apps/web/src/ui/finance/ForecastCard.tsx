@@ -20,6 +20,9 @@ export function ForecastCard({ forecast }: { forecast: CashForecast }) {
     ...(forecast.academy !== 0
       ? [{ label: t("finance.forecast.academy"), value: forecast.academy }]
       : []),
+    ...(forecast.scouting !== 0
+      ? [{ label: t("finance.forecast.scouting"), value: forecast.scouting }]
+      : []),
     ...(forecast.interest !== 0
       ? [{ label: t("finance.forecast.interest"), value: forecast.interest }]
       : []),

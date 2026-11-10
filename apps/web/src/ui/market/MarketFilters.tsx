@@ -18,6 +18,8 @@ export interface FilterForm {
   text: string;
   /** País do clube do jogador, em bancos de vários países (020); "" = todos. */
   country: string;
+  /** Só jogadores com relatório do olheiro (039). */
+  observedOnly?: boolean;
 }
 
 export const EMPTY_FILTERS: FilterForm = {
@@ -101,6 +103,14 @@ export function MarketFilters({
               <option value="clubs">{t("market.filter.scope.clubs")}</option>
               <option value="free">{t("market.filter.scope.free")}</option>
             </select>
+          </label>
+          <label className={styles.checkField}>
+            <input
+              type="checkbox"
+              checked={form.observedOnly === true}
+              onChange={(event) => onChange({ ...form, observedOnly: event.target.checked })}
+            />
+            <span>{t("market.filter.observedOnly")}</span>
           </label>
           <label className={styles.field}>
             <span>{t("market.filter.position")}</span>

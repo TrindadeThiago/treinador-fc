@@ -2,8 +2,10 @@
 
 import type { MarketRow } from "@brasfoot-like/engine";
 import type { SaveFile } from "@brasfoot-like/save";
+import { reportSortValue, scoutReport } from "../../game/scouting-view";
 import { formatMoney, label, useT } from "../../i18n";
 import { type Column, DataTable } from "../DataTable";
+import { EstimateRange } from "../EstimateRange";
 import { COMPARE_LIMIT } from "./CompareTray";
 import styles from "./market.module.css";
 
@@ -115,6 +117,27 @@ export function MarketTable({
           },
         ]
       : []),
+    {
+      // Olheiros (039): relatório em texto e a faixa; sem relatório, vai para o fim nos dois sentidos.
+      key: "observed",
+      header: t("market.col.observed"),
+      render: (row) => {
+        const report = scoutReport(save, row.playerId);
+        return report
+          ? t(report.watching ? "market.observed.watching" : "market.observed.yes")
+          : "";
+      },
+    },
+    {
+      key: "potential",
+      header: t("market.col.potential"),
+      render: (row) => {
+        const report = scoutReport(save, row.playerId);
+        return report ? <EstimateRange estimate={report.estimate} /> : "—";
+      },
+      sortValue: (row) => reportSortValue(scoutReport(save, row.playerId)),
+      align: "right",
+    },
     {
       key: "value",
       header: t("market.col.value"),

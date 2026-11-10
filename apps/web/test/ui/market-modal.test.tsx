@@ -48,7 +48,10 @@ describe("modal do jogador no Mercado (028)", () => {
     ]) {
       expect(within(modal).getByText(t(key))).toBeDefined();
     }
-    expect(document.body.textContent).not.toMatch(/potencial|temperamento|propensão/i);
+    // Sem relatório do olheiro (039), o modal não fala de atributos ocultos; a coluna "Potencial" da
+    // busca, atrás do modal, só mostra faixas de quem foi observado (scouting-secrecy.test.tsx).
+    expect(modal.textContent).not.toMatch(/potencial|temperamento|propensão/i);
+    expect(within(modal).queryByRole("region", { name: t("scouting.report.title") })).toBeNull();
     for (const name of [
       t("market.action.offer"),
       t("market.action.loan"),

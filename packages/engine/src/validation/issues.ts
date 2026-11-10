@@ -112,6 +112,7 @@ export const ISSUE_PARAMS = {
   "country.names_too_few": ["kind", "count", "min"],
   "economy.unknown_division": ["level"],
   "economy.estimate_width_order": ["level", "width", "previous"],
+  "economy.scouting_width_order": ["level", "width", "previous"],
   "squad.size": ["clubId", "count", "min", "max"],
   "squad.min_goalkeepers": ["clubId", "count", "min"],
   "player.potential_below_strength": ["potential", "strength"],
@@ -147,6 +148,7 @@ const WARNING_CODES: ReadonlySet<IssueCode> = new Set<IssueCode>([
   "csv.unknown_column",
   "continental.rules_ignored",
   "economy.estimate_width_order",
+  "economy.scouting_width_order",
 ]);
 
 export function severityOf(code: IssueCode): Severity {

@@ -20,6 +20,7 @@ import type { MarketState } from "../market/types";
 import type { Competition, CompletedBank } from "../model/types";
 import type { NewsState } from "../news/types";
 import type { RenewalState } from "../renewal/types";
+import type { ScoutingState } from "../scouting/types";
 import type { SeasonError } from "../season/errors";
 import type { Fixture, MatchRecord, PlayerStatus } from "../season/types";
 import type { FixtureStage } from "../stages/types";
@@ -52,6 +53,8 @@ export interface CareerSeasonState {
   board?: BoardState;
   fans?: FansState;
   news?: NewsState;
+  /** Olheiros do técnico (039): departamento, observações e relatórios. */
+  scouting?: ScoutingState;
 }
 
 /**

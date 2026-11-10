@@ -308,6 +308,24 @@ export const economySchema = z.object({
   crisisRounds: intInRange(1, 200).optional(),
   wageFactorPct: intInRange(1, 1000).optional(),
   divisions: list(divisionEconomySchema, 0, 99).optional(),
+  /** Olheiros (039): os 5 níveis do departamento e as larguras; ausente = padrão do jogo. */
+  scouting: z
+    .object({
+      levels: z
+        .array(
+          z.object({
+            slots: intInRange(1, 50),
+            costPct: intInRange(0, 50),
+            shrink: intInRange(1, 20),
+            minWidth: intInRange(4, 60),
+          }),
+        )
+        .length(5)
+        .optional(),
+      initialWidth: intInRange(8, 60).optional(),
+      reportCap: intInRange(10, 2000).optional(),
+    })
+    .optional(),
   /** Academia (037): os 5 níveis, do 1 ao 5; ausente = padrão do jogo. */
   academy: z
     .object({

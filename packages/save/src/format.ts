@@ -14,12 +14,13 @@ import type {
   QualificationRecord,
   RegionalEdition,
   RenewalState,
+  ScoutingState,
   SeasonCalendar,
   SeasonHistoryEntry,
 } from "@brasfoot-like/engine";
 
 /** Versão atual do formato do save (Princípio VI). */
-export const SAVE_FORMAT_VERSION = 23;
+export const SAVE_FORMAT_VERSION = 24;
 
 export const MANAGER_NAME_MAX = 40;
 
@@ -72,6 +73,8 @@ export interface SaveFile {
   fans: FansState;
   /** Manchetes, recordes e memória do mundo (v10). */
   news: NewsState;
+  /** Olheiros do técnico (v24, 039): departamento, observações e relatórios. */
+  scouting: ScoutingState;
   /** Imagens de escudo do banco da carreira: caminho no pacote → data URI (v11). */
   assets: Record<string, string>;
   /** Escalação do clube do jogador (v2). */

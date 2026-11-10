@@ -79,5 +79,7 @@ export {
 export type { LoadResult, Migration } from "./migrate";
 export { MIGRATIONS, migrateSave } from "./migrate";
 export { SCALE_LIMITS } from "./scale-limits";
+export type { ScoutingSaveResult } from "./scouting";
+export { scoutPlayer, setScoutingLevel, unscoutPlayer } from "./scouting";
 export type { SaveSummary } from "./summary";
 export { divisionNameOf, seasonYearOf, summarize, touch } from "./summary";

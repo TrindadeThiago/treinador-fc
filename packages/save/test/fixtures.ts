@@ -632,6 +632,22 @@ export function saveV21(step: SaveV11Step = { rounds: 0 }): SaveV21 {
   return JSON.parse(JSON.stringify(save)) as SaveV21;
 }
 
+export type SaveV23 = Omit<SaveFile, "formatVersion" | "scouting"> & { formatVersion: 23 };
+
+const v23Cache = new Map<string, SaveV23>();
+
+/** Carreira atual no formato v23 (1.11.x): sem os olheiros (039). */
+export function saveV23(step: SaveV11Step = { rounds: 0 }): SaveV23 {
+  const key = JSON.stringify(step);
+  let save = v23Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, scouting: _scouting, ...rest } = playedCurrentSave(step);
+    save = { ...rest, formatVersion: 23 };
+    v23Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV23;
+}
+
 export type SaveV22 = Omit<SaveFile, "formatVersion"> & { formatVersion: 22 };
 
 const v22Cache = new Map<string, SaveV22>();

@@ -81,6 +81,7 @@ Os módulos ficam em `packages/engine/src`. A API pública é o `index.ts`.
 | `continental/`, `regional/` | Competições continentais (campanhas, reputação, prêmios) e estaduais. |
 | `finance/` | Livro-caixa por rodada: bilheteria (`gate.ts`), salários, patrocínio, prêmios, crédito, estádio, a IA financeira e a previsão de caixa (`forecast.ts`). |
 | `market/` | Janelas, valor de mercado, busca, negociação com o clube e com o jogador, propostas recebidas, contratos, empréstimos, rescisão, jogadores livres e a IA de transferências. |
+| `scouting/` | Olheiros do técnico (039): o departamento (nível, vagas, custo na categoria `scouting` do livro-caixa), as observações e os relatórios em `CareerSeasonState.scouting`. Os relatórios avançam no `day.ts` depois da rodada de cada liga principal (`scoutingAfterRound`), com a faixa da 038 e semente própria; a limpeza de aposentados e o teto rodam no save, depois da virada (`pruneScouting`). Só informação: com o departamento fechado, nada muda. |
 | `board/` | Diretoria: metas, confiança, avaliação, demissão, propostas de emprego, técnicos da IA e reputação. |
 | `fans/` | Torcida: humor, rivalidades, ídolos. |
 | `news/` | Manchetes: fatos da rodada, recordes, conquistas e o feed por rodada (só dados: tipo, variante e variáveis). As notícias da base (`academy.ts`, 038) dão a revelação da safra na etapa `news-academy` da virada e a estreia, o primeiro gol e a venda das crias do clube do técnico, com as marcas por jogador em `NewsState.crias`. |

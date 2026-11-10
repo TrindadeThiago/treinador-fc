@@ -23,6 +23,7 @@ import {
   type Posture,
   placePlayer as placeLineupPlayer,
   type RosterIssue,
+  type ScoutingError,
   type StartInput,
   squadWithFitness,
   startCareerDay,
@@ -60,14 +61,18 @@ import {
   rosterIssuesOf,
   type SaveError,
   type SaveFile,
+  type ScoutingSaveResult,
+  scoutPlayer as scoutSavedPlayer,
   seasonStateOf,
   sellManagerPlayer,
   setManagerTicketPrice,
+  setScoutingLevel as setSavedScoutingLevel,
   startManagerNegotiation,
   startManagerStadiumWorks,
   takeManagerLoan,
   terminateManagerContract,
   touch,
+  unscoutPlayer as unscoutSavedPlayer,
   upgradeYouthAcademy,
   userSeasonFor,
   withAdjustedLineup,
@@ -264,6 +269,10 @@ interface GameContextValue {
   upgradeAcademy(): AcademyActionResult;
   downgradeAcademy(): AcademyActionResult;
   cancelAcademyChange(): AcademyActionResult;
+  /** Olheiros (039): nível do departamento (0 fecha), observar e cancelar uma observação. */
+  setScoutingLevel(level: number): ScoutingActionResult;
+  scoutPlayer(playerId: string): ScoutingActionResult;
+  unscoutPlayer(playerId: string): ScoutingActionResult;
   /** Carreira do técnico (012): aceitar/recusar proposta de emprego e dispensar o aviso. */
   acceptJobOffer(offerId: string): boolean;
   declineJobOffer(offerId: string): void;
@@ -271,6 +280,10 @@ interface GameContextValue {
 }
 
 export type DisposalActionResult = { ok: true } | { ok: false; error: MarketError };
+
+export type ScoutingActionResult =
+  | { ok: true; cancelled?: string[] }
+  | { ok: false; error: ScoutingError | "scouting.match_in_progress" };
 
 export interface SimulateIssues {
   kind: "blocked" | "confirm";
@@ -864,6 +877,33 @@ export function GameProvider({
     },
     [persist],
   );
+  const scoutingAction = useCallback(
+    (action: (save: SaveFile) => ScoutingSaveResult): ScoutingActionResult => {
+      const save = latestSave.current;
+      if (!save) return { ok: false, error: "scouting.not_found" };
+      if (liveRef.current) return { ok: false, error: "scouting.match_in_progress" };
+      const result = action(save);
+      if (!result.ok) return result;
+      const next = touch(result.save, new Date().toISOString());
+      latestSave.current = next;
+      dispatch({ type: "update", save: next });
+      void persist(next);
+      return result.cancelled ? { ok: true, cancelled: result.cancelled } : { ok: true };
+    },
+    [persist],
+  );
+  const setScoutingLevel = useCallback(
+    (level: number) => scoutingAction((save) => setSavedScoutingLevel(save, level)),
+    [scoutingAction],
+  );
+  const scoutPlayer = useCallback(
+    (playerId: string) => scoutingAction((save) => scoutSavedPlayer(save, playerId)),
+    [scoutingAction],
+  );
+  const unscoutPlayer = useCallback(
+    (playerId: string) => scoutingAction((save) => unscoutSavedPlayer(save, playerId)),
+    [scoutingAction],
+  );
   const upgradeAcademy = useCallback(() => levelAction(upgradeYouthAcademy), [levelAction]);
   const downgradeAcademy = useCallback(() => levelAction(downgradeYouthAcademy), [levelAction]);
   const cancelAcademyChange = useCallback(
@@ -989,6 +1029,9 @@ export function GameProvider({
       upgradeAcademy,
       downgradeAcademy,
       cancelAcademyChange,
+      setScoutingLevel,
+      scoutPlayer,
+      unscoutPlayer,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,
@@ -1033,6 +1076,9 @@ export function GameProvider({
       upgradeAcademy,
       downgradeAcademy,
       cancelAcademyChange,
+      setScoutingLevel,
+      scoutPlayer,
+      unscoutPlayer,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,

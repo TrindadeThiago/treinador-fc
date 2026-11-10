@@ -20,6 +20,7 @@ import { academyClub, academyLevelRule, academyMaintenance } from "../renewal/ac
 import { evolvePlayers, midSeasonRound } from "../renewal/evolution";
 import { withRegionalClubs } from "../renewal/regional";
 import type { RenewalState } from "../renewal/types";
+import { scoutingCost } from "../scouting/rules";
 import type { SeasonError } from "../season/errors";
 import { interestFor } from "./actions";
 import { aiRoundReview } from "./ai";
@@ -92,12 +93,14 @@ export function applyRoundFinances(
   fans?: FansState,
   /** Renovação, para o nível da academia de cada clube (037); sem ela, o nível da reputação. */
   renewal?: RenewalState,
+  /** Nível dos olheiros do clube do técnico (039); 0 ou ausente = nenhum lançamento. */
+  scoutingLevel = 0,
 ): FinanceState {
   const rules = economyRules(world, league.competitionId);
   const working = draft(finances);
   const entry = (
     clubId: string,
-    category: "gate" | "wages" | "interest" | "academy",
+    category: "gate" | "wages" | "interest" | "academy" | "scouting",
     amount: number,
   ) => ({
     clubId,
@@ -143,6 +146,14 @@ export function applyRoundFinances(
         working,
         entry(clubId, "academy", -wageInstalment(academy, round, season.calendar.length)),
       );
+      // Olheiros do técnico (039 FR-004): só o clube dele e só com o departamento aberto.
+      if (clubId === managerClubId && scoutingLevel > 0) {
+        const scouting = 12 * scoutingCost(world, clubId, scoutingLevel);
+        post(
+          working,
+          entry(clubId, "scouting", -wageInstalment(scouting, round, season.calendar.length)),
+        );
+      }
     }
   }
 
@@ -327,7 +338,7 @@ export function applyRoundSystems(
    * que a IA nunca altera (preço, obras, crédito, compras e vendas) mesmo numa liga estrangeira,
    * onde `managerClubId` vai vazio.
    */
-  options: { foreign?: boolean; userClubId?: string } = {},
+  options: { foreign?: boolean; userClubId?: string; scoutingLevel?: number } = {},
 ): CareerRoundResult {
   const foreign = options.foreign === true;
   const userClubId = options.userClubId ?? managerClubId;
@@ -340,6 +351,7 @@ export function applyRoundSystems(
     userClubId,
     fans?.state,
     renewal?.state,
+    options.scoutingLevel ?? 0,
   );
   let nextWorld = world;
   let nextRenewal = renewal?.state;

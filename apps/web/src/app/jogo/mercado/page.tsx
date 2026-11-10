@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { GameLayout } from "../../../game/GameLayout";
 import type { useGame } from "../../../game/GameProvider";
+import { scoutingPanelOf, scoutReport } from "../../../game/scouting-view";
 import { useT } from "../../../i18n";
 import { Button } from "../../../ui/Button";
 import { EmptyState } from "../../../ui/EmptyState";
@@ -24,14 +25,22 @@ import { MarketTable } from "../../../ui/market/MarketTable";
 import styles from "../../../ui/market/market.module.css";
 import { NegotiationDialog, type NegotiationTarget } from "../../../ui/market/NegotiationDialog";
 import { NegotiationsTab } from "../../../ui/market/NegotiationsTab";
+import { ScoutingTab } from "../../../ui/market/ScoutingTab";
 import { WindowReport } from "../../../ui/market/WindowReport";
 import { WindowStatus } from "../../../ui/market/WindowStatus";
 import { SquadCounter } from "../../../ui/SquadCounter";
 import { Tabs } from "../../../ui/Tabs";
 
 type Game = ReturnType<typeof useGame>;
-type Tab = "search" | "negotiations" | "incoming" | "contracts" | "report";
-const TABS: readonly Tab[] = ["search", "negotiations", "incoming", "contracts", "report"];
+type Tab = "search" | "negotiations" | "incoming" | "contracts" | "scouting" | "report";
+const TABS: readonly Tab[] = [
+  "search",
+  "negotiations",
+  "incoming",
+  "contracts",
+  "scouting",
+  "report",
+];
 
 function Market({ save, game }: { save: SaveFile; game: Game }) {
   const t = useT();
@@ -55,8 +64,12 @@ function Market({ save, game }: { save: SaveFile; game: Game }) {
   // 39 000 jogadores, refazê-la a cada tecla era o que deixava a tela lenta).
   const everyone = useMemo(() => marketRows(context), [context]);
   const found = useMemo(
-    () => filterRows(everyone, toFilters(form, save.clubId), { key: "strength", dir: "desc" }),
-    [everyone, form, save.clubId],
+    () =>
+      filterRows(everyone, toFilters(form, save.clubId), { key: "strength", dir: "desc" }).filter(
+        // Só observados (039): quem tem relatório do olheiro.
+        (row) => !form.observedOnly || scoutReport(save, row.playerId) !== undefined,
+      ),
+    [everyone, form, save],
   );
   const locked = game.state.live !== undefined;
   const [opened, setOpened] = useState<string | undefined>();
@@ -148,6 +161,11 @@ function Market({ save, game }: { save: SaveFile; game: Game }) {
               />
             ),
           },
+          {
+            id: "scouting",
+            label: counted("scouting", scoutingPanelOf(save).used),
+            content: <ScoutingTab save={save} game={game} />,
+          },
           { id: "report", label: t("market.tab.report"), content: <WindowReport save={save} /> },
         ]}
       />
@@ -158,6 +176,11 @@ function Market({ save, game }: { save: SaveFile; game: Game }) {
         compared={openRow ? selected.has(openRow.playerId) : false}
         compareFull={selected.size >= COMPARE_LIMIT}
         onAction={(row, action) => setTarget({ kind: action, row })}
+        onScout={(playerId) => {
+          const result = game.scoutPlayer(playerId);
+          const name = everyone.find((row) => row.playerId === playerId)?.displayName ?? "";
+          return result.ok ? t("scouting.done.watch", { name }) : t("scouting.error");
+        }}
         onToggleCompare={toggle}
         onClose={() => setOpened(undefined)}
       />
