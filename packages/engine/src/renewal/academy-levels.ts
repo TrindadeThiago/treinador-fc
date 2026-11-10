@@ -17,6 +17,7 @@ import {
   withAcademyPlayers,
   withoutAcademyPlayers,
 } from "./academy";
+import { withEstimate } from "./estimate";
 import { withRegionalClubs } from "./regional";
 import type { AcademyClub, AcademyPlayer, AcademyState, RenewalState } from "./types";
 import { createYouth, neediestPosition } from "./youth";
@@ -43,6 +44,10 @@ export interface AcademyLevelRule {
   maintenancePct: number;
   /** Obra para chegar a este nível, em folhas mensais de referência (0 no nível 1). */
   buildMonths: number;
+  /** Largura da faixa de potencial de quem chega à base (038); ausente = padrão do nível. */
+  estimateWidth?: number | undefined;
+  /** Quanto a faixa estreita por virada na base (038); ausente = padrão do nível. */
+  estimateShrink?: number | undefined;
 }
 
 /** Padrão (research.md R2); a calibragem (T027) ajusta e registra no research. */
@@ -56,6 +61,8 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
     evolutionBonus: 0,
     maintenancePct: 2,
     buildMonths: 0,
+    estimateWidth: 20,
+    estimateShrink: 2,
   },
   {
     minReputation: 30,
@@ -66,6 +73,8 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
     evolutionBonus: 0,
     maintenancePct: 4,
     buildMonths: 2,
+    estimateWidth: 18,
+    estimateShrink: 2,
   },
   {
     minReputation: 45,
@@ -76,6 +85,8 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
     evolutionBonus: 0.05,
     maintenancePct: 6,
     buildMonths: 3,
+    estimateWidth: 16,
+    estimateShrink: 2,
   },
   {
     minReputation: 65,
@@ -86,6 +97,8 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
     evolutionBonus: 0.1,
     maintenancePct: 8,
     buildMonths: 4.5,
+    estimateWidth: 14,
+    estimateShrink: 3,
   },
   {
     minReputation: 80,
@@ -96,6 +109,8 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
     evolutionBonus: 0.3,
     maintenancePct: 10,
     buildMonths: 6,
+    estimateWidth: 12,
+    estimateShrink: 3,
   },
 ];
 
@@ -396,7 +411,12 @@ export function seedAcademies(
       );
       seq += 1;
       const { clubId: _clubId, contract: _contract, ...player } = youth;
-      const entry: AcademyPlayer = { player, clubId: club.id, joinedSeason: 1 };
+      const entry = withEstimate(
+        { player, clubId: club.id, joinedSeason: 1 },
+        academyRules(world, club.id),
+        academyClub(regulated, world, club.id).level,
+        careerSeed,
+      );
       own.push(entry);
       fresh.push(entry);
     }

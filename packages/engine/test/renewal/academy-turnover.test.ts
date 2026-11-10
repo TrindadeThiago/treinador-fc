@@ -5,7 +5,8 @@ import type { CareerSeasonState } from "../../src/career/season-state";
 import { DEFAULT_TURNOVER_STEPS, seasonTurnover } from "../../src/career/turnover";
 import type { CompletedPlayer } from "../../src/model/types";
 import { academyOf, emptyAcademy, graduateOf } from "../../src/renewal/academy";
-import { academyLimit } from "../../src/renewal/academy-levels";
+import { academyClub, academyLimit, academyRules } from "../../src/renewal/academy-levels";
+import { estimateWidth } from "../../src/renewal/estimate";
 import { SQUAD_RULES } from "../../src/renewal/rules";
 import { squadProblems } from "../../src/renewal/squads";
 import type { AcademyPlayer } from "../../src/renewal/types";
@@ -281,5 +282,125 @@ describe("virada com a base (036)", () => {
 
   it("a mesma seed dá a mesma virada", () => {
     expect(turn(finished())).toEqual(turn(finished()));
+  }, 120000);
+});
+
+describe("faixa de potencial na virada (038)", () => {
+  const contains = (entry: AcademyPlayer) =>
+    !!entry.estimate &&
+    entry.estimate.low <= entry.player.hidden.potential &&
+    entry.player.hidden.potential <= entry.estimate.high;
+
+  it("estreita a faixa de quem ficou, em todos os clubes, sem alargar", () => {
+    const state = finished();
+    const before = new Map(
+      (state.renewal?.academy?.players ?? []).map((entry) => [entry.player.id, entry]),
+    );
+    expect(before.size).toBeGreaterThan(0);
+    for (const entry of before.values()) expect(contains(entry)).toBe(true);
+    const result = turn(state);
+    const after = result.renewal?.academy?.players ?? [];
+    let stayed = 0;
+    let narrowed = 0;
+    const clubs = new Set<string>();
+    for (const entry of after) {
+      expect(contains(entry)).toBe(true);
+      const previous = before.get(entry.player.id)?.estimate;
+      if (!previous || !entry.estimate) continue;
+      stayed += 1;
+      clubs.add(entry.clubId);
+      expect(entry.estimate.low).toBeGreaterThanOrEqual(previous.low);
+      expect(entry.estimate.high).toBeLessThanOrEqual(previous.high);
+      if (entry.estimate.high - entry.estimate.low < previous.high - previous.low) narrowed += 1;
+      // Largura alvo pelo nível do clube e pelo tempo na base (também na IA: troca de clube).
+      const level = academyClub(result.renewal, result.world, entry.clubId).level;
+      const rule = academyRules(result.world, entry.clubId)[level - 1];
+      if (!rule) throw new Error("sem regra");
+      expect(entry.estimate.high - entry.estimate.low).toBeLessThanOrEqual(
+        estimateWidth(rule, level, result.league.number - entry.joinedSeason),
+      );
+    }
+    expect(stayed).toBeGreaterThan(0);
+    expect(narrowed).toBeGreaterThan(0);
+    expect(clubs.size).toBeGreaterThan(1);
+  }, 120000);
+
+  it("a academia rebaixada na virada não alarga a faixa", () => {
+    const state = finished();
+    if (!state.renewal?.academy) throw new Error("sem base");
+    const level = academyClub(state.renewal, state.world, MANAGER).level;
+    const lowered: CareerSeasonState = {
+      ...state,
+      renewal: {
+        ...state.renewal,
+        academy: {
+          ...state.renewal.academy,
+          clubs: {
+            ...(state.renewal.academy.clubs ?? {}),
+            [MANAGER]: { level: Math.max(2, level), pending: { kind: "downgrade" } },
+          },
+        },
+      },
+    };
+    const before = new Map(
+      academyOf(lowered.renewal, MANAGER).map((entry) => [entry.player.id, entry.estimate]),
+    );
+    const result = turn(lowered);
+    for (const entry of academyOf(result.renewal, MANAGER)) {
+      const previous = before.get(entry.player.id);
+      if (!previous || !entry.estimate) continue;
+      expect(entry.estimate.high - entry.estimate.low).toBeLessThanOrEqual(
+        previous.high - previous.low,
+      );
+    }
+  }, 120000);
+
+  it("a safra nova chega com faixa de tempo zero", () => {
+    const result = turn(finished());
+    const fresh = (result.renewal?.academy?.players ?? []).filter(
+      (entry) => entry.joinedSeason === result.league.number,
+    );
+    expect(fresh.length).toBeGreaterThan(0);
+    for (const entry of fresh) {
+      expect(contains(entry)).toBe(true);
+      const level = academyClub(result.renewal, result.world, entry.clubId).level;
+      const rule = academyRules(result.world, entry.clubId)[level - 1];
+      if (!rule || !entry.estimate) throw new Error("sem regra");
+      expect(entry.estimate.high - entry.estimate.low).toBeLessThanOrEqual(
+        estimateWidth(rule, level, 0),
+      );
+    }
+  }, 120000);
+});
+
+describe("crias e histórico na virada (038)", () => {
+  it("as marcas de quem não é mais cria viva somem; o histórico guarda a força máxima", () => {
+    const state = finished();
+    if (!state.news || !state.renewal?.academy) throw new Error("sem notícias");
+    const promoted = state.world.players.find((player) => player.clubId === MANAGER);
+    if (!promoted) throw new Error("sem jogador");
+    const marked: CareerSeasonState = {
+      ...state,
+      news: { ...state.news, crias: { "jogador-fantasma": 7, [promoted.id]: 1 } },
+      renewal: {
+        ...state.renewal,
+        academy: {
+          ...state.renewal.academy,
+          graduates: {
+            ...state.renewal.academy.graduates,
+            [promoted.id]: { clubId: MANAGER, season: 1, peak: 1 },
+          },
+        },
+      },
+    };
+    const result = turn(marked);
+    expect(result.news?.crias?.["jogador-fantasma"]).toBeUndefined();
+    const graduate = result.renewal?.academy?.graduates[promoted.id];
+    if (graduate) {
+      expect(result.news?.crias?.[promoted.id]).toBe(1);
+      expect(graduate.peak ?? 0).toBeGreaterThan(1);
+      const best = result.renewal?.academy?.hall?.[MANAGER]?.best ?? [];
+      expect(best.some((legend) => legend.playerId === promoted.id)).toBe(true);
+    }
   }, 120000);
 });

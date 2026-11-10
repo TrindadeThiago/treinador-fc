@@ -136,7 +136,8 @@ export type HeadlineCategory =
   | "table"
   | "cup"
   | "continental"
-  | "regional";
+  | "regional"
+  | "academy";
 
 const CATEGORY: Record<HeadlineType, HeadlineCategory> = {
   result: "result",
@@ -169,6 +170,10 @@ const CATEGORY: Record<HeadlineType, HeadlineCategory> = {
   regionalChampion: "regional",
   regionalPromoted: "regional",
   regionalRelegated: "regional",
+  academyRevelation: "academy",
+  academyDebut: "academy",
+  academyFirstGoal: "academy",
+  academySale: "academy",
 };
 
 /** Etiqueta de categoria de uma manchete no cartão da Início (research R5). */

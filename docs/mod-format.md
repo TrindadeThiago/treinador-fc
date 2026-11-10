@@ -701,6 +701,11 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
 
   A folha de referência é a de 18 jogadores típicos da reputação do clube, na escala de salários
   do país (ou do estadual, para os clubes só regionais).
+  Faixa de potencial estimado (038, opcional em cada nível): `estimateWidth` (4 a 60, largura da
+  faixa de quem chega à base) e `estimateShrink` (0 a 20, quanto a faixa estreita a cada virada na
+  base). A largura nunca fica abaixo de 4. Sem os campos, valem os padrões: 20/2, 18/2, 16/2, 14/3 e
+  12/3, do nível 1 ao 5. Uma largura que cresce do nível 1 ao 5 gera aviso
+  (`economy.estimate_width_order`). A faixa é só informação: não muda nenhum resultado do jogo.
 - `market` — janelas (`windows[]` com `fromRound`/`toRound`), anos de contrato (`contractYears`),
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de
@@ -844,6 +849,7 @@ Fora do jogo, `pnpm validate-bank <pasta|arquivo.zip>` faz a mesma validação n
 | `economy.price_range` | O preço mínimo do ingresso ({min}) é maior que o máximo ({max}). |
 | `country.names_too_few` | O banco de nomes do país tem {count, plural, one {# {kind, select, firstNames {nome} other {sobrenome}}} other {# {kind, select, firstNames {nomes} other {sobrenomes}}}}; são necessários ao menos {min}. |
 | `economy.unknown_division` | As regras econômicas citam a divisão de nível {level}, que não existe na competição. |
+| `economy.estimate_width_order` | A largura da faixa de potencial do nível {level} da academia ({width}) é maior que a do nível anterior ({previous}): academias melhores deveriam estimar melhor. |
 | `squad.size` | O clube {clubId} tem {count, plural, =0 {nenhum jogador} one {# jogador} other {# jogadores}}; o elenco deve ter entre {min} e {max}. |
 | `squad.min_goalkeepers` | O clube {clubId} {count, plural, =0 {não tem goleiros} one {tem apenas # goleiro} other {tem apenas # goleiros}}; o mínimo é {min}. |
 | `player.potential_below_strength` | O jogador {entityId} tem potencial {potential}, menor que a força atual ({strength}). |

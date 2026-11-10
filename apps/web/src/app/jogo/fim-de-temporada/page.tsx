@@ -19,6 +19,7 @@ import { Button } from "../../../ui/Button";
 import { CupResult } from "../../../ui/cup/CupHistory";
 import { OtherCompetitions } from "../../../ui/history/OtherCompetitions";
 import { QualificationSummary } from "../../../ui/qualification/QualificationSummary";
+import { AcademySeason } from "../../../ui/season/AcademySeason";
 import { Campaign } from "../../../ui/season/Campaign";
 import { Champions } from "../../../ui/season/Champions";
 import { ClubResult } from "../../../ui/season/ClubResult";
@@ -66,6 +67,7 @@ function SeasonEnd({ save, game }: { save: SaveFile; game: Game }) {
       <Campaign save={save} summary={summary} />
       <Champions save={save} summary={summary} />
       <Moves save={save} summary={summary} />
+      <AcademySeason save={save} />
       <details>
         <summary>{t("seasonEnd.otherCompetitions")}</summary>
         {staged.map((season) => (

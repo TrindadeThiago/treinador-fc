@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
   ACADEMY_RULES,
+  academyClub,
   advanceCareer,
   ageOn,
   type BoardState,
@@ -106,6 +107,30 @@ export interface WorldSeason {
   mood: number;
   /** Tipos diferentes de manchete na temporada (014). */
   headlineTypes: number;
+  /** Faixas de potencial (038): total, quantas contêm o valor real e largura por nível e tempo. */
+  estimates: { total: number; contained: number; widths: Record<string, [number, number]> };
+}
+
+/** Faixas da base depois da virada: contenção e largura média por "nível:tempo" (038 FR-021). */
+function estimateStats(
+  renewal: RenewalState,
+  world: CompletedBank,
+  season: number,
+): WorldSeason["estimates"] {
+  const widths: Record<string, [number, number]> = {};
+  let contained = 0;
+  const players = renewal.academy?.players ?? [];
+  for (const entry of players) {
+    const estimate = entry.estimate;
+    const potential = entry.player.hidden.potential;
+    if (!estimate) continue;
+    if (estimate.low <= potential && potential <= estimate.high) contained += 1;
+    const level = academyClub(renewal, world, entry.clubId).level;
+    const key = `${level}:${Math.min(3, season - entry.joinedSeason)}`;
+    const [sum, count] = widths[key] ?? [0, 0];
+    widths[key] = [sum + estimate.high - estimate.low, count + 1];
+  }
+  return { total: players.length, contained, widths };
 }
 
 /** Executa a carreira e devolve as medidas de cada temporada (testável). */
@@ -220,6 +245,7 @@ export function simulateWorld(options: SimulateWorldOptions): WorldSeason[] {
       clubs: Object.keys(board.clubs).length,
       mood,
       headlineTypes,
+      estimates: estimateStats(renewal, world, league.number),
     });
   }
   return result;
@@ -268,6 +294,25 @@ export function runSimulateWorld(options: SimulateWorldOptions): {
     "",
     `${emergencyOk ? "✓" : "✗"} safras de emergência: ${emergencies} (${emergencyRate.toFixed(3)} por clube e temporada, ≤ ${ACADEMY_RULES.emergencyLimitPerClubSeason}); base no fim: ${seasons.at(-1)?.academy ?? 0} jovens`,
   );
+  // Faixa de potencial (038 FR-021): 100% contém o valor real; largura por nível e tempo na base.
+  const total = seasons.reduce((sum, season) => sum + season.estimates.total, 0);
+  const contained = seasons.reduce((sum, season) => sum + season.estimates.contained, 0);
+  const estimateOk = total > 0 && contained === total;
+  ok &&= estimateOk;
+  lines.push(
+    "",
+    `${estimateOk ? "✓" : "✗"} faixas de potencial com o valor real: ${contained} de ${total} (${total ? ((100 * contained) / total).toFixed(1) : "0"}%)`,
+    "   largura média  tempo 0  tempo 1  tempo 2  tempo 3+",
+  );
+  for (const level of [1, 2, 3, 4, 5]) {
+    const cells = [0, 1, 2, 3].map((tenure) => {
+      const pairs = seasons.map((season) => season.estimates.widths[`${level}:${tenure}`]);
+      const sum = pairs.reduce((acc, pair) => acc + (pair?.[0] ?? 0), 0);
+      const count = pairs.reduce((acc, pair) => acc + (pair?.[1] ?? 0), 0);
+      return count ? (sum / count).toFixed(1).padStart(8) : "       —";
+    });
+    lines.push(`   nível ${level}      ${cells.join(" ")}`);
+  }
   const gaps = seasons.flatMap((season) => season.gaps);
   const perSeason = gaps.length ? (2 * gaps.reduce((sum, gap) => sum + gap, 0)) / gaps.length : 0;
   const gapOk = perSeason >= WORLD_LIMITS.minYouthMinutesGain;

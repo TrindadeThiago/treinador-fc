@@ -35,6 +35,21 @@ export function academyOriginText(
   return t("player.academyGraduate", { club, year });
 }
 
+/**
+ * Faixa de potencial guardada na promoção (038 FR-008): só para quem subiu da base do clube do
+ * técnico; continua depois de uma venda. O potencial real nunca é lido aqui.
+ */
+export function promotionEstimateText(
+  save: SaveFile,
+  playerId: string,
+  t: ReturnType<typeof useT>,
+): string | undefined {
+  const estimate = graduateOf(save.renewal, playerId)?.estimate;
+  return estimate
+    ? t("academy.estimate.range", { low: estimate.low, high: estimate.high })
+    : undefined;
+}
+
 export function PlayerStats({ save, playerId }: { save: SaveFile; playerId: string }) {
   const t = useT();
   const stats = seasonStats(userSeason(save)).find((entry) => entry.playerId === playerId);
@@ -105,6 +120,8 @@ export function PlayerDetails({
   ];
   const origin = academyOriginText(save, player.id, t);
   if (origin) visible.push(["player.origin", origin]);
+  const estimate = promotionEstimateText(save, player.id, t);
+  if (estimate) visible.push(["player.estimatePromotion", estimate]);
   return (
     <Dialog
       open

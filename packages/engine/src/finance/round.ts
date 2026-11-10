@@ -469,6 +469,7 @@ export function applyRoundSystems(
         news: news.state,
         careerSeed: news.careerSeed,
         managerClubId: nextBoard ? (nextBoard.manager.clubId ?? "") : managerClubId,
+        ...(nextRenewal?.academy ? { graduates: nextRenewal.academy.graduates } : {}),
         ...(nextMarket ? { market: nextMarket } : {}),
         ...(board ? { boardBefore: board.state } : {}),
         ...(nextBoard ? { boardAfter: nextBoard } : {}),

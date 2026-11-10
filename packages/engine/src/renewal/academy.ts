@@ -11,16 +11,20 @@ import { POSITIONS, type Position } from "../model/catalogs";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { createRng } from "../rng/xoshiro";
 import { squadOf } from "../world/squads";
-import { academyLimit } from "./academy-levels";
+import { academyClub, academyLimit, academyRules } from "./academy-levels";
+import { withEstimate } from "./estimate";
 import { evolutionDelta } from "./evolution";
+import { type HallPlayer, hallOf, hallWithPromotions } from "./hall";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
 import { ACADEMY_RULES, EVOLUTION_RULES, SQUAD_RULES } from "./rules";
 import type {
   AcademyGraduate,
+  AcademyHall,
   AcademyPlayer,
   AcademyState,
   PlayerRef,
+  PotentialEstimate,
   RenewalState,
 } from "./types";
 import { createYouth } from "./youth";
@@ -110,6 +114,11 @@ export function byUtilityDesc(date: string) {
     renewalUtility(b.player, date) - renewalUtility(a.player, date) || byPlayerId(a, b);
 }
 
+/** Crias de um clube formador: total promovido e as maiores revelações (038 FR-016). */
+export function academyHallOf(renewal: RenewalState | undefined, clubId: string): AcademyHall {
+  return hallOf(academyState(renewal), clubId);
+}
+
 export function graduateOf(
   renewal: RenewalState | undefined,
   playerId: string,
@@ -141,16 +150,31 @@ export function withAcademyPlayers(
   return { ...academy, players: [...academy.players, ...entries].sort(byPlayerId) };
 }
 
-/** Registra a origem de promovidos. */
+/**
+ * Registra a origem de promovidos (036) com a safra, a força na promoção e, só quando o formador é o
+ * clube do técnico (`keepEstimate`), a faixa da promoção (038 FR-008); soma no histórico do formador.
+ */
 export function withGraduates(
   academy: AcademyState,
   entries: readonly AcademyPlayer[],
   season: number,
+  options: { keepEstimate?: boolean } = {},
 ): AcademyState {
   if (entries.length === 0) return academy;
   const graduates = { ...academy.graduates };
-  for (const entry of entries) graduates[entry.player.id] = { clubId: entry.clubId, season };
-  return { ...academy, graduates };
+  const promoted: { player: HallPlayer; graduate: AcademyGraduate }[] = [];
+  for (const entry of entries) {
+    const graduate: AcademyGraduate = {
+      clubId: entry.clubId,
+      season,
+      joinedSeason: entry.joinedSeason,
+      peak: entry.player.strength,
+      ...(options.keepEstimate && entry.estimate ? { estimate: entry.estimate } : {}),
+    };
+    graduates[entry.player.id] = graduate;
+    promoted.push({ player: entry.player, graduate });
+  }
+  return hallWithPromotions({ ...academy, graduates }, promoted);
 }
 
 /** Contrato que o jovem assinaria se promovido na temporada `year` (mesma seed de `ensureContracts`). */
@@ -201,7 +225,7 @@ export function promoteFromAcademy(
   const player: CompletedPlayer = { ...asClubPlayer(entry), contract };
   const ref = playerRef(player, seasonDate(state.world.manifest.referenceDate, state.league.year));
   let academy = withoutAcademyPlayers(academyState(state.renewal), new Set([playerId]));
-  academy = withGraduates(academy, [entry], state.league.number);
+  academy = withGraduates(academy, [entry], state.league.number, { keepEstimate: true });
   academy = { ...academy, promotedThisSeason: [...academy.promotedThisSeason, ref] };
   return {
     ok: true,
@@ -528,7 +552,12 @@ export function emergencyPromotion(
     rng,
   );
   const { clubId: _c, contract: _k, ...player } = youth;
-  const entry: AcademyPlayer = { player, clubId, joinedSeason: state.league.number };
+  const entry = withEstimate(
+    { player, clubId, joinedSeason: state.league.number },
+    academyRules(state.world, clubId),
+    academyClub(state.renewal, state.world, clubId).level,
+    careerSeed,
+  );
   const withEntry: CareerSeasonState = {
     ...state,
     renewal: {
@@ -549,5 +578,61 @@ export function emergencyPromotion(
         academy: { ...academy, emergencies: academy.emergencies + 1 },
       },
     },
+  };
+}
+
+/** Jovem de uma lista do bloco Base, com a faixa quando ela é conhecida. */
+export interface AcademyReportRow extends PlayerRef {
+  estimate?: PotentialEstimate;
+}
+
+/** Bloco Base do fim de temporada (038 FR-015, research R8). */
+export interface AcademySeasonReport {
+  arrived: AcademyReportRow[];
+  promoted: AcademyReportRow[];
+  left: (AcademyReportRow & { reason: "released" | "ageOut" })[];
+}
+
+/**
+ * Quem chegou, subiu e saiu da base do clube na temporada. "Chegaram" vem do aviso da virada que
+ * abriu a temporada (mesmo clube); sem ele (primeira temporada, ou o técnico trocou de clube), são os
+ * jovens da base que chegaram nesta temporada. "Saíram" junta as dispensas e quem está no último ano
+ * (sai por idade na virada que vem). Só dados visíveis e a faixa; nada de potencial.
+ */
+export function academySeasonReport(
+  renewal: RenewalState | undefined,
+  clubId: string,
+  season: { year: number; number: number },
+  referenceDate: string,
+): AcademySeasonReport {
+  const academy = academyState(renewal);
+  const own = academy.players.filter((entry) => entry.clubId === clubId);
+  const inBase = new Map(own.map((entry) => [entry.player.id, entry]));
+  const date = seasonDate(referenceDate, season.year);
+  const withEstimate = (ref: PlayerRef): AcademyReportRow => {
+    const estimate =
+      inBase.get(ref.playerId)?.estimate ?? academy.graduates[ref.playerId]?.estimate;
+    return estimate ? { ...ref, estimate } : { ...ref };
+  };
+  const notice = renewal?.squadNotice;
+  const arrivedRefs =
+    notice && notice.season === season.number && notice.clubId === clubId
+      ? (notice.academyArrived ?? [])
+      : own
+          .filter((entry) => entry.joinedSeason === season.number)
+          .map((entry) => playerRef(asClubPlayer(entry), date));
+  const lastYear = own
+    .filter((entry) => academyStatus(entry, referenceDate, season).lastYear)
+    .map((entry) => ({
+      ...withEstimate(playerRef(asClubPlayer(entry), date)),
+      reason: "ageOut" as const,
+    }));
+  return {
+    arrived: arrivedRefs.map(withEstimate),
+    promoted: academy.promotedThisSeason.map(withEstimate),
+    left: [
+      ...academy.releasedThisSeason.map((ref) => ({ ...ref, reason: "released" as const })),
+      ...lastYear,
+    ],
   };
 }

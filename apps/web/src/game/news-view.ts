@@ -19,6 +19,9 @@ export const LEAGUE_TYPES = [
   "promotionClinched",
   "relegationConfirmed",
   "seasonSummary",
+  // Crias (038): na liga sem `competition`; nas outras competições o motor grava a variável.
+  "academyDebut",
+  "academyFirstGoal",
 ] as const satisfies readonly HeadlineType[];
 
 /** Manchetes que o motor já grava com `vars.competition`. */
@@ -44,6 +47,8 @@ export const GENERAL_TYPES = [
   "managerFired",
   "managerHired",
   "bigTransfer",
+  "academyRevelation",
+  "academySale",
 ] as const satisfies readonly HeadlineType[];
 
 const GENERAL = "general";

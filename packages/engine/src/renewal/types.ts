@@ -44,6 +44,15 @@ export interface PlayerDelta extends PlayerRef {
   delta: number;
 }
 
+/**
+ * Faixa de potencial estimado (038): sempre contém o potencial real e só encolhe. Sorteada com
+ * semente própria, não muda nenhum resultado do jogo.
+ */
+export interface PotentialEstimate {
+  low: number;
+  high: number;
+}
+
 /** Jovem da base de um clube (036): o jogador do mundo sem clube nem contrato. */
 export interface AcademyPlayer {
   player: Omit<CompletedPlayer, "clubId" | "contract">;
@@ -51,12 +60,36 @@ export interface AcademyPlayer {
   clubId: string;
   /** Temporada (`LeagueSeason.number`) da safra em que chegou. */
   joinedSeason: number;
+  /** Faixa de potencial estimado (038); ausente só antes da primeira atribuição. */
+  estimate?: PotentialEstimate;
 }
 
 /** Origem de um jogador promovido da base. */
 export interface AcademyGraduate {
   clubId: string;
   season: number;
+  /** Safra do jovem (038); ausente nos promovidos antes da 1.11.0. */
+  joinedSeason?: number;
+  /** Faixa da promoção (038): só quando o formador era o clube do técnico. */
+  estimate?: PotentialEstimate;
+  /** Força máxima vista na promoção e nas viradas (038). */
+  peak?: number;
+}
+
+/** Uma das maiores revelações de um clube formador (038). */
+export interface AcademyLegend {
+  playerId: string;
+  name: string;
+  position: Position;
+  peak: number;
+  /** Temporada da promoção. */
+  season: number;
+}
+
+/** Crias de um clube formador (038): total promovido e as maiores revelações. */
+export interface AcademyHall {
+  promoted: number;
+  best: AcademyLegend[];
 }
 
 /** Academia de um clube (037): nível e, no máximo, uma mudança pendente. */
@@ -79,6 +112,8 @@ export interface AcademyState {
   releasedThisSeason: PlayerRef[];
   /** Safras de emergência da última virada (R6). */
   emergencies: number;
+  /** Crias por clube formador (038); ausente = nenhuma registrada. */
+  hall?: Record<string, AcademyHall>;
 }
 
 export interface SquadChangeNotice {

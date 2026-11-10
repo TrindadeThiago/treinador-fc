@@ -23,6 +23,7 @@ import {
 } from "./academy";
 import { academyLevelRule } from "./academy-levels";
 import { evolvePlayers, midSeasonRound } from "./evolution";
+import { type HallPlayer, refreshHall } from "./hall";
 import { measureWorld } from "./measure";
 import { withRegionalClubs } from "./regional";
 import { regulate, regulatorFor, withRegulator } from "./regulator";
@@ -428,20 +429,35 @@ export const academyCloseStep: TurnoverStep = {
   id: "academy-close",
   run: (context) => {
     if (!context.renewal) return context;
-    const academy = academyState(context.renewal);
-    const alive = new Set([
-      ...context.world.players.map((player) => player.id),
-      ...(context.market?.freeAgents ?? []).map((agent) => agent.player.id),
+    const living = new Map<string, HallPlayer>([
+      ...context.world.players.map((player): [string, HallPlayer] => [player.id, player]),
+      ...(context.market?.freeAgents ?? []).map((agent): [string, HallPlayer] => [
+        agent.player.id,
+        agent.player,
+      ]),
     ]);
+    // Força máxima e revelações antes da poda: quem se aposentou fica no histórico (038 R9).
+    const academy = refreshHall(academyState(context.renewal), living);
     const graduates = Object.fromEntries(
-      Object.entries(academy.graduates).filter(([playerId]) => alive.has(playerId)),
+      Object.entries(academy.graduates).filter(([playerId]) => living.has(playerId)),
     );
+    const crias = context.news?.crias;
     return {
       ...context,
       renewal: {
         ...context.renewal,
         academy: { ...academy, graduates, promotedThisSeason: [], releasedThisSeason: [] },
       },
+      ...(context.news && crias
+        ? {
+            news: {
+              ...context.news,
+              crias: Object.fromEntries(
+                Object.entries(crias).filter(([playerId]) => playerId in graduates),
+              ),
+            },
+          }
+        : {}),
     };
   },
 };

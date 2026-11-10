@@ -152,6 +152,18 @@ No topo da aba fica a **academia**, com nível de 1 a 5:
 
 Uma academia forte pode render vendas de crias da base, mas o retorno leva algumas temporadas.
 
+O **potencial** de cada jovem continua escondido, mas a coluna **Potencial** mostra uma
+**estimativa** em faixa (por exemplo, "68–84"). O valor de verdade está sempre dentro dela:
+- a faixa fica mais estreita a cada virada que o jovem passa na base e é mais estreita numa
+  academia melhor (no nível 1, um recém-chegado tem uma faixa de uns 20 pontos; no nível 5, com dois
+  anos de base, de uns 6);
+- a faixa nunca se alarga e nunca começa abaixo da força atual;
+- dá para ordenar a tabela pela faixa e filtrar por posição;
+- quem é promovido leva a última faixa conhecida para o detalhe ("Potencial estimado na
+  promoção"), mesmo depois de vendido.
+
+A faixa é só informação: não muda nenhum resultado do jogo.
+
 - **Promover:** leva o jovem ao elenco profissional, com o contrato inicial (o salário e a duração
   aparecem antes de confirmar). Dá para promover a qualquer momento, menos durante uma partida, e
   só com vaga no elenco.
@@ -170,7 +182,10 @@ da posição e a compra impossível, com a janela fechada ou o caixa negativo), 
 **Subir jovem de emergência**: um jovem novo sobe na hora, para o jogo nunca travar. Os clubes do
 computador seguem as mesmas regras.
 
-Quem subiu da base aparece como **cria da base** no detalhe do jogador.
+Quem subiu da base aparece como **cria da base** no detalhe do jogador. As crias do seu clube viram
+notícia na **estreia** pelo profissional, no **primeiro gol** e quando você as **vende**. Em
+Histórico → Clubes, o card **Crias da base** mostra quantas o clube promoveu e as maiores revelações,
+pela força máxima que atingiram, mesmo as que já saíram ou se aposentaram.
 
 ## 5. Escalação
 
@@ -309,7 +324,9 @@ As manchetes de cada rodada, geradas pelo que aconteceu no mundo:
 - sequências e recordes;
 - técnicos demitidos e contratados e grandes transferências;
 - títulos, acessos e rebaixamentos;
-- copas, continentais e estaduais.
+- copas, continentais e estaduais;
+- a base: a revelação da safra na virada e a estreia, o primeiro gol e a venda das crias do seu
+  clube.
 
 Há filtros por competição e pelas notícias do seu clube, e as setas navegam entre as rodadas.
 
@@ -329,12 +346,17 @@ Há filtros por competição e pelas notícias do seu clube, e as setas navegam 
 Quando a temporada acaba, a tela de fim de temporada mostra:
 - a classificação final, os campeões, os acessos e os rebaixamentos;
 - os artilheiros e os prêmios;
+- o bloco **Base**: quem chegou à base do seu clube, quem foi promovido e quem saiu (dispensado ou
+  por idade na virada), com a faixa de potencial de quem chegou;
 - a **avaliação da diretoria**;
 - o resumo financeiro.
 
 Ao começar a **próxima temporada**, o mundo se renova:
 - os jogadores evoluem ou declinam com a idade;
 - alguns se aposentam, e chegam jovens à base (aba Base do Elenco);
+- as faixas de potencial dos jovens que ficam na base ficam mais estreitas;
+- sai a manchete da **revelação da safra**: o jovem mais forte da safra que chegou um ano antes, no
+  seu clube e na sua divisão;
 - quem chegou aos 20 anos sai da base (promova antes para não perdê-lo);
 - os contratos vencem;
 - as metas da diretoria são refeitas.

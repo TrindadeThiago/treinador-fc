@@ -10,6 +10,7 @@ import {
   academyUpgradeCost,
   divisionAcademies,
   MAX_ACADEMY_LEVEL,
+  type PotentialEstimate,
   squadLimit,
 } from "@brasfoot-like/engine";
 import { isEmployed, managedClubId, type SaveFile, seasonStateOf } from "@brasfoot-like/save";
@@ -21,14 +22,27 @@ export interface AcademyRow {
   /** Ano da temporada em que o jovem já não pode estar na base. */
   leavesYear: number;
   lastYear: boolean;
+  /** Faixa de potencial estimado (038); o potencial real nunca chega à tela. */
+  estimate?: PotentialEstimate | undefined;
 }
 
 export function academyRows(save: SaveFile): AcademyRow[] {
   const reference = save.bank.manifest.referenceDate;
   return academyOf(save.renewal, save.clubId).map((entry) => {
     const status = academyStatus(entry, reference, save.league);
-    return { entry, age: status.age, leavesYear: status.leavesYear, lastYear: status.lastYear };
+    return {
+      entry,
+      age: status.age,
+      leavesYear: status.leavesYear,
+      lastYear: status.lastYear,
+      estimate: entry.estimate,
+    };
   });
+}
+
+/** Valor de ordenação da faixa: o centro e, no empate, o limite superior (038 FR-018). */
+export function estimateSortValue(estimate: PotentialEstimate | undefined): number | undefined {
+  return estimate ? (estimate.low + estimate.high) * 1000 + estimate.high : undefined;
 }
 
 export interface AcademyCapacity {

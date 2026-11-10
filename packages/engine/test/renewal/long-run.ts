@@ -77,6 +77,12 @@ interface SeasonEnd {
   proMeanAge: number;
   /** Tamanho médio dos elencos. */
   squadMean: number;
+  /** Jovens da base sem faixa ou com a faixa sem o potencial real (038 SC-001: deve ser 0). */
+  estimateMisses: number;
+  /** Jovens que ficaram na base com a faixa fora da anterior (038 SC-004: deve ser 0). */
+  estimateEscapes: number;
+  /** Jovens que ficaram na base de uma virada para a outra. */
+  estimateStayed: number;
 }
 
 function median(values: number[]): number {
@@ -116,6 +122,9 @@ function simulate(careerSeed: string): SeasonEnd[] {
   let renewal: RenewalState = initialCareerRenewal(world, careerSeed, world.manifest.referenceDate);
   let history: SeasonHistoryEntry[] = [];
   const ends: SeasonEnd[] = [];
+  let estimates = new Map(
+    (renewal.academy?.players ?? []).map((entry) => [entry.player.id, entry.estimate]),
+  );
   for (let index = 0; index < SEASONS; index++) {
     const date = seasonDate(world.manifest.referenceDate, league.year);
     const played = advanceCareer(
@@ -174,7 +183,23 @@ function simulate(careerSeed: string): SeasonEnd[] {
         ([clubId, size]) => size - academyLimit(renewal, world, clubId),
       ),
     );
+    let estimateMisses = 0;
+    let estimateEscapes = 0;
+    let estimateStayed = 0;
+    for (const entry of academy) {
+      const estimate = entry.estimate;
+      const potential = entry.player.hidden.potential;
+      if (!estimate || estimate.low > potential || potential > estimate.high) estimateMisses += 1;
+      const previous = estimates.get(entry.player.id);
+      if (!previous || !estimate) continue;
+      estimateStayed += 1;
+      if (estimate.low < previous.low || estimate.high > previous.high) estimateEscapes += 1;
+    }
+    estimates = new Map(academy.map((entry) => [entry.player.id, entry.estimate]));
     ends.push({
+      estimateMisses,
+      estimateEscapes,
+      estimateStayed,
       academyMax: overLimit,
       emergencies: renewal.academy?.emergencies ?? 0,
       createdDirect: promotedNew,
@@ -228,6 +253,14 @@ export function describeLongRun(seed: string): void {
         );
         expect(end.expired, `temporada ${index + 1} vencidos`).toBe(0);
       }
+    });
+
+    it("faixa de potencial: 100% contém o valor real e fica dentro da anterior (038 SC-001, SC-004)", () => {
+      for (const [index, end] of ends.entries()) {
+        expect(end.estimateMisses, `temporada ${index + 1} faixas sem o valor real`).toBe(0);
+        expect(end.estimateEscapes, `temporada ${index + 1} faixas fora da anterior`).toBe(0);
+      }
+      expect(ends.reduce((sum, end) => sum + end.estimateStayed, 0)).toBeGreaterThan(0);
     });
 
     it("todo clube tem elenco válido e o mundo segue o schema do banco (SC-002)", () => {

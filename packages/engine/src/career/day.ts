@@ -661,6 +661,7 @@ function afterExtraMatches(
           news: next.news,
           careerSeed,
           managerClubId: manager,
+          ...(next.renewal?.academy ? { graduates: next.renewal.academy.graduates } : {}),
         },
         matches,
         round,

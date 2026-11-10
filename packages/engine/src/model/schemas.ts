@@ -322,6 +322,9 @@ export const economySchema = z.object({
             evolutionBonus: z.number().min(0).max(1),
             maintenancePct: intInRange(0, 100),
             buildMonths: z.number().min(0).max(60),
+            /** Faixa de potencial (038): largura de quem chega e redução por virada. */
+            estimateWidth: intInRange(4, 60).optional(),
+            estimateShrink: intInRange(0, 20).optional(),
           }),
         )
         .length(5),
@@ -517,6 +520,10 @@ const headlineMap = (max: number) =>
       regionalChampion: intInRange(0, max),
       regionalPromoted: intInRange(0, max),
       regionalRelegated: intInRange(0, max),
+      academyRevelation: intInRange(0, max),
+      academyDebut: intInRange(0, max),
+      academyFirstGoal: intInRange(0, max),
+      academySale: intInRange(0, max),
     })
     .partial();
 

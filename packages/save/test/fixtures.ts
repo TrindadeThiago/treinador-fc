@@ -632,6 +632,44 @@ export function saveV21(step: SaveV11Step = { rounds: 0 }): SaveV21 {
   return JSON.parse(JSON.stringify(save)) as SaveV21;
 }
 
+export type SaveV22 = Omit<SaveFile, "formatVersion"> & { formatVersion: 22 };
+
+const v22Cache = new Map<string, SaveV22>();
+
+/**
+ * Carreira atual no formato v22 (1.10.x): sem faixa de potencial nos jovens, sem safra, faixa e
+ * força máxima nos promovidos, sem o histórico de crias e sem as marcas de crias nas notícias.
+ */
+export function saveV22(step: SaveV11Step = { rounds: 0 }): SaveV22 {
+  const key = JSON.stringify(step);
+  let save = v22Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, renewal, news, ...rest } = playedCurrentSave(step);
+    const { hall: _hall, ...academy } = renewal.academy ?? emptyAcademy();
+    const { crias: _crias, ...oldNews } = news;
+    save = {
+      ...rest,
+      news: oldNews,
+      renewal: {
+        ...renewal,
+        academy: {
+          ...academy,
+          players: academy.players.map(({ estimate: _estimate, ...entry }) => entry),
+          graduates: Object.fromEntries(
+            Object.entries(academy.graduates).map(([id, graduate]) => [
+              id,
+              { clubId: graduate.clubId, season: graduate.season },
+            ]),
+          ),
+        },
+      },
+      formatVersion: 22,
+    };
+    v22Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV22;
+}
+
 /** Banco padrão com uma copa de 16 clubes (8 de cada divisão), quartas a cada 2 semanas (018). */
 export function bankWithCup(): ModPackage {
   const bank = JSON.parse(JSON.stringify(defaultBank())) as ModPackage;
@@ -677,10 +715,13 @@ export function bankWithCup(): ModPackage {
 export function sansAcademy<T>(save: T): T {
   const copy = JSON.parse(JSON.stringify(save)) as T & {
     renewal?: { academy?: unknown; nextPlayerSeq?: unknown };
+    news?: { crias?: unknown };
   };
   if (copy.renewal) {
     delete copy.renewal.academy;
     delete copy.renewal.nextPlayerSeq;
   }
+  // Marcas das crias (038): a migração marca todos os promovidos que o save conhece.
+  if (copy.news) delete copy.news.crias;
   return copy;
 }

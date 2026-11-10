@@ -91,7 +91,10 @@ describe("elencos válidos (US4, R7)", () => {
     expect(result.renewal.academy?.players.map((entry) => entry.player.id)).toEqual([
       "jogador-90004",
     ]);
-    expect(result.renewal.academy?.graduates["jogador-90002"]).toEqual({ clubId: CLUB, season: 2 });
+    expect(result.renewal.academy?.graduates["jogador-90002"]).toMatchObject({
+      clubId: CLUB,
+      season: 2,
+    });
     expect(result.renewal.nextPlayerSeq).toBe(renewal.nextPlayerSeq);
   });
 

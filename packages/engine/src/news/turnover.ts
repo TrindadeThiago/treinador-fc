@@ -78,6 +78,8 @@ export const newsNewSeasonStep: TurnoverStep = {
       [...summary, ...updated.broken],
     );
     const news: NewsState = {
+      // Mantém o que as outras features guardam nas notícias (as marcas das crias, 038).
+      ...context.news,
       // A temporada encerrada fica só com as manchetes mais relevantes de cada rodada (R9, R11).
       feed: [
         ...context.news.feed

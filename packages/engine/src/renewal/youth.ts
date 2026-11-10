@@ -14,7 +14,13 @@ import {
   withAcademyPlayers,
   withoutAcademyPlayers,
 } from "./academy";
-import { type AcademyLevelRule, academyLevelRule } from "./academy-levels";
+import {
+  type AcademyLevelRule,
+  academyClub,
+  academyLevelRule,
+  academyRules,
+} from "./academy-levels";
+import { withEstimate } from "./estimate";
 import { nameBankFor } from "./names";
 import { regulatorFor } from "./regulator";
 import { playerRef } from "./retirement";
@@ -147,6 +153,8 @@ export function generateYouth(
     const base: AcademyPlayer[] = [...own];
     // Quantidade, força e potencial pelo nível da academia (037 FR-004).
     const rule = academyLevelRule(renewal, world, clubId);
+    const level = academyClub(renewal, world, clubId).level;
+    const rules = academyRules(world, clubId);
     for (let index = 0; index < rule.youthPerIntake; index++) {
       const pool = [...squadOf(world, clubId), ...base.map(asClubPlayer)];
       const youth = createYouth(
@@ -161,7 +169,13 @@ export function generateYouth(
       );
       seq += 1;
       const { clubId: _clubId, contract: _contract, ...player } = youth;
-      const entry: AcademyPlayer = { player, clubId, joinedSeason: season + 1 };
+      // Faixa de potencial (038): semente própria, não toca no rng da safra.
+      const entry = withEstimate(
+        { player, clubId, joinedSeason: season + 1 },
+        rules,
+        level,
+        careerSeed,
+      );
       base.push(entry);
       fresh.push(entry);
       arrived.push(playerRef(youth, date));

@@ -168,7 +168,7 @@ describe("base: promover (036 US2)", () => {
     expect(player?.clubId).toBe(MANAGER);
     expect(player?.contract).toEqual(preview);
     expect(academyOf(done.state.renewal, MANAGER)).toHaveLength(0);
-    expect(graduateOf(done.state.renewal, "jogador-90001")).toEqual({
+    expect(graduateOf(done.state.renewal, "jogador-90001")).toMatchObject({
       clubId: MANAGER,
       season: state.league.number,
     });

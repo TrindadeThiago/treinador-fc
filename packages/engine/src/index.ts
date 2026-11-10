@@ -542,7 +542,14 @@ export type {
   RoundFeed,
   SeasonNews,
 } from "./news/types";
-export { CLUB_RECORD_KINDS, HEADLINE_TYPES, LEAGUE_RECORD_KINDS } from "./news/types";
+export {
+  CLUB_RECORD_KINDS,
+  CRIA_DEBUT,
+  CRIA_GOAL,
+  CRIA_SALE,
+  HEADLINE_TYPES,
+  LEAGUE_RECORD_KINDS,
+} from "./news/types";
 export { variantOf } from "./news/variants";
 export { applyQualification } from "./qualification/apply";
 export { resolveFinishedSeasons } from "./qualification/finish";
@@ -588,14 +595,18 @@ export type { RegionalDivisionResult, RegionalEdition } from "./regional/types";
 export { REGIONAL_DEFAULT_WEIGHT, regionalWeightFor, weighted } from "./regional/weight";
 export type {
   AcademyError,
+  AcademyReportRow,
   AcademyResult,
+  AcademySeasonReport,
   AcademyStatus,
   RosterIssue,
   RosterIssueCode,
 } from "./renewal/academy";
 export {
+  academyHallOf,
   academyIdsProblem,
   academyOf,
+  academySeasonReport,
   academyState,
   academyStatus,
   academyWarning,
@@ -638,11 +649,23 @@ export {
   withAcademyClubs,
 } from "./renewal/academy-levels";
 export {
+  academyEstimatesStep,
+  ESTIMATE_MIN_WIDTH,
+  estimateKey,
+  estimateWidth,
+  initialEstimate,
+  narrowEstimate,
+  withEstimate,
+  withMissingEstimates,
+} from "./renewal/estimate";
+export {
   evolutionDelta,
   evolvePlayers,
   midSeasonRound,
   minutesInRounds,
 } from "./renewal/evolution";
+export type { HallPlayer } from "./renewal/hall";
+export { HALL_SIZE, hallOf, mergeLegends, refreshHall, seedHall } from "./renewal/hall";
 export { initialCareerRenewal, initialRenewal, measureWorld, playerSeq } from "./renewal/measure";
 export type { CountryNames } from "./renewal/names";
 export { DEFAULT_NAME_BANK, nameBankFor } from "./renewal/names";
@@ -662,11 +685,14 @@ export { balanceSquads, squadProblems } from "./renewal/squads";
 export type {
   AcademyClub,
   AcademyGraduate,
+  AcademyHall,
+  AcademyLegend,
   AcademyPlayer,
   AcademyState,
   EvolutionRecord,
   PlayerDelta,
   PlayerRef,
+  PotentialEstimate,
   RegulatorState,
   RenewalState,
   SquadChangeNotice,

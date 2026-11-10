@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  type AcademyLegend,
+  academyHallOf,
   allTimeScorers,
   CLUB_RECORD_KINDS,
   clubLegends,
@@ -12,7 +14,7 @@ import {
 } from "@brasfoot-like/engine";
 import { divisionNameOf, type SaveFile } from "@brasfoot-like/save";
 import { useState } from "react";
-import { useT } from "../../i18n";
+import { label, useT } from "../../i18n";
 import { Card } from "../Card";
 import { Crest } from "../Crest";
 import { type Column, DataTable } from "../DataTable";
@@ -175,6 +177,44 @@ export function Records({ save }: { save: SaveFile }) {
 }
 
 /** Histórico de um clube: títulos, recordes e lendas. */
+/** Maiores revelações da base de um clube (038 FR-016): força máxima, promoção e clube atual. */
+function hallColumns(save: SaveFile, t: ReturnType<typeof useT>): Column<AcademyLegend>[] {
+  const clubOf = new Map(save.bank.players.map((player) => [player.id, player.clubId]));
+  const yearOf = (season: number) => save.league.year - (save.league.number - season);
+  return [
+    { key: "name", header: t("col.player"), render: (row) => row.name },
+    {
+      key: "position",
+      header: t("col.playerPosition"),
+      render: (row) => label(`position.${row.position}`),
+    },
+    {
+      key: "peak",
+      header: t("history.clubs.academy.peak"),
+      render: (row) => row.peak,
+      align: "right",
+    },
+    {
+      key: "year",
+      header: t("history.clubs.academy.year"),
+      render: (row) => yearOf(row.season),
+      align: "right",
+    },
+    {
+      key: "club",
+      header: t("history.clubs.academy.current"),
+      render: (row) => {
+        const clubId = clubOf.get(row.playerId);
+        return clubId ? (
+          <ClubName save={save} clubId={clubId} />
+        ) : (
+          t("history.clubs.academy.retired")
+        );
+      },
+    },
+  ];
+}
+
 export function ClubHistory({ save }: { save: SaveFile }) {
   const t = useT();
   const clubs = [...save.bank.clubs].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
@@ -186,6 +226,7 @@ export function ClubHistory({ save }: { save: SaveFile }) {
     return entry ? [[kind, entry]] : [];
   });
   const legends = clubLegends(save.news, clubId, legendsPerClub);
+  const hall = academyHallOf(save.renewal, clubId);
   return (
     <div className={styles.layout}>
       <label className={styles.toolbar}>
@@ -214,6 +255,22 @@ export function ClubHistory({ save }: { save: SaveFile }) {
               </li>
             ))}
           </ul>
+        )}
+      </Card>
+      <Card aria-label={t("history.clubs.academy")} className={styles.card}>
+        <h2>{t("history.clubs.academy")}</h2>
+        {hall.promoted === 0 ? (
+          <p className={styles.empty}>{t("history.clubs.academy.none")}</p>
+        ) : (
+          <>
+            <p>{t("history.clubs.academy.promoted", { count: hall.promoted })}</p>
+            <DataTable
+              rows={hall.best}
+              columns={hallColumns(save, t)}
+              rowKey={(row) => row.playerId}
+              caption={t("history.clubs.academy.best")}
+            />
+          </>
         )}
       </Card>
       <RecordsTable save={save} entries={records} caption={t("history.records.clubCaption")} />
