@@ -54,6 +54,12 @@ ficam na constituição e entram no `/speckit-plan`.
 | M11 — Categorias de base | [036](marco11/prompt036.md) | Elenco de base | 009, 032 |
 | | [037](marco11/prompt037.md) | Academia e investimento na base | 008, 036 |
 | | [038](marco11/prompt038.md) | Potencial estimado e revelações | 014, 037 |
+| M12 — Olheiros | [039](marco12/prompt039.md) | Olheiros e relatórios de jogadores | 028, 038 |
+| | [040](marco12/prompt040.md) | Captação de jovens | 037, 039 |
+| M13 — Mercado: cláusulas e empresários | [041](marco13/prompt041.md) | Cláusula de revenda | 011, 036 |
+| | [042](marco13/prompt042.md) | Empresários | 011, 041 |
+| M14 — Sócio-torcedor | [043](marco14/prompt043.md) | Programa de sócio-torcedor | 008, 013 |
+| | [044](marco14/prompt044.md) | Sócios na vida do clube | 012, 014, 043 |
 
 O marco 10 é uma refatoração só visual: não muda motor, regras nem saves. As decisões de design que
 os prompts 025 a 032 compartilham estão em [`../interface-nova.md`](../interface-nova.md). Cada
@@ -63,6 +69,17 @@ feature que muda o que o jogador vê termina com a nota de versão e a subida de
 As features 033 a 035 (estatísticas de jogadas, nota do jogador e reformulação do Início) vieram de
 pedidos avulsos, sem prompt de marco. O marco 11 volta ao fluxo normal: cada feature sai de uma
 branch própria da `main`, e o PR leva a nota de versão e a subida de versão (minor).
+
+Os marcos 12 a 14 vêm das ideias de feature da [`AUDITORIA-v1.0.0.md`](../../AUDITORIA-v1.0.0.md)
+(a ideia 3, academia, foi o marco 11) e seguem o mesmo fluxo do marco 11. Ordem sugerida:
+- **M12 — Olheiros** (ideia 5) continua a faixa de potencial da 038: relatórios de jogadores de outros
+  clubes e captação de jovens para a base;
+- **M13 — Mercado** (ideias 2 e 1): cláusula de revenda e empresários, que mexem na mesma
+  negociação; a cláusula vem antes porque não muda a IA entre clubes e combina com as crias;
+- **M14 — Sócio-torcedor** (ideia 4): a receita nova e, depois, a meta da diretoria, as campanhas,
+  as manchetes e o histórico.
+
+Os marcos são independentes entre si; a ordem pode mudar sem retrabalho.
 
 **Fluxo do marco 10.** O marco é desenvolvido na branch `release/v1.0.0`, cortada da `main` depois do
 PR de documentação. Cada feature (025 a 031) sai de uma branch própria dessa branch e volta para ela
