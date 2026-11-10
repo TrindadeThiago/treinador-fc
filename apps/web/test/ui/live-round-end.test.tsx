@@ -6,6 +6,7 @@ import { t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
 import { useRoundClock } from "../helpers/live";
+import { confirmLastYearIfAsked } from "../helpers/round";
 import { memoryRouter } from "../helpers/router";
 
 vi.setConfig({ testTimeout: 180000 });
@@ -25,6 +26,7 @@ async function finishRound(round: number) {
   renderApp("/jogo?c=tela", career.store);
   const user = userEvent.setup({ delay: null });
   await user.click(await screen.findByRole("button", { name: t("home.playLive") }));
+  if (round === 38) await confirmLastYearIfAsked(user);
   await waitFor(() => expect(memoryRouter.pathname()).toBe("/jogo/rodada"));
   await screen.findByRole("region", { name: t("round.myMatch") });
   await user.click(screen.getByRole("button", { name: t("round.finishNow") }));

@@ -12,6 +12,7 @@ import {
 } from "../game/academy-view";
 import type { useGame } from "../game/GameProvider";
 import { formatMoney, label, useT } from "../i18n";
+import { AcademyPanel } from "./AcademyPanel";
 import styles from "./AcademyTab.module.css";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
@@ -160,6 +161,7 @@ export function AcademyTab({
 
   return (
     <div className={styles.layout}>
+      <AcademyPanel save={save} game={game} />
       {status ? <p role="status">{status}</p> : null}
       {warning ? (
         <Notice tone="warning" title={t("academy.lastYear")}>

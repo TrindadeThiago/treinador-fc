@@ -76,6 +76,7 @@ export function initialCareerRenewal(
   world: CompletedBank,
   careerSeed: string,
   date: string,
+  managerClubId?: string,
 ): RenewalState {
-  return seedAcademies(world, initialRenewal(world), careerSeed, date);
+  return seedAcademies(world, initialRenewal(world), careerSeed, date, managerClubId);
 }

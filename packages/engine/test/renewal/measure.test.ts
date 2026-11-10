@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyAcademy } from "../../src/renewal/academy";
+import { withAcademyClubs } from "../../src/renewal/academy-levels";
 import { initialRenewal, measureWorld } from "../../src/renewal/measure";
 import { STAR_THRESHOLD } from "../../src/renewal/rules";
 import { newLeague, testWorld } from "../career/helpers";
@@ -29,7 +30,7 @@ describe("medida do mundo e estado inicial (R1)", () => {
     expect(renewal).toEqual({
       nextPlayerSeq: max + 1,
       regulator: { strengthOffset: 0, potentialBonus: 0 },
-      academy: emptyAcademy(),
+      academy: withAcademyClubs(testWorld(), emptyAcademy()),
     });
   });
 

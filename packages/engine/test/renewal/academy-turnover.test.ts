@@ -5,6 +5,7 @@ import type { CareerSeasonState } from "../../src/career/season-state";
 import { DEFAULT_TURNOVER_STEPS, seasonTurnover } from "../../src/career/turnover";
 import type { CompletedPlayer } from "../../src/model/types";
 import { academyOf, emptyAcademy, graduateOf } from "../../src/renewal/academy";
+import { academyLimit } from "../../src/renewal/academy-levels";
 import { ACADEMY_RULES, SQUAD_RULES } from "../../src/renewal/rules";
 import { squadProblems } from "../../src/renewal/squads";
 import type { AcademyPlayer } from "../../src/renewal/types";
@@ -120,11 +121,12 @@ describe("virada com a base (036)", () => {
     for (const club of result.world.clubs) {
       if (club.id === MANAGER) continue;
       expect(academyOf(result.renewal, club.id).length).toBeLessThanOrEqual(
-        ACADEMY_RULES.maxPlayers,
+        academyLimit(result.renewal, result.world, club.id),
       );
     }
     // A safra do técnico aparece no aviso.
     const own = academyOf(result.renewal, MANAGER)
+      .filter((entry) => entry.joinedSeason === result.league.number)
       .map((entry) => entry.player.id)
       .sort();
     expect(result.renewal?.squadNotice?.academyArrived?.map((ref) => ref.playerId).sort()).toEqual(

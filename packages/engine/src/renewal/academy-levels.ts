@@ -101,7 +101,17 @@ export const DEFAULT_ACADEMY_LEVELS: readonly AcademyLevelRule[] = [
 
 export const MAX_ACADEMY_LEVEL = 5;
 /** Jovens com que toda base começa (037 FR-004b). */
-export const INITIAL_ACADEMY_SIZE = 15;
+/** Jovens com que a base do clube do técnico começa (037, decisão de 2026-11-09). */
+export const INITIAL_ACADEMY_SIZE = 10;
+/** Clubes da IA começam com o equivalente a este número de safras do nível (até o teto acima). */
+export const INITIAL_AI_INTAKES = 3;
+
+/** Tamanho da base inicial de um clube: o técnico, 10; a IA, 3 safras do nível, até 10. */
+export function initialAcademySize(rule: AcademyLevelRule, isManager: boolean): number {
+  return isManager
+    ? INITIAL_ACADEMY_SIZE
+    : Math.min(INITIAL_ACADEMY_SIZE, INITIAL_AI_INTAKES * rule.youthPerIntake);
+}
 /**
  * A base inicial tem metade da margem de potencial de uma safra: são ~9 safras de uma vez, e com a
  * margem cheia a onda de talentos inflava força e salários do mundo (037, research "Calibragem").
@@ -343,6 +353,8 @@ export function seedAcademies(
   renewal: RenewalState,
   careerSeed: string,
   date: string,
+  /** Clube do técnico, que começa com a base de 10; sem ele (simulações), todos seguem a IA. */
+  managerClubId?: string,
 ): RenewalState {
   let academy = withAcademyClubs(world, academyState(renewal));
   let seq = renewal.nextPlayerSeq;
@@ -354,10 +366,10 @@ export function seedAcademies(
   const regulated: RenewalState = { ...renewal, academy };
   for (const club of [...world.clubs].sort((a, b) => (a.id < b.id ? -1 : 1))) {
     const own = [...(byClub.get(club.id) ?? [])];
-    const missing = INITIAL_ACADEMY_SIZE - own.length;
+    const rule = academyLevelRule(regulated, world, club.id);
+    const missing = initialAcademySize(rule, club.id === managerClubId) - own.length;
     if (missing <= 0) continue;
     const rng = createRng(`${careerSeed}:academy-seed:${club.id}`);
-    const rule = academyLevelRule(regulated, world, club.id);
     const first = world.competitions[0]?.countryId;
     const regulator =
       club.countryId === first

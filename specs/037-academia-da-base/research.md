@@ -194,3 +194,28 @@ estaduais (`regional-long-run`).
 - **Força máxima:** teto de 95 (era 94). Um craque chegou a 95 numa temporada.
 
 **Resultado:** `long-run-1`, `long-run-2` e `regional-long-run` passam.
+
+### Base inicial reduzida (decisão de 2026-11-09)
+
+Com a base inicial de 15 jovens em todos os clubes, o mercado da IA secava e a economia e a
+diretoria saíam da faixa nas outras simulações longas. Decisão do usuário: o clube do técnico
+começa com **10 jovens**, e cada clube da IA com o equivalente a 3 safras do nível, até 10 (3, 3, 6,
+9 ou 10). A manutenção mais barata (folha de referência de 18 jogadores) foi aceita.
+
+**Resultado:** os dois mundos de 30 temporadas, os estaduais, a economia, a diretoria e os vários
+países passam.
+
+**Mercado:** com a manutenção, a IA ficava sem orçamento e deixava 3 janelas sem compras em 60 por
+seed (sem a manutenção, nenhuma). A reserva de salários antes de comprar (`aiMarket.reserveMonths`)
+passou de 6 para 4 meses. Com isso, o critério original ("toda janela tem compras") volta a passar,
+e a economia de 30 temporadas também.
+
+## Linhas de base regravadas (T029)
+
+`equivalence-baseline.json` e os snapshots de composição e continental. Nas duas seeds da
+equivalência:
+- as finanças diferem desde o início, por causa da manutenção da academia;
+- as partidas diferem a partir da 2ª rodada, porque a reserva menor de salários (4 meses) muda as
+  compras da IA na janela de abertura.
+
+A 1ª rodada continua idêntica.

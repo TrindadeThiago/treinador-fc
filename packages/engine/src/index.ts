@@ -629,6 +629,7 @@ export {
   divisionAcademies,
   downgradeAcademy,
   INITIAL_ACADEMY_SIZE,
+  initialAcademySize,
   levelForReputation,
   MAX_ACADEMY_LEVEL,
   referenceMonthlyPayroll,

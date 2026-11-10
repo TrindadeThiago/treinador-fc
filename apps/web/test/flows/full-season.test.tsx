@@ -8,6 +8,7 @@ import { t } from "../../src/i18n";
 import { renderApp } from "../helpers/app";
 import { storedCareer } from "../helpers/career";
 import { loadSaved } from "../helpers/live";
+import { confirmLastYearIfAsked } from "../helpers/round";
 import { memoryRouter } from "../helpers/router";
 
 describe("temporada inteira no navegador (SC-001)", () => {
@@ -17,6 +18,7 @@ describe("temporada inteira no navegador (SC-001)", () => {
     const user = userEvent.setup();
     for (let round = 1; round <= 38; round++) {
       await user.click(await screen.findByRole("button", { name: t("home.simulate") }));
+      if (round === 38) await confirmLastYearIfAsked(user);
       if (round < 38) {
         await screen.findByText(
           t("header.progress", { year: 2027, round: round + 1, total: 38, division: "Série A" }),

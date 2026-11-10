@@ -120,6 +120,7 @@ export function createSave(input: CreateSaveInput): CreateSaveResult {
         bank,
         input.seed,
         seasonDate(bank.manifest.referenceDate, seasons.league.year),
+        input.clubId,
       ),
       market: emptyMarket(),
       fans: systems.fans,

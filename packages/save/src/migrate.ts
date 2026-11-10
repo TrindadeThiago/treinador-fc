@@ -406,7 +406,13 @@ const addAcademyLevels: Migration = {
     const save = raw as SaveFile;
     const date = seasonDate(save.bank.manifest.referenceDate, save.league.year);
     const academy = withAcademyClubs(save.bank, save.renewal.academy ?? emptyAcademy());
-    const renewal = seedAcademies(save.bank, { ...save.renewal, academy }, save.seed, date);
+    const renewal = seedAcademies(
+      save.bank,
+      { ...save.renewal, academy },
+      save.seed,
+      date,
+      save.clubId,
+    );
     return { ...(raw as object), formatVersion: 22, renewal };
   },
 };

@@ -4,6 +4,7 @@ import type { CareerSeasonState } from "../../src/career/season-state";
 import { emptyAcademy } from "../../src/renewal/academy";
 import {
   academyClub,
+  academyLevelRule,
   academyLimit,
   academyMaintenance,
   academyRules,
@@ -12,6 +13,7 @@ import {
   DEFAULT_ACADEMY_LEVELS,
   divisionAcademies,
   downgradeAcademy,
+  initialAcademySize,
   levelForReputation,
   referenceMonthlyPayroll,
   seedAcademies,
@@ -115,32 +117,33 @@ describe("regras e níveis da academia (037)", () => {
 });
 
 describe("base inicial cheia (037 FR-004b)", () => {
-  it("15 jovens por clube, 3 de cada idade de 15 a 19, fora do mundo e determinístico", () => {
+  it("técnico com 10, IA com 3 safras do nível (até 10), idades espalhadas, fora do mundo", () => {
     const world = testWorld();
-    const date = seasonDate(
-      world.manifest.referenceDate,
-      Number(world.manifest.referenceDate.slice(0, 4)),
-    );
-    const renewal = seedAcademies(world, initialRenewal(world), SEED, date);
+    const date = world.manifest.referenceDate;
+    const renewal = seedAcademies(world, initialRenewal(world), SEED, date, MANAGER);
     const players = renewal.academy?.players ?? [];
+    let total = 0;
     for (const club of world.clubs) {
       const own = players.filter((entry) => entry.clubId === club.id);
-      expect(own).toHaveLength(15);
-      const ages = own.map((entry) => ageOn(entry.player.birthDate, date)).sort();
-      expect(ages).toEqual([15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18, 18, 19, 19, 19]);
+      const rule = academyLevelRule(renewal, world, club.id);
+      const expected = initialAcademySize(rule, club.id === MANAGER);
+      expect(own).toHaveLength(expected);
+      total += expected;
+      const ages = own.map((entry) => ageOn(entry.player.birthDate, date));
+      expect(Math.min(...ages)).toBeGreaterThanOrEqual(15);
+      expect(Math.max(...ages)).toBeLessThanOrEqual(19);
     }
+    expect(players.filter((entry) => entry.clubId === MANAGER)).toHaveLength(10);
     const ids = new Set(world.players.map((player) => player.id));
     expect(players.some((entry) => ids.has(entry.player.id))).toBe(false);
-    expect(renewal.nextPlayerSeq).toBe(
-      initialRenewal(world).nextPlayerSeq + 15 * world.clubs.length,
-    );
-    expect(seedAcademies(world, initialRenewal(world), SEED, date)).toEqual(renewal);
+    expect(renewal.nextPlayerSeq).toBe(initialRenewal(world).nextPlayerSeq + total);
+    expect(seedAcademies(world, initialRenewal(world), SEED, date, MANAGER)).toEqual(renewal);
   });
 
   it("completa uma base parcial sem tirar ninguém", () => {
     const world = testWorld();
     const date = world.manifest.referenceDate;
-    const full = seedAcademies(world, initialRenewal(world), SEED, date);
+    const full = seedAcademies(world, initialRenewal(world), SEED, date, MANAGER);
     const four = (full.academy?.players ?? [])
       .filter((entry) => entry.clubId === MANAGER)
       .slice(0, 4);
@@ -149,9 +152,9 @@ describe("base inicial cheia (037 FR-004b)", () => {
       nextPlayerSeq: full.nextPlayerSeq,
       academy: { ...emptyAcademy(), players: four },
     };
-    const done = seedAcademies(world, partial, `${SEED}-b`, date);
+    const done = seedAcademies(world, partial, `${SEED}-b`, date, MANAGER);
     const own = (done.academy?.players ?? []).filter((entry) => entry.clubId === MANAGER);
-    expect(own).toHaveLength(15);
+    expect(own).toHaveLength(10);
     for (const entry of four) expect(own).toContainEqual(entry);
   });
 
