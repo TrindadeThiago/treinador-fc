@@ -4,6 +4,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
+  academyUpgradeCost,
   advanceCareer,
   annualWageBill,
   type CompletedBank,
@@ -17,6 +18,7 @@ import {
   generateDefaultBank,
   initialCareerRenewal,
   type SeasonHistoryEntry,
+  seasonFinanceSummary,
   seasonTurnover,
   spearman,
 } from "@brasfoot-like/engine";
@@ -165,6 +167,143 @@ export function runSimulateEconomy(options: SimulateEconomyOptions): SimulateEco
   return { exitCode: ok ? 0 : 1, lines };
 }
 
+/** Limites do cenário da academia (037 SC-002, SC-003). */
+export const ACADEMY_SCENARIO_LIMITS = {
+  /** O nível 5 traz pelo menos isto vezes os jovens do nível 1. */
+  minYouthRatio: 1.5,
+} as const;
+
+interface AcademyRun {
+  youths: number;
+  strength: number;
+  potential: number;
+  /** Receita de vendas de crias da base do clube. */
+  sales: number;
+  /** Obras e manutenção da academia pagas pelo clube. */
+  cost: number;
+}
+
+/**
+ * Cenário da academia (037): o clube de menor reputação com a academia fixa num nível por
+ * `seasons` temporadas. Mede a safra (quantidade, força e potencial), a venda das crias e o custo.
+ */
+function academyRun(seed: string, level: number, seasons: number): AcademyRun {
+  const bank = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  let world: CompletedBank = ensureContracts(bank, created.league.year, seed);
+  const club = [...world.clubs].sort(
+    (a, b) => a.reputation - b.reputation || (a.id < b.id ? -1 : 1),
+  )[0];
+  if (!club) throw new Error("sem clubes");
+  let market = emptyMarket();
+  let league = created.league;
+  let finances: FinanceState = createFinances(world, league);
+  let renewal = initialCareerRenewal(world, seed, world.manifest.referenceDate);
+  let fans = createFans(world, league);
+  let history: SeasonHistoryEntry[] = [];
+  // Obras para chegar ao nível, pagas no início (como o técnico faria nas primeiras viradas).
+  const start = renewal.academy?.clubs?.[club.id]?.level ?? 1;
+  let cost = 0;
+  for (let next = start + 1; next <= level; next++)
+    cost += academyUpgradeCost(world, club.id, next);
+  const youths: { strength: number; potential: number }[] = [];
+  let sales = 0;
+  for (let index = 0; index < seasons; index++) {
+    const academy = renewal.academy;
+    if (academy) {
+      renewal = {
+        ...renewal,
+        academy: { ...academy, clubs: { ...(academy.clubs ?? {}), [club.id]: { level } } },
+      };
+    }
+    const played = advanceCareer(
+      league,
+      finances,
+      world,
+      { toEnd: true },
+      "",
+      undefined,
+      { state: renewal, careerSeed: seed },
+      { state: market, careerSeed: seed },
+      undefined,
+      { state: fans },
+    );
+    if (!played.ok) throw new Error(JSON.stringify(played.error));
+    const turned = seasonTurnover(played.league, played.world, history, {
+      careerSeed: seed,
+      finances: played.finances,
+      managerClubId: "",
+      renewal: played.renewal ?? renewal,
+      market: played.market ?? market,
+      fans: played.fans ?? fans,
+    });
+    if (!turned.ok || !turned.finances) throw new Error(JSON.stringify(turned));
+    cost += -seasonFinanceSummary(played.finances, club.id).totals.academy;
+    // O registro do mercado é zerado na virada: soma as vendas de crias da temporada.
+    const graduates = played.renewal?.academy?.graduates ?? {};
+    sales += (played.market?.log ?? [])
+      .filter(
+        (entry) =>
+          entry.fromClubId === club.id &&
+          entry.kind === "sale" &&
+          graduates[entry.playerId]?.clubId === club.id,
+      )
+      .reduce((sum, entry) => sum + (entry.fee ?? 0), 0);
+    market = turned.market ?? market;
+    fans = turned.fans ?? fans;
+    league = turned.league;
+    history = turned.history;
+    finances = turned.finances;
+    world = turned.world;
+    renewal = turned.renewal ?? renewal;
+    for (const entry of renewal.academy?.players ?? []) {
+      if (entry.clubId === club.id && entry.joinedSeason === league.number) {
+        youths.push({ strength: entry.player.strength, potential: entry.player.hidden.potential });
+      }
+    }
+  }
+  const mean = (values: number[]) =>
+    values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+  return {
+    youths: youths.length,
+    strength: mean(youths.map((youth) => youth.strength)),
+    potential: mean(youths.map((youth) => youth.potential)),
+    sales,
+    cost,
+  };
+}
+
+/** Cenário academia nível 1 × nível 5 (037 SC-002, SC-003). */
+export function runAcademyScenario(seed: string, seasons = 10): SimulateEconomyOutput {
+  const low = academyRun(seed, 1, seasons);
+  const high = academyRun(seed, 5, seasons);
+  const ratio = low.youths > 0 ? high.youths / low.youths : Number.POSITIVE_INFINITY;
+  const checks: [boolean, string][] = [
+    [
+      ratio >= ACADEMY_SCENARIO_LIMITS.minYouthRatio,
+      `nível 5 traz ${high.youths} jovens contra ${low.youths} do nível 1 (${ratio.toFixed(2)}×, ≥ ${ACADEMY_SCENARIO_LIMITS.minYouthRatio}×)`,
+    ],
+    [
+      high.strength > low.strength && high.potential > low.potential,
+      `força ${high.strength.toFixed(1)} × ${low.strength.toFixed(1)} e potencial ${high.potential.toFixed(1)} × ${low.potential.toFixed(1)}`,
+    ],
+    [
+      high.sales < high.cost,
+      `clube pequeno no nível 5: vendas de crias ${millions(high.sales)} < custo ${millions(high.cost)}`,
+    ],
+  ];
+  const lines = [`Academia — ${seasons} temporadas, clube de menor reputação, seed "${seed}"`];
+  let ok = true;
+  for (const [passed, text] of checks) {
+    ok &&= passed;
+    lines.push(`${passed ? "✓" : "✗"} ${text}`);
+  }
+  return { exitCode: ok ? 0 : 1, lines };
+}
+
 const invokedDirectly =
   process.argv[1] !== undefined &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -178,5 +317,8 @@ if (invokedDirectly) {
     ...(values.seasons ? { seasons: Number(values.seasons) } : {}),
   });
   for (const line of output.lines) console.log(line);
-  process.exit(output.exitCode);
+  const academy = runAcademyScenario(values.seed ?? "economia");
+  console.log("");
+  for (const line of academy.lines) console.log(line);
+  process.exit(output.exitCode || academy.exitCode);
 }
