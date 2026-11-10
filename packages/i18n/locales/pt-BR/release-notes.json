@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.11.0",
+    "date": "2026-11-10",
+    "changes": [
+      "Potencial estimado na base: a aba Base do Elenco ganhou a coluna Potencial, com uma faixa (por exemplo, 68–84) para cada jovem do seu clube. O potencial de verdade continua escondido, mas está sempre dentro da faixa. Dá para ordenar pela faixa e filtrar por posição.",
+      "A estimativa melhora com o tempo e com a academia: a cada virada na base a faixa fica mais estreita, e uma academia melhor estima melhor. No nível 1 um recém-chegado tem uma faixa de uns 20 pontos; no nível 5, com dois anos de base, de uns 6. A faixa nunca se alarga e nunca começa abaixo da força atual.",
+      "Quem é promovido leva a última faixa conhecida para o detalhe do jogador (\"Potencial estimado na promoção\"), mesmo depois de vendido.",
+      "A base virou notícia: na virada sai a manchete da revelação da safra, o jovem mais forte da safra do ano anterior, no seu clube e na sua divisão. As crias do seu clube também viram manchete na estreia pelo profissional, no primeiro gol e quando você as vende.",
+      "O fim de temporada ganhou o bloco Base, com quem chegou à base, quem foi promovido e quem saiu. Em Histórico → Clubes, o card Crias da base mostra quantas o clube promoveu e as maiores revelações pela força máxima atingida.",
+      "A faixa é só informação: a mesma seed dá a mesma carreira da 1.10.1. Os saves da 1.10 abrem com a faixa de cada jovem pela academia e pelo tempo de base, e as crias antigas entram no histórico. O formato do save mudou (versão 23), e o formato de mod ganhou os campos opcionais estimateWidth e estimateShrink em economy.academy."
+    ]
+  },
+  {
     "version": "1.10.1",
     "date": "2026-11-10",
     "changes": [
