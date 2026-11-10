@@ -696,7 +696,7 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   | 1 | 0 | 15 | 1 | −3 | −4 | 0 | 2 | 0 |
   | 2 | 30 | 15 | 1 | −1 | −2 | 0 | 4 | 2 |
   | 3 | 45 | 15 | 2 | 0 | 0 | 0,05 | 6 | 3 |
-  | 4 | 65 | 20 | 3 | +2 | +3 | 0,15 | 8 | 4,5 |
+  | 4 | 65 | 20 | 3 | +1 | +1 | 0,10 | 8 | 4,5 |
   | 5 | 80 | 25 | 4 | +4 | +6 | 0,30 | 10 | 6 |
 
   A folha de referência é a de 18 jogadores típicos da reputação do clube, na escala de salários

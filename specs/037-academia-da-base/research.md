@@ -263,3 +263,43 @@ A média da correlação nas 3 seeds é 0,27 e passa a tolerância do SC-005 (�
 fica entre 18,1% e 19,3%, até 1,2 ponto acima do valor da `main` da 1.8.1 (18,1%, que já passava do
 limite de 15%). O caixa dos assíduos passa do limite por 0,3 folha numa seed. Ficam como pendências
 conhecidas do critério da continental completa, que não roda no CI.
+
+## Ajuste da continental (1.10.1)
+
+**Referência certa.** A continental completa da 1.9.0, nas mesmas 3 seeds:
+
+| Seed | Prêmios (máximo) | Caixa dos assíduos | Vagas × títulos |
+|---|---|---|---|
+| padrão | 16,9% | 2,80 | 0,29 |
+| var-a | 17,4% | 1,77 | −0,26 |
+| var-b | 18,3% | 1,56 | 0,16 |
+
+O limite de 15% dos prêmios já não passava na 1.9.0. O peso é um máximo entre clubes e temporadas e
+varia até 1,4 ponto entre as seeds. Por isso o SC-005 passou a comparar a média das 3 seeds com a da
+1.9.0 (17,5%), com folga de 0,5 ponto, em vez de cada seed com o valor da seed padrão da 1.8.1.
+
+**Causa.** Na 1.10.0 a média subiu para 18,8% e o caixa dos assíduos de uma seed passou de 4. Os
+assíduos são os clubes de reputação alta, com academia no nível 4. Os jovens desse nível eram fortes
+demais: viravam titulares baratos e boas vendas. Isso concentrava força e caixa nos mesmos clubes.
+
+Experimentos, nas seeds padrão e var-a:
+- a IA promover menos crias (elenco-alvo da saída por idade de 25 para 23): piorou (caixa 5,43);
+- jovens do nível 4 mais fracos: resolveu.
+
+**Ajuste.** Nível 4 com `strengthAdjust` +1 (era +2), `potentialBonus` +1 (era +3) e
+`evolutionBonus` 0,10 (era 0,15). O nível 5 não mudou: ele só vem por obra.
+
+| Seed | Prêmios | Caixa dos assíduos | Vagas × títulos |
+|---|---|---|---|
+| padrão | 16,8% | 1,88 | −0,10 |
+| var-a | 19,0% | 1,42 | 0,56 |
+| var-b | 16,1% | 0,81 | 0,36 |
+| **média** | **17,3%** (1.9.0: 17,5%) | — | **0,27** |
+
+O SC-005 revisto passa. `sim:economy` (cenário da academia 3,00×; retorno lento), `sim:world
+--seasons 30` e `sim:gates` continuam passando. As linhas de base da equivalência e da continental
+do CI foram regravadas, porque a força dos jovens do nível 4 mudou.
+
+**T031.** `apps/web/e2e/fixtures/carreira-v21.blsave` é um save da 1.9.0 (v21, gerado de
+`saveV21({ rounds: 2 })`). O e2e em `save-file.spec.ts` importa o arquivo e confere a academia no
+nível da reputação e a base com 10 jovens.

@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.10.1",
+    "date": "2026-11-10",
+    "changes": [
+      "Ajuste de equilíbrio da academia: os jovens das academias de nível 4 chegam um pouco menos fortes e evoluem um pouco menos na base. Com isso, os clubes grandes do computador não acumulam tanto caixa com as crias, e a Taça Continental volta ao equilíbrio da 1.9.0.",
+      "Os saves da 1.10.0 continuam abrindo normalmente; o formato do save não mudou. A mesma seed pode dar uma carreira um pouco diferente da versão anterior."
+    ]
+  },
+  {
     "version": "1.10.0",
     "date": "2026-11-10",
     "changes": [
