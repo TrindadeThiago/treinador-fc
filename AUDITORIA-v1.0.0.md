@@ -21,6 +21,7 @@ Auditoria somente leitura, feita em `main` (a2d9a0b); as correções entregues d
 | T2 (testes de propriedade) | **Feito** na **1.0.10**, sem dependência nova (ver nota). |
 | A4 (ondas de craques) | **Parado** por decisão (2026-11-04), com a meta definida e o diagnóstico medido (ver nota). |
 | Constantes de partida (`directRedRate`, `injuryRate`) | **Abandonado**: a mudança quebra 11 testes de baseline e os valores já estão dentro das faixas do projeto. |
+| Ideias de features | Ideia 3 (academia) **feita** no marco 11 (036 a 038, até a **1.11.0**). As ideias 5 (olheiros), 2 e 1 (cláusula de revenda e empresários) e 4 (sócio-torcedor) viraram os marcos 12, 13 e 14 (prompts 039 a 044 em `docs/speckit-prompts/`). |
 | — | Nenhum item pendente: o A4 está parado por decisão. |
 
 **Nota sobre o A2.** A estimativa original (+25% de lucro geral) era exagerada. Medido no mundo de teste, o lucro existia só para quem tinha 1 ano de contrato (cerca de 12% dos jogadores): 58% desses ciclos davam lucro, no máximo +35% e mediana +4%. Com 2 anos, 0,4%; com 3 ou mais, 0%. A severidade desceu de Alta para **Média**. A correção foi um piso na pedida de compra do usuário (`buyAskingPrice`, `market/club-response.ts`), igual ao que a venda imediata pagaria depois de renovado. Valores como `lastYearValuePct` e `QUICK_SALE_PCT` ficaram como estavam: mexer neles muda a IA e quebra os baselines de seed. **Limite conhecido:** comprar no último ano, renovar e esperar uma proposta recebida (85% a 110% do valor) ainda rende; é aleatório e limitado.
