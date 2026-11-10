@@ -872,6 +872,32 @@ export const RULE_CASES: RuleCase[] = [
     },
   },
   {
+    code: "economy.estimate_width_order",
+    description: "faixa de potencial que alarga com o nível da academia (aviso, 038)",
+    mutate: (bank) => {
+      const level = (estimateWidth: number) => ({
+        minReputation: 0,
+        slots: 15,
+        youthPerIntake: 1,
+        strengthAdjust: 0,
+        potentialBonus: 0,
+        evolutionBonus: 0,
+        maintenancePct: 2,
+        buildMonths: 1,
+        estimateWidth,
+      });
+      at(bank.competitions, 0).economy = {
+        academy: { levels: [level(20), level(18), level(22), level(14), level(12)] },
+      };
+    },
+    expect: {
+      section: "competitions",
+      path: [0, "economy", "academy", "levels", 2, "estimateWidth"],
+      entityId: "liga",
+      params: { level: 3, width: 22, previous: 18 },
+    },
+  },
+  {
     code: "country.names_too_few",
     description: "banco de nomes com poucos sobrenomes",
     mutate: (bank) => {

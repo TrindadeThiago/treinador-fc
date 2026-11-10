@@ -2,6 +2,9 @@ import {
   academyIdsProblem,
   advanceSeason,
   type CompletedBank,
+  CRIA_DEBUT,
+  CRIA_GOAL,
+  CRIA_SALE,
   clubUnavailability,
   createBoard,
   createFans,
@@ -17,6 +20,7 @@ import {
   type FinanceState,
   FORMATION_IDS,
   generateRivalries,
+  type HallPlayer,
   initialRenewal,
   isCountryMain,
   isSeasonOver,
@@ -29,9 +33,11 @@ import {
   type Season,
   seasonDate,
   seedAcademies,
+  seedHall,
   validateBank,
   validateLineup,
   withAcademyClubs,
+  withMissingEstimates,
 } from "@brasfoot-like/engine";
 import { z } from "zod";
 import { MANAGER_NAME_MAX, SAVE_FORMAT_VERSION, type SaveFile } from "./format";
@@ -417,6 +423,46 @@ const addAcademyLevels: Migration = {
   },
 };
 
+/**
+ * v22 → v23: faixa de potencial e crias (038). Todo jovem da base ganha a faixa do nível e do tempo
+ * que já tem; os promovidos ganham a força máxima (a atual) e entram no histórico do formador; e
+ * todos ficam marcados como já estreados, marcados e vendidos, para nenhuma cria antiga ganhar
+ * manchete de estreia.
+ */
+const addPotentialEstimates: Migration = {
+  from: 22,
+  migrate(raw) {
+    const save = raw as SaveFile;
+    const academy = save.renewal.academy ?? emptyAcademy();
+    const living = new Map<string, HallPlayer>([
+      ...save.bank.players.map((player): [string, HallPlayer] => [player.id, player]),
+      ...(save.market?.freeAgents ?? []).map((agent): [string, HallPlayer] => [
+        agent.player.id,
+        agent.player,
+      ]),
+    ]);
+    const estimated = withMissingEstimates(
+      academy,
+      save.bank,
+      save.renewal,
+      save.seed,
+      save.league.number,
+    );
+    const crias = Object.fromEntries(
+      Object.keys(academy.graduates).map((playerId) => [
+        playerId,
+        CRIA_DEBUT | CRIA_GOAL | CRIA_SALE,
+      ]),
+    );
+    return {
+      ...(raw as object),
+      formatVersion: 23,
+      renewal: { ...save.renewal, academy: seedHall(estimated, living) },
+      news: { ...save.news, crias: { ...(save.news.crias ?? {}), ...crias } },
+    };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -440,6 +486,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addPlayExtras,
   addAcademy,
   addAcademyLevels,
+  addPotentialEstimates,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -544,6 +591,7 @@ const envelopeSchema = z.object({
                 player: z.object({ id: z.string().min(1) }).loose(),
                 clubId: z.string().min(1),
                 joinedSeason: z.int(),
+                estimate: z.object({ low: z.int(), high: z.int() }).optional(),
               })
               .loose(),
           ),
@@ -703,6 +751,11 @@ function renewalProblem(save: SaveFile): string | undefined {
     save.market.freeAgents.map((agent) => agent.player.id),
   );
   if (ids) return ids;
+  // Faixa de potencial (038): limites em ordem.
+  const inverted = academy.players.find(
+    (entry) => entry.estimate && entry.estimate.low > entry.estimate.high,
+  );
+  if (inverted) return `faixa de potencial invertida: ${inverted.player.id}`;
   // Academias (037): nível de 1 a 5, pendência coerente, clube existente.
   const clubIds = new Set(save.bank.clubs.map((club) => club.id));
   for (const [clubId, club] of Object.entries(academy.clubs ?? {})) {

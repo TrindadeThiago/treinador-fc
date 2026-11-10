@@ -2,6 +2,7 @@ import type { BoardState } from "../board/types";
 import type { LeagueSeason } from "../career/types";
 import type { MarketState } from "../market/types";
 import type { CompletedBank } from "../model/types";
+import type { AcademyGraduate } from "../renewal/types";
 
 /** Tipos de manchete (research.md R3 da 014). */
 export const HEADLINE_TYPES = [
@@ -35,6 +36,10 @@ export const HEADLINE_TYPES = [
   "regionalChampion",
   "regionalPromoted",
   "regionalRelegated",
+  "academyRevelation",
+  "academyDebut",
+  "academyFirstGoal",
+  "academySale",
 ] as const;
 export type HeadlineType = (typeof HEADLINE_TYPES)[number];
 
@@ -124,11 +129,21 @@ export interface SeasonNews {
   scorers: { level: number; playerId?: string; name?: string; clubId?: string; goals: number }[];
 }
 
+/** Marcas das crias da base (038): estreou e marcou pelo formador, venda noticiada. */
+export const CRIA_DEBUT = 1;
+export const CRIA_GOAL = 2;
+export const CRIA_SALE = 4;
+
 export interface NewsState {
   feed: RoundFeed[];
   records: Records;
   allTime: AllTime;
   seasons: SeasonNews[];
+  /**
+   * Marcas por cria da base (038 R7), máscara de `CRIA_*`; ausente = nenhuma. Podada na virada com
+   * os promovidos vivos.
+   */
+  crias?: Record<string, number>;
 }
 
 export interface NewsContext {
@@ -141,6 +156,8 @@ export interface NewsContext {
   managerClubId: string;
   /** Mercado depois da rodada (log com as transferências da rodada). */
   market?: MarketState;
+  /** Promovidos da base (038): com eles, as crias viram notícia; sem eles, nada muda. */
+  graduates?: Readonly<Record<string, AcademyGraduate>> | undefined;
   /** Diretoria antes e depois da rodada (técnicos demitidos e contratados, 012). */
   boardBefore?: BoardState;
   boardAfter?: BoardState;

@@ -11,7 +11,9 @@ describe("etapa resolve-qualification (021 R2)", () => {
     expect(ids.indexOf("resolve-qualification")).toBe(ids.indexOf("promotion-relegation") + 1);
     expect(ids.indexOf("news-qualification")).toBe(ids.indexOf("resolve-qualification") + 1);
     expect(ids.indexOf("news-regional")).toBe(ids.indexOf("news-qualification") + 1);
-    expect(ids.indexOf("advance-year")).toBe(ids.indexOf("news-regional") + 1);
+    // A revelação da safra (038) entra entre as manchetes do estadual e a virada do ano.
+    expect(ids.indexOf("news-academy")).toBe(ids.indexOf("news-regional") + 1);
+    expect(ids.indexOf("advance-year")).toBe(ids.indexOf("news-academy") + 1);
   });
 
   it("a supercopa da temporada seguinte tem os participantes resolvidos e as origens", () => {

@@ -90,3 +90,54 @@ test("base: estado vazio, safra na virada, promover pelo teclado e dispensar (03
     await expect(page.getByText(t("academy.released", { name: other }))).toBeVisible();
   }
 });
+
+// 038: faixa de potencial na aba Base (ordenar e filtrar pelo teclado, SC-009), a faixa da promoção
+// no detalhe do jogador e o bloco Base no fim de temporada.
+test("base: faixa de potencial, promoção com a faixa e bloco Base no fim de temporada (038)", async ({
+  page,
+}) => {
+  test.setTimeout(300_000);
+  await createCareer(page, "Ana Souza", 1, undefined, { noFiring: true });
+  await page.keyboard.press("2");
+  await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
+
+  // Cada jovem tem a faixa por extenso para o leitor de tela.
+  await expect(page.getByText(/^potencial estimado entre \d+ e \d+$/)).toHaveCount(10);
+  await expect(page.getByText(t("academy.estimate.help"))).toBeVisible();
+
+  // Filtrar e ordenar em duas ações, só com o teclado (SC-009): a posição do primeiro jovem.
+  const position = (
+    (await page.locator("tbody tr").first().locator("td").first().textContent()) ?? ""
+  ).trim();
+  const filter = page.getByRole("combobox", { name: t("academy.filter.position") });
+  await filter.focus();
+  await filter.selectOption({ label: position });
+  const sort = page.getByRole("button", { name: t("col.estimate") });
+  await press(page, sort);
+  await expect(page.locator("th", { has: sort })).toHaveAttribute("aria-sort", "ascending");
+  for (const cell of await page.locator("tbody tr td:first-child").allTextContents()) {
+    expect(cell.trim()).toBe(position);
+  }
+  await filter.selectOption("");
+
+  // Promover leva a faixa para o detalhe do jogador.
+  const promotes = page.getByRole("button", { name: /^Promover .* ao elenco profissional$/ });
+  const name = ((await promotes.first().getAttribute("aria-label")) ?? "")
+    .replace(/^Promover /, "")
+    .replace(/ ao elenco profissional$/, "");
+  await press(page, promotes.first());
+  const dialog = page.getByRole("dialog", { name: t("academy.promoteTitle", { name }) });
+  await press(page, dialog.getByRole("button", { name: t("academy.promote") }));
+  await expect(page.getByText(t("academy.promoted", { name }))).toBeVisible();
+  await page.getByRole("tab", { name: t("squad.tab.professional") }).click();
+  await page.getByRole("button", { name: t("lineup.detailsOf", { name }) }).click();
+  await expect(page.getByText(t("player.estimatePromotion"))).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // Fim de temporada: o bloco Base com quem foi promovido.
+  await simulateSeason(page);
+  await expect(page).toHaveURL(/fim-de-temporada/);
+  const block = page.getByRole("region", { name: t("seasonEnd.academy"), exact: true });
+  await expect(block).toBeVisible();
+  await expect(block).toContainText(name);
+});

@@ -10,6 +10,7 @@ import type { KnockoutFormat } from "../model/types";
 import { playerLines } from "../season/record";
 import type { MatchRecord, Season } from "../season/types";
 import { cloneData } from "../serialize/clone";
+import { criaMatchNews, criaSaleNews } from "./academy";
 import { clinched } from "./clinched";
 import { type Fact, matchFacts, matchKey, streakOf } from "./facts";
 import { compare as compareHeadlines, rankFeed } from "./feed";
@@ -183,9 +184,9 @@ function boardFacts(context: NewsContext, round: number): Fact[] {
   return facts;
 }
 
-/** Maior transferência relevante da rodada (research.md R3). */
-function transferFacts(context: NewsContext, round: number): Fact[] {
-  const deals = (context.market?.log ?? []).filter(
+/** Negócios da rodada que podem virar manchete de mercado. */
+function roundDeals(context: NewsContext, round: number) {
+  return (context.market?.log ?? []).filter(
     (entry) =>
       entry.season === context.league.number &&
       entry.round === round &&
@@ -196,6 +197,18 @@ function transferFacts(context: NewsContext, round: number): Fact[] {
         entry.kind === "loan_out" ||
         entry.kind === "free"),
   );
+}
+
+/**
+ * Maior transferência relevante da rodada (research.md R3). A venda de uma cria pelo clube do
+ * técnico tem manchete própria (038) e fica de fora (`skip`).
+ */
+function transferFacts(
+  context: NewsContext,
+  round: number,
+  skip: ReadonlySet<unknown> = new Set(),
+): Fact[] {
+  const deals = roundDeals(context, round).filter((entry) => !skip.has(entry));
   if (deals.length === 0) return [];
   const rules = newsRules(context.world, context.league.competitionId);
   const values = context.world.players
@@ -263,10 +276,12 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
   const rules = newsRules(context.world, context.league.competitionId);
   const facts: Fact[] = [];
   const candidates: (RecordCandidate & { match?: string })[] = [];
+  const played: MatchRecord[] = [];
   for (const season of context.league.divisions) {
     const records = season.records
       .filter((record) => record.round === round)
       .sort((a, b) => (a.home < b.home ? -1 : a.home > b.home ? 1 : 0));
+    played.push(...records);
     const expectations = divisionExpectations(context, season.clubIds);
     const goals = seasonGoals(season, round);
     for (const record of records) {
@@ -284,11 +299,28 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
     );
     facts.push(source?.match ? { ...fact, match: source.match } : fact);
   }
+  // Crias da base (038): estreia, primeiro gol e venda, só com `graduates` no contexto.
+  const debut = criaMatchNews(
+    context,
+    played.map((record) => ({ record })),
+    round,
+  );
+  const sale = criaSaleNews(
+    { ...context, news: { ...context.news, ...(debut.crias ? { crias: debut.crias } : {}) } },
+    roundDeals(context, round),
+    round,
+    debut.headlines.length,
+  );
   facts.push(...clinched(context, round));
   facts.push(...boardFacts(context, round));
-  facts.push(...transferFacts(context, round));
-  const headlines = rankFeed(rules, toHeadlines(context, round, facts));
+  facts.push(...transferFacts(context, round, sale.used));
+  const headlines = rankFeed(rules, [
+    ...toHeadlines(context, round, facts),
+    ...debut.headlines,
+    ...sale.headlines,
+  ]);
   const news = clone(context.news);
+  if (sale.crias) news.crias = sale.crias;
   news.records = updated.records;
   news.feed = [
     ...news.feed.filter(
@@ -312,10 +344,20 @@ export function newsAfterExtraMatches(
   const mine = matches.filter(
     ({ record }) => record.home === context.managerClubId || record.away === context.managerClubId,
   );
-  if (context.managerClubId === "" || mine.length === 0) return context.news;
-  const rules = newsRules(context.world, context.league.competitionId);
+  // Crias da base (038): estreia e primeiro gol também em copa, continental e estadual.
   const season = context.league.number;
+  const existingCount =
+    context.news.feed.find((feed) => feed.season === season && feed.round === round)?.headlines
+      .length ?? 0;
+  const crias = criaMatchNews(context, matches, round, existingCount);
+  if (context.managerClubId === "" || mine.length === 0) {
+    return crias.crias === context.news.crias
+      ? context.news
+      : { ...context.news, ...(crias.crias ? { crias: crias.crias } : {}) };
+  }
+  const rules = newsRules(context.world, context.league.competitionId);
   const news = clone(context.news);
+  if (crias.crias) news.crias = crias.crias;
   const entry = news.feed.find((feed) => feed.season === season && feed.round === round);
   const existing = entry?.headlines ?? [];
   const added: Headline[] = mine.map(({ competitionId, record }, index) => {
@@ -352,6 +394,7 @@ export function newsAfterExtraMatches(
       match: `${competitionId}:${matchKey(record)}`,
     };
   });
+  added.push(...crias.headlines);
   const ranked = rankFeed(rules, [...existing, ...added]);
   // O resultado do clube do jogador em outra competição nunca fica de fora do feed da rodada: toma
   // o lugar da manchete menos relevante que não é do clube do jogador (o limite do feed vale).

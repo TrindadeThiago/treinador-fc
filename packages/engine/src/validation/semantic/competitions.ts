@@ -126,6 +126,26 @@ function checkEconomy(index: number, competition: Competition): ValidationIssue[
       ),
     );
   }
+  // Faixa de potencial (038): a largura inicial não deveria crescer com o nível (só aviso).
+  const academyLevels = economy.academy?.levels ?? [];
+  academyLevels.forEach((rule, position) => {
+    const previous = academyLevels[position - 1]?.estimateWidth;
+    if (
+      rule.estimateWidth !== undefined &&
+      previous !== undefined &&
+      rule.estimateWidth > previous
+    ) {
+      issues.push(
+        makeIssue(
+          "economy.estimate_width_order",
+          "competitions",
+          [index, "economy", "academy", "levels", position, "estimateWidth"],
+          { level: position + 1, width: rule.estimateWidth, previous },
+          competition.id,
+        ),
+      );
+    }
+  });
   const levels = new Set(competition.divisions.map((division) => division.level));
   (economy.divisions ?? []).forEach((division, position) => {
     if (!levels.has(division.level)) {

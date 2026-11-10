@@ -1,6 +1,6 @@
 import type { HeadlineVars } from "@brasfoot-like/engine";
 import { divisionNameOf, type SaveFile } from "@brasfoot-like/save";
-import { formatMoney } from "../../i18n";
+import { formatMoney, label } from "../../i18n";
 
 /** Variáveis que guardam ids de clube e viram nomes na apresentação. */
 const CLUB_VARS = [
@@ -26,6 +26,7 @@ export function headlineVars(save: SaveFile, vars: HeadlineVars): HeadlineVars {
   }
   if (typeof vars.level === "number") resolved.division = divisionNameOf(save, vars.level);
   if (typeof vars.fee === "number") resolved.feeText = formatMoney(vars.fee);
+  if (typeof vars.position === "string") resolved.positionName = label(`position.${vars.position}`);
   if (typeof vars.competition === "string") {
     const competition = save.bank.competitions.find((entry) => entry.id === vars.competition);
     resolved.competition = competition?.name ?? vars.competition;

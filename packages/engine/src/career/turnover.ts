@@ -36,11 +36,13 @@ import {
   returnLoansStep,
 } from "../market/turnover";
 import type { CompletedBank } from "../model/types";
+import { newsAcademyStep } from "../news/academy";
 import { newsNewSeasonStep, newsQualificationStep, newsRegionalStep } from "../news/turnover";
 import { applyQualification } from "../qualification/apply";
 import { resolveFinishedSeasons } from "../qualification/finish";
 import { regionalEditions } from "../regional/history";
 import { academyLevelsStep } from "../renewal/academy-levels";
+import { academyEstimatesStep } from "../renewal/estimate";
 import {
   academyAgeOutStep,
   academyCloseStep,
@@ -89,12 +91,14 @@ export const TURNOVER_STEP_IDS = [
   "generate-youth",
   "balance-squads",
   "complete-squads",
+  "academy-estimates",
   "age-out-free-agents",
   "academy-close",
   "promotion-relegation",
   "resolve-qualification",
   "news-qualification",
   "news-regional",
+  "news-academy",
   "advance-year",
   "reset-season-stats",
   "generate-calendars",
@@ -371,12 +375,14 @@ export const DEFAULT_TURNOVER_STEPS: readonly TurnoverStep[] = [
   perCountry(generateYouthStep),
   perCountry(balanceSquadsStep),
   perCountry(completeSquadsStep),
+  academyEstimatesStep,
   ageOutFreeAgentsStep,
   academyCloseStep,
   promotionRelegation,
   resolveQualificationStep,
   newsQualificationStep,
   newsRegionalStep,
+  newsAcademyStep,
   advanceYear,
   resetSeasonStats,
   generateCalendars,

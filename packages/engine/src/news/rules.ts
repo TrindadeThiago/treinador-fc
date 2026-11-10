@@ -50,6 +50,10 @@ const RELEVANCE: Record<HeadlineType, number> = {
   regionalChampion: 70,
   regionalPromoted: 72,
   regionalRelegated: 72,
+  academyRevelation: 78,
+  academyDebut: 65,
+  academyFirstGoal: 60,
+  academySale: 55,
 };
 
 const VARIANTS = Object.fromEntries(

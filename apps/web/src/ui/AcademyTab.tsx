@@ -1,6 +1,6 @@
 "use client";
 
-import { POSITIONS } from "@brasfoot-like/engine";
+import { POSITIONS, type Position } from "@brasfoot-like/engine";
 import { emergencyPositionsOf, type SaveFile, youthContractPreview } from "@brasfoot-like/save";
 import { useId, useMemo, useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   academyCapacity,
   academyRows,
   canManageAcademy,
+  estimateSortValue,
   squadIsFull,
 } from "../game/academy-view";
 import type { useGame } from "../game/GameProvider";
@@ -19,6 +20,7 @@ import { Button } from "./Button";
 import { type Column, DataTable } from "./DataTable";
 import { Dialog } from "./Dialog";
 import { EmptyState } from "./EmptyState";
+import { EstimateRange } from "./EstimateRange";
 import { Notice } from "./Notice";
 
 type Game = ReturnType<typeof useGame>;
@@ -39,7 +41,13 @@ export function AcademyTab({
   const hintId = useId();
   const [pending, setPending] = useState<Pending | undefined>();
   const [status, setStatus] = useState<string | undefined>();
-  const rows = useMemo(() => academyRows(save), [save]);
+  const [position, setPosition] = useState<Position | "">("");
+  const filterId = useId();
+  const all = useMemo(() => academyRows(save), [save]);
+  const rows = useMemo(
+    () => (position ? all.filter((row) => row.entry.player.position === position) : all),
+    [all, position],
+  );
   const capacity = academyCapacity(save);
   // Sem nenhum candidato para o mínimo, a safra de emergência fica disponível (036).
   const emergency = useMemo(() => emergencyPositionsOf(save), [save]);
@@ -97,6 +105,13 @@ export function AcademyTab({
       header: t("col.strength"),
       render: (row) => row.entry.player.strength,
       sortValue: (row) => row.entry.player.strength,
+      align: "right",
+    },
+    {
+      key: "estimate",
+      header: t("col.estimate"),
+      render: (row) => (row.estimate ? <EstimateRange estimate={row.estimate} /> : "—"),
+      sortValue: (row) => estimateSortValue(row.estimate),
       align: "right",
     },
     {
@@ -209,10 +224,32 @@ export function AcademyTab({
           {promoteBlocked}
         </p>
       ) : null}
-      {rows.length === 0 ? (
+      {all.length > 0 ? (
+        <div className={styles.filters}>
+          <label className={styles.field} htmlFor={filterId}>
+            <span>{t("academy.filter.position")}</span>
+            <select
+              id={filterId}
+              value={position}
+              onChange={(event) => setPosition(event.target.value as Position | "")}
+            >
+              <option value="">{t("academy.filter.anyPosition")}</option>
+              {POSITIONS.map((item) => (
+                <option key={item} value={item}>
+                  {label(`position.${item}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className={styles.hint}>{t("academy.estimate.help")}</p>
+        </div>
+      ) : null}
+      {all.length === 0 ? (
         <EmptyState title={t("academy.empty.title")}>
           <p>{t("academy.empty.body")}</p>
         </EmptyState>
+      ) : rows.length === 0 ? (
+        <p className={styles.hint}>{t("academy.filter.none")}</p>
       ) : (
         <DataTable
           rows={rows}
