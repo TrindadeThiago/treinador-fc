@@ -211,7 +211,8 @@ test("Mercado e Finanças: setas nas abas e foco devolvido ao fechar (028)", asy
   const overview = page.getByRole("tab", { name: t("finance.tab.overview") });
   await overview.focus();
   await page.keyboard.press("End");
-  await expect(page.getByRole("tab", { name: t("finance.tab.history") })).toBeFocused();
+  // A última aba é Revendas (041), só com o técnico empregado.
+  await expect(page.getByRole("tab", { name: t("finance.tab.resale") })).toBeFocused();
   await expectFocusVisible(page, "aba de finanças");
 });
 
