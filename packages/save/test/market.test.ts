@@ -32,8 +32,11 @@ describe("mercado no save (contracts/save-and-ui.md)", () => {
     expect(bought?.clubId).toBe(save.clubId);
     expect(done.save.market.negotiations).toEqual([]);
     expect(done.save.market.log.at(-1)?.kind).toBe("buy");
+    // A comissão do empresário (042) sai junto com a taxa, registrada na compra.
+    const commission = done.save.market.log.at(-1)?.commission ?? 0;
+    expect(commission).toBeGreaterThan(0);
     expect(done.save.finances.clubs[save.clubId]?.cash).toBe(
-      (save.finances.clubs[save.clubId]?.cash ?? 0) - ask,
+      (save.finances.clubs[save.clubId]?.cash ?? 0) - ask - commission,
     );
     expect(save.bank.players.find((player) => player.id === target.id)?.clubId).toBe(target.clubId);
   });

@@ -6,6 +6,7 @@ import { wageDemand } from "../../src/market/player-response";
 import { SQUAD_RULES } from "../../src/renewal/rules";
 import {
   applied,
+  commissionsPaid,
   contextAfter,
   MANAGER,
   marketContext,
@@ -116,8 +117,11 @@ describe("jogadores livres (US7, SC-001)", () => {
       clubId: MANAGER,
       contract: { wage: demand, untilYear: YEAR + 1 },
     });
-    expect(totalCash(update)).toBe(totalCash(ctx));
-    expect(update.finances.clubs[MANAGER]?.cash).toBe(ctx.finances.clubs[MANAGER]?.cash);
+    // Livre não tem taxa; só a comissão do empresário (042) sai do caixa.
+    expect(totalCash(update)).toBe(totalCash(ctx) - commissionsPaid(update));
+    expect(update.finances.clubs[MANAGER]?.cash).toBe(
+      (ctx.finances.clubs[MANAGER]?.cash ?? 0) - commissionsPaid(update),
+    );
   });
 
   it("não contrata com o elenco cheio nem quem não é livre", () => {

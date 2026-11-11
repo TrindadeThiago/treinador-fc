@@ -859,6 +859,131 @@ export function runResaleScenario(seed: string, seasons = 30): SimulateEconomyOu
   return { exitCode: ok ? 0 : 1, lines };
 }
 
+/** Limites do cenário dos empresários (042 SC-004, research "Calibração"). */
+export const AGENTS_SCENARIO_LIMITS = {
+  /** Comissões da IA na temporada, em % da folha anual somada dos clubes. */
+  maxCommissionWagePct: 6,
+  /** Caixa mediano no fim: distância (%) da mesma carreira sem empresários. */
+  maxMedianCashShiftPct: 15,
+} as const;
+
+interface AgentsRun {
+  medianCash: number;
+  healthy: number;
+  /** Maior peso das comissões na folha anual, entre as temporadas. */
+  worstCommissionPct: number;
+  commissions: number;
+}
+
+/** Carreira de 30 temporadas sem técnico, com ou sem empresários (`perCountry` 0). */
+function agentsRun(seed: string, seasons: number, agents: boolean): AgentsRun {
+  const generated = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const bank: CompletedBank = agents
+    ? generated
+    : {
+        ...generated,
+        competitions: generated.competitions.map((competition) => ({
+          ...competition,
+          market: { ...(competition.market ?? {}), agents: { perCountry: 0 } },
+        })),
+      };
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  let world: CompletedBank = ensureContracts(bank, created.league.year, seed);
+  let market = emptyMarket();
+  let league = created.league;
+  let finances: FinanceState = createFinances(world, league);
+  let renewal = initialCareerRenewal(world, seed, world.manifest.referenceDate);
+  let fans = createFans(world, league);
+  let history: SeasonHistoryEntry[] = [];
+  let healthySum = 0;
+  let worst = 0;
+  let total = 0;
+  for (let index = 0; index < seasons; index++) {
+    const played = advanceCareer(
+      league,
+      finances,
+      world,
+      { toEnd: true },
+      "",
+      undefined,
+      { state: renewal, careerSeed: seed },
+      { state: market, careerSeed: seed },
+      undefined,
+      { state: fans },
+    );
+    if (!played.ok) throw new Error(JSON.stringify(played.error));
+    const clubIds = Object.keys(played.finances.clubs).sort();
+    const commissions = -played.finances.ledger
+      .filter((entry) => entry.category === "commission")
+      .reduce((sum, entry) => sum + entry.amount, 0);
+    const wages = clubIds.reduce(
+      (sum, clubId) =>
+        sum + annualWageBill(played.world, clubId, played.world.manifest.referenceDate),
+      0,
+    );
+    if (wages > 0) worst = Math.max(worst, (100 * commissions) / wages);
+    total += commissions;
+    const turned = seasonTurnover(played.league, played.world, history, {
+      careerSeed: seed,
+      finances: played.finances,
+      managerClubId: "",
+      renewal: played.renewal ?? renewal,
+      market: played.market ?? market,
+      fans: played.fans ?? fans,
+    });
+    if (!turned.ok || !turned.finances) throw new Error(JSON.stringify(turned));
+    market = turned.market ?? market;
+    fans = turned.fans ?? fans;
+    league = turned.league;
+    history = turned.history;
+    finances = turned.finances;
+    world = turned.world;
+    renewal = turned.renewal ?? renewal;
+    const ids = Object.keys(finances.clubs);
+    healthySum += 1 - ids.filter((id) => finances.clubs[id]?.inCrisis).length / ids.length;
+  }
+  return {
+    medianCash: median(Object.values(finances.clubs).map((club) => club.cash)),
+    healthy: healthySum / seasons,
+    worstCommissionPct: worst,
+    commissions: total,
+  };
+}
+
+/** Cenário dos empresários (042): o peso das comissões da IA e o caixa comparado a sem empresários. */
+export function runAgentsScenario(seed: string, seasons = 30): SimulateEconomyOutput {
+  const without = agentsRun(seed, seasons, false);
+  const withIt = agentsRun(seed, seasons, true);
+  const shift =
+    without.medianCash === 0
+      ? 0
+      : (100 * Math.abs(withIt.medianCash - without.medianCash)) / Math.abs(without.medianCash);
+  const checks: [boolean, string][] = [
+    [
+      withIt.worstCommissionPct <= AGENTS_SCENARIO_LIMITS.maxCommissionWagePct,
+      `comissões da IA: até ${withIt.worstCommissionPct.toFixed(1)}% da folha anual numa temporada (≤ ${AGENTS_SCENARIO_LIMITS.maxCommissionWagePct}%); ${millions(withIt.commissions)} em ${seasons} temporadas`,
+    ],
+    [
+      shift <= AGENTS_SCENARIO_LIMITS.maxMedianCashShiftPct,
+      `caixa mediano no fim: ${millions(withIt.medianCash)} com empresários × ${millions(without.medianCash)} sem (${shift.toFixed(1)}%, ≤ ${AGENTS_SCENARIO_LIMITS.maxMedianCashShiftPct}%)`,
+    ],
+    [
+      withIt.healthy >= ECONOMY_LIMITS.minHealthyShareAverage,
+      `clubes fora de crise na média: ${(100 * withIt.healthy).toFixed(1)}% com empresários × ${(100 * without.healthy).toFixed(1)}% sem (≥ ${100 * ECONOMY_LIMITS.minHealthyShareAverage}%)`,
+    ],
+  ];
+  const lines = [`Empresários — ${seasons} temporadas sem técnico, seed "${seed}"`];
+  let ok = true;
+  for (const [passed, text] of checks) {
+    ok &&= passed;
+    lines.push(`${passed ? "✓" : "✗"} ${text}`);
+  }
+  return { exitCode: ok ? 0 : 1, lines };
+}
+
 const invokedDirectly =
   process.argv[1] !== undefined &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -884,11 +1009,15 @@ if (invokedDirectly) {
   const resale = runResaleScenario(values.seed ?? "economia");
   console.log("");
   for (const line of resale.lines) console.log(line);
+  const agents = runAgentsScenario(values.seed ?? "economia");
+  console.log("");
+  for (const line of agents.lines) console.log(line);
   process.exit(
     output.exitCode ||
       academy.exitCode ||
       scouting.exitCode ||
       recruitment.exitCode ||
-      resale.exitCode,
+      resale.exitCode ||
+      agents.exitCode,
   );
 }

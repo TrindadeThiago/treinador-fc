@@ -11,6 +11,7 @@ import {
   estimateSortValue,
   squadIsFull,
 } from "../game/academy-view";
+import { agentTextOf } from "../game/agents-view";
 import type { useGame } from "../game/GameProvider";
 import { regionName } from "../game/scouting-view";
 import { formatMoney, label, useT } from "../i18n";
@@ -298,6 +299,11 @@ export function AcademyTab({
               })
             : t("academy.releaseBody")}
         </p>
+        {pending ? (
+          <p className={styles.hint}>
+            {t("player.agent")}: {agentTextOf(save, pending.row.entry.player.id, t) ?? "—"}
+          </p>
+        ) : null}
       </Dialog>
     </div>
   );

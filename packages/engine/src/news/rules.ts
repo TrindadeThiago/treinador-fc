@@ -55,6 +55,8 @@ const RELEVANCE: Record<HeadlineType, number> = {
   academyFirstGoal: 60,
   academySale: 55,
   resaleReceived: 50,
+  agentBroke: 60,
+  agentBigDeal: 45,
 };
 
 const VARIANTS = Object.fromEntries(

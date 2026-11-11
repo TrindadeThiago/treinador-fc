@@ -257,7 +257,7 @@ interface GameContextValue {
   answerClubCounter(negotiationId: string, accept: boolean): MarketActionResult;
   proposeContract(
     negotiationId: string,
-    offer: { wage: number; years: number; acceptResale?: boolean },
+    offer: { wage: number; years: number; acceptResale?: boolean; commission?: number },
   ): MarketActionResult;
   answerPlayerDemand(negotiationId: string, accept: boolean): MarketActionResult;
   cancelNegotiation(negotiationId: string): void;
@@ -794,8 +794,10 @@ export function GameProvider({
     [commitMarket],
   );
   const proposeContract = useCallback(
-    (id: string, offer: { wage: number; years: number; acceptResale?: boolean }) =>
-      commitMarket((save) => proposeManagerContract(save, id, offer)),
+    (
+      id: string,
+      offer: { wage: number; years: number; acceptResale?: boolean; commission?: number },
+    ) => commitMarket((save) => proposeManagerContract(save, id, offer)),
     [commitMarket],
   );
   const answerPlayerDemand = useCallback(

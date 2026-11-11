@@ -40,6 +40,13 @@ export function totalCash(context: Pick<MarketContext, "finances">): number {
   return Object.values(context.finances.clubs).reduce((sum, club) => sum + club.cash, 0);
 }
 
+/** Comissões pagas a empresários (042): o único dinheiro que sai do mundo nas assinaturas. */
+export function commissionsPaid(context: Pick<MarketContext, "finances">): number {
+  return -context.finances.ledger
+    .filter((entry) => entry.category === "commission")
+    .reduce((sum, entry) => sum + entry.amount, 0);
+}
+
 /** Contexto após `rounds` rodadas jogadas (a janela de início fecha depois da quarta). */
 export function contextAfter(rounds: number, options: Parameters<typeof marketContext>[0] = {}) {
   const base = marketContext(options);

@@ -23,6 +23,7 @@ const EXPENSES: readonly LedgerCategory[] = [
   "academy",
   "scouting",
   "transfer_purchase",
+  "commission",
 ];
 
 /** Receitas e despesas da temporada por categoria, com saldo inicial e atual (US4, FR-024). */

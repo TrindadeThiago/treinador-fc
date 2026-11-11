@@ -376,6 +376,40 @@ export const economySchema = z.object({
 
 const pct = intInRange(0, 1000);
 
+/** Empresários (042, research R5); tudo opcional, com os padrões de `DEFAULT_AGENTS`. */
+const agentsSchema = z
+  .object({
+    perCountry: intInRange(0, 30).optional(),
+    refMonths: z.number().min(0).max(6).optional(),
+    capMonths: z.number().min(0).max(24).optional(),
+    gapPerInfluence: intInRange(0, 20).optional(),
+    gapMonthsPerPoint: z.number().min(0).max(5).optional(),
+    /** No máximo 100: a troca de comissão por salário nunca dá lucro (FR-010). */
+    tradePct: intInRange(0, 100).optional(),
+    wageCapPct: intInRange(0, 50).optional(),
+    headlineMonths: z.number().min(0).max(100).optional(),
+    relation: z
+      .object({
+        signed: intInRange(-50, 50),
+        renewed: intInRange(-50, 50),
+        terminated: intInRange(-50, 50),
+        demandRefused: intInRange(-50, 50),
+        abandoned: intInRange(-50, 50),
+        decay: intInRange(0, 50),
+      })
+      .partial()
+      .optional(),
+  })
+  .superRefine((value, ctx) => {
+    if ((value.capMonths ?? 6) < (value.refMonths ?? 0.5)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["capMonths"],
+        message: "capMonths menor que refMonths",
+      });
+    }
+  });
+
 /**
  * Cláusula de revenda (041, data-model.md); tudo opcional, com os padrões de `DEFAULT_RESALE`.
  * As checagens entre campos valem só entre os campos presentes; `resaleRules` confere de novo
@@ -504,6 +538,7 @@ export const marketSchema = z.object({
     })
     .optional(),
   resale: resaleSchema.optional(),
+  agents: agentsSchema.optional(),
 });
 
 /** Regras da diretoria (012, research.md R17); tudo opcional. */
@@ -609,6 +644,8 @@ const headlineMap = (max: number) =>
       academyFirstGoal: intInRange(0, max),
       academySale: intInRange(0, max),
       resaleReceived: intInRange(0, max),
+      agentBroke: intInRange(0, max),
+      agentBigDeal: intInRange(0, max),
     })
     .partial();
 

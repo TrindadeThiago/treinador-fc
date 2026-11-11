@@ -741,6 +741,25 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
 
   `aiMaxPct` e `aiAskPct` precisam estar na faixa e no passo. A regra usada é a da competição em que a
   venda é negociada; o pagamento da cláusula vale entre quaisquer clubes e países.
+  Empresários (042, opcional): `market.agents`, lido da competição principal do país do empresário
+  (o país de nacionalidade do jogador), com:
+  - `perCountry`: empresários por país (padrão 8; de 0 a 30; 0 desliga os empresários e a comissão);
+  - `refMonths`: comissão de referência, em meses do salário pedido, com ganância 3 (padrão 0,5; de 0
+    a 6). Calibrada pela economia de 30 temporadas: valores altos tiram dinheiro demais dos clubes;
+  - `capMonths`: teto da comissão, em meses do salário pedido (padrão 6; de 0 a 24, e pelo menos
+    `refMonths`). No rompimento (relação 0), o empresário pede o teto;
+  - `gapPerInfluence`: pontos de falta de interesse que a comissão cobre por nível de influência
+    (padrão 4; de 0 a 20);
+  - `gapMonthsPerPoint`: meses do salário pedido por ponto de falta de interesse coberto (padrão 0,5);
+  - `tradePct`: parte da comissão acima da pedida que vira desconto no salário ao longo do contrato
+    (padrão 80; de 0 a 100). O teto em 100 garante que trocar comissão por salário nunca dá lucro;
+  - `wageCapPct`: desconto máximo no salário pedido (padrão 15%);
+  - `headlineMonths`: manchete de negócio grande a partir destas folhas mensais de referência do
+    clube (padrão 3);
+  - `relation`: `signed` (+5), `renewed` (+3), `terminated` (−15), `demandRefused` (−8),
+    `abandoned` (−4), de −50 a 50, e `decay` (5, de 0 a 50): pontos de volta ao neutro por virada.
+
+  Os nomes dos empresários vêm do banco de nomes do país (`names`).
 - `board` — metas, confiança, demissão, reputação, vagas e propostas da diretoria, e o peso dos
   clássicos (`derbyPct`) e a copa (`cupOut`, `cupTitle`, `cupGoal`).
 - `fans` — humor da torcida: pesos de resultado, expectativa, clássicos, ídolos, público, pressão na

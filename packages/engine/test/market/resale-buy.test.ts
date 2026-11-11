@@ -9,7 +9,15 @@ import { DEFAULT_RESALE, feeWithResale } from "../../src/market/resale";
 import { canAddPlayer, canRemovePlayer } from "../../src/market/squad";
 import type { MarketContext } from "../../src/market/types";
 import type { CompletedPlayer } from "../../src/model/types";
-import { applied, contextAfter, MANAGER, marketContext, totalCash, YEAR } from "./helpers";
+import {
+  applied,
+  commissionsPaid,
+  contextAfter,
+  MANAGER,
+  marketContext,
+  totalCash,
+  YEAR,
+} from "./helpers";
 
 // 041 US3 (T016): a IA pede cláusula nos jovens que vende ao técnico; ele aceita ou recusa.
 
@@ -66,7 +74,7 @@ describe("compra com cláusula pedida pela IA (041 US3)", () => {
     const before = ctx.finances.clubs[MANAGER]?.cash ?? 0;
     const after = conclude(ctx, negotiation.id, young, true);
     const net = feeWithResale(fee, 20, DEFAULT_RESALE);
-    expect(after.finances.clubs[MANAGER]?.cash).toBe(before - net);
+    expect(after.finances.clubs[MANAGER]?.cash).toBe(before - net - commissionsPaid(after));
     expect(after.market.resale?.clauses).toEqual([
       expect.objectContaining({
         playerId: young.id,
@@ -76,14 +84,14 @@ describe("compra com cláusula pedida pela IA (041 US3)", () => {
         fee: net,
       }),
     ]);
-    expect(totalCash(after)).toBe(totalCash(ctx));
+    expect(totalCash(after)).toBe(totalCash(ctx) - commissionsPaid(after));
   });
 
   it("recusar paga o valor cheio e não cria cláusula", () => {
     const { ctx, negotiation, fee } = agreed(young);
     const before = ctx.finances.clubs[MANAGER]?.cash ?? 0;
     const after = conclude(ctx, negotiation.id, young, false);
-    expect(after.finances.clubs[MANAGER]?.cash).toBe(before - fee);
+    expect(after.finances.clubs[MANAGER]?.cash).toBe(before - fee - commissionsPaid(after));
     expect(after.market.resale).toBeUndefined();
     // Sem escolha explícita, também não há cláusula.
     const plain = conclude(ctx, negotiation.id, young);

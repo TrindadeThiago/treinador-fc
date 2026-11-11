@@ -11,6 +11,7 @@ import { playerLines } from "../season/record";
 import type { MatchRecord, Season } from "../season/types";
 import { cloneData } from "../serialize/clone";
 import { criaMatchNews, criaSaleNews } from "./academy";
+import { agentNews } from "./agents";
 import { clinched } from "./clinched";
 import { type Fact, matchFacts, matchKey, streakOf } from "./facts";
 import { compare as compareHeadlines, rankFeed } from "./feed";
@@ -314,6 +315,8 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
   );
   // Revenda recebida (041): só as cláusulas a favor do clube do técnico, acima do limiar.
   const resale = resaleNews(context, roundDeals(context, round), round);
+  // Empresários (042): rompimento e negócio grande do clube do técnico.
+  const agents = agentNews(context, roundDeals(context, round), round);
   facts.push(...clinched(context, round));
   facts.push(...boardFacts(context, round));
   facts.push(...transferFacts(context, round, sale.used));
@@ -322,6 +325,7 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
     ...debut.headlines,
     ...sale.headlines,
     ...resale,
+    ...agents,
   ]);
   const news = clone(context.news);
   if (sale.crias) news.crias = sale.crias;

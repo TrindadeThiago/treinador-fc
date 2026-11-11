@@ -74,7 +74,7 @@ export function answerManagerClubCounter(
 export function proposeManagerContract(
   save: SaveFile,
   negotiationId: string,
-  offer: { wage: number; years: number; acceptResale?: boolean },
+  offer: { wage: number; years: number; acceptResale?: boolean; commission?: number },
 ): MarketSaveResult {
   return applyStep(save, proposeContract(marketContextOf(save), negotiationId, offer));
 }

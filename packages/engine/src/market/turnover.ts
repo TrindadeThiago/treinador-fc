@@ -1,6 +1,10 @@
+import { aiCommission } from "../agents/commission";
+import { decayRelations } from "../agents/relations";
+import { agentRules } from "../agents/rules";
 import { ageOn } from "../calendar/date";
 import type { TurnoverContext, TurnoverStep } from "../career/types";
 import { deriveWage } from "../derived/economy";
+import { draft, post } from "../finance/ledger";
 import type { CompletedPlayer } from "../model/types";
 import { playerRef } from "../renewal/retirement";
 import { nextSeasonDate, withNotice } from "../renewal/turnover";
@@ -105,6 +109,31 @@ export const expireContractsStep: TurnoverStep = {
         });
       }
     }
+    // Comissão do empresário nas renovações da IA (042 R3), na temporada nova (depois do
+    // fechamento das finanças, como a manutenção da academia).
+    const finances = context.finances ? draft(context.finances) : undefined;
+    if (finances && context.market) {
+      const marketContext = {
+        world: context.world,
+        league: context.finished,
+        finances: context.finances as NonNullable<typeof context.finances>,
+        market: context.market,
+        managerClubId: context.managerClubId ?? "",
+        careerSeed: context.careerSeed,
+      };
+      for (const player of [...renewed.values()].sort((a, b) => (a.id < b.id ? -1 : 1))) {
+        if (!finances.clubs[player.clubId]) continue;
+        const amount = aiCommission(marketContext, player, player.clubId);
+        if (amount <= 0) continue;
+        post(finances, {
+          clubId: player.clubId,
+          season: context.finished.number + 1,
+          round: 0,
+          category: "commission",
+          amount: -amount,
+        });
+      }
+    }
     const freedIds = new Set(freed.map((player) => player.id));
     const clubs = new Map(context.world.clubs.map((club) => [club.id, club]));
     const players = context.world.players
@@ -128,7 +157,12 @@ export const expireContractsStep: TurnoverStep = {
       log: [...context.market.log, ...log],
     };
     return withNotice(
-      { ...context, world: { ...context.world, players }, market },
+      {
+        ...context,
+        world: { ...context.world, players },
+        market,
+        ...(finances ? { finances } : {}),
+      },
       "released",
       freed.map((player) => playerRef(player, date)),
       (ref) => clubOf.get(ref.playerId) ?? "",
@@ -157,10 +191,17 @@ export const resetMarketStep: TurnoverStep = {
   id: "reset-market",
   run: (context) => {
     if (!context.market) return context;
+    // Relações com empresários voltam devagar ao neutro (042 R4).
+    const world = context.world;
+    const market = decayRelations(
+      context.market,
+      (agentId) => agentRules(world, /^agent-(.+)-\d+$/.exec(agentId)?.[1] ?? ""),
+      context.finished.number + 1,
+    );
     return {
       ...context,
       market: {
-        ...context.market,
+        ...market,
         negotiations: [],
         incoming: [],
         log: context.market.log.filter((entry) => entry.season > context.finished.number),

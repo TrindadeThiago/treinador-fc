@@ -61,6 +61,9 @@ novo, use estes termos; ao traduzir, mantenha a mesma distinção entre eles.
 | **mercado de transferências** / **janela** | contratações e vendas; período em que o mercado abre | — |
 | **cláusula de revenda** / **revenda** | o percentual de uma venda futura que fica com o clube que vendeu o jogador; vale uma vez, na próxima venda definitiva ("20% de revenda para o X") | percentual de venda futura, sell-on |
 | **Revendas** | a categoria do livro-caixa e a aba de Finanças com as cláusulas a receber, a pagar e as recebidas | — |
+| **empresário** | quem representa o jogador nas negociações; fictício, de um país, com ganância e influência | agente, procurador |
+| **relação (com o empresário)** | de 0 a 100, entre o empresário e o clube; "rompida" em 0 | reputação, para isso |
+| **comissão** / **Comissões** | o valor pago ao empresário uma vez na assinatura; a categoria do livro-caixa | taxa do agente |
 | **carreira** | um jogo salvo: técnico + clube + mundo | save, para o jogador |
 | **Carreiras salvas** / **Exportar** / **Importar carreira** | a lista de carreiras e o arquivo `.blsave` para levar a carreira a outro navegador | "save" |
 | **mod** / **banco de dados** | pacote `.zip` com outro mundo de clubes e jogadores, feito pela comunidade | — |

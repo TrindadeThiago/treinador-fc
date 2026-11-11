@@ -3,6 +3,7 @@
 import { ageOn, clubUnavailability, type MarketRow } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
 import { useMemo, useState } from "react";
+import { agentTextOf } from "../../game/agents-view";
 import { watchBlock } from "../../game/scouting-view";
 import { fitnessAt } from "../../game/selectors";
 import { formatMoney, label, useT } from "../../i18n";
@@ -86,6 +87,8 @@ export function MarketPlayerModal({
   // Cláusula de revenda ativa (041): quem comprar sabe que uma venda futura paga essa fatia.
   const resale = resaleText(save, row.playerId, t);
   if (resale) facts.push(["player.resale", resale]);
+  const agent = agentTextOf(save, row.playerId, t);
+  if (agent) facts.push(["player.agent", agent]);
   const canOffer = !own && !row.onLoan;
   return (
     <Dialog

@@ -4,7 +4,14 @@ import { DEFAULT_AI_MARKET } from "../../../src/market/ai/rules";
 import type { MarketContext } from "../../../src/market/types";
 import { POSITIONS } from "../../../src/model/catalogs";
 import { SQUAD_RULES } from "../../../src/renewal/rules";
-import { applied, contextAfter, MANAGER, marketContext, totalCash } from "../helpers";
+import {
+  applied,
+  commissionsPaid,
+  contextAfter,
+  MANAGER,
+  marketContext,
+  totalCash,
+} from "../helpers";
 
 const open = marketContext();
 const started = performance.now();
@@ -63,7 +70,8 @@ describe("rodada da IA de mercado (US1, US2)", () => {
   });
 
   it("cada negócio lança a taxa nos dois caixas e a soma não muda (SC-006)", () => {
-    expect(totalCash(first)).toBe(totalCash(open));
+    // A taxa só muda de caixa; a comissão do empresário (042) é o único dinheiro que sai.
+    expect(totalCash(first)).toBe(totalCash(open) - commissionsPaid(first));
     const purchases = first.finances.ledger.filter(
       (entry) => entry.category === "transfer_purchase",
     );

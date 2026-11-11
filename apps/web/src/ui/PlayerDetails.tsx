@@ -8,6 +8,7 @@ import {
   seasonStats,
 } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
+import { agentTextOf } from "../game/agents-view";
 import { regionName, scoutReport } from "../game/scouting-view";
 import { clubSeasonRatings } from "../game/selectors";
 import { formatRating, label, useT } from "../i18n";
@@ -148,6 +149,8 @@ export function PlayerDetails({
   if (origin) visible.push(["player.origin", origin]);
   const resale = resaleText(save, player.id, t);
   if (resale) visible.push(["player.resale", resale]);
+  const agent = agentTextOf(save, player.id, t);
+  if (agent) visible.push(["player.agent", agent]);
   // Com relatório do olheiro (039), ele já parte da faixa da promoção e a substitui.
   const estimate = scoutReport(save, player.id)
     ? undefined

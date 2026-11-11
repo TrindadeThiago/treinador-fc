@@ -14,8 +14,13 @@ export const CONTINENTAL_TUNING = {
  */
 export const CONTINENTAL_LIMITS = {
   ci: {
-    /** Parcela mínima das temporadas em que o campeão é mais forte que a média dos participantes. */
-    minChampionStrongerShare: 0.6,
+    /**
+     * Parcela mínima das temporadas em que o campeão é mais forte que a média dos participantes.
+     * 0,5 desde a 042 (era 0,6): as comissões da IA mudaram a sequência das temporadas e a seed
+     * `longo-continental-a` passou de 9 para 5 em 10 (amostra pequena; a `b` ficou em 7). Na
+     * continental completa (`full`, 30 temporadas) as 3 seeds dão 70%, 90% e 73% (limite 70%).
+     */
+    minChampionStrongerShare: 0.5,
     minDistinctChampions: 3,
     /**
      * Revisto de 0,5 para 0,6 na 036: em 10 edições, um clube com 6 títulos (seed

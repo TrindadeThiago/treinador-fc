@@ -50,6 +50,8 @@ export const GENERAL_TYPES = [
   "academyRevelation",
   "academySale",
   "resaleReceived",
+  "agentBroke",
+  "agentBigDeal",
 ] as const satisfies readonly HeadlineType[];
 
 const GENERAL = "general";
