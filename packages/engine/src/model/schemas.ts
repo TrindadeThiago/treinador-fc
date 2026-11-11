@@ -324,6 +324,30 @@ export const economySchema = z.object({
         .optional(),
       initialWidth: intInRange(8, 60).optional(),
       reportCap: intInRange(10, 2000).optional(),
+      /** Captação de jovens (040); tudo opcional, com os padrões do jogo. */
+      recruitment: z
+        .object({
+          offersPerWindow: z
+            .object({
+              country: z.array(intInRange(0, 10)).length(5).optional(),
+              state: z.array(intInRange(0, 10)).length(5).optional(),
+            })
+            .optional(),
+          registrationPct: z
+            .object({
+              state: intInRange(0, 200).optional(),
+              country: intInRange(0, 200).optional(),
+              abroad: intInRange(0, 200).optional(),
+            })
+            .optional(),
+          ageRange: z
+            .tuple([intInRange(14, 19), intInRange(14, 19)])
+            .refine(([min, max]) => min <= max)
+            .optional(),
+          levelBasis: intInRange(1, 5).optional(),
+          offerSteps: z.array(intInRange(0, 20)).length(5).optional(),
+        })
+        .optional(),
     })
     .optional(),
   /** Academia (037): os 5 níveis, do 1 ao 5; ausente = padrão do jogo. */

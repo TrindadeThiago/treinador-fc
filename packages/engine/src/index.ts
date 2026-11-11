@@ -687,6 +687,7 @@ export type {
   AcademyGraduate,
   AcademyHall,
   AcademyLegend,
+  AcademyOrigin,
   AcademyPlayer,
   AcademyState,
   EvolutionRecord,
@@ -701,6 +702,27 @@ export type {
 export { generateYouth, youthCount } from "./renewal/youth";
 export type { Rng, RngState, WeightedItem } from "./rng/xoshiro";
 export { createRng, restoreRng } from "./rng/xoshiro";
+export type {
+  OfferContext,
+  RecruitmentError,
+  RecruitmentRoundContext,
+  RecruitmentRules,
+} from "./scouting/recruitment";
+export {
+  availableRegions,
+  DEFAULT_RECRUITMENT,
+  declineOffer,
+  foreignCountWithAcademy,
+  generateOffers,
+  recruitmentAfterRound,
+  recruitmentAtSeasonStart,
+  recruitmentRules,
+  recruitmentWindows,
+  regionKey,
+  registrationCost,
+  setScoutingRegion,
+  signOffer,
+} from "./scouting/recruitment";
 export type { ScoutingRoundContext } from "./scouting/round";
 export { advanceReport, gradeOf, pruneScouting, scoutingAfterRound } from "./scouting/round";
 export type { ScoutingLevelRule, ScoutingRules } from "./scouting/rules";
@@ -730,7 +752,9 @@ export type {
   Observation,
   ScoutGrade,
   ScoutingMoment,
+  ScoutingRegion,
   ScoutingState,
+  ScoutOffer,
   ScoutReport,
 } from "./scouting/types";
 export type { ScoutConfidence, ScoutingPanel, ScoutReportView } from "./scouting/view";

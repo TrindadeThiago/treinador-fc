@@ -30,6 +30,7 @@ import type { Lineup } from "../match/types";
 import type { CompletedBank, KnockoutFormat } from "../model/types";
 import { newsAfterContinental, newsAfterCup, newsAfterExtraMatches } from "../news/round";
 import { newsRules } from "../news/rules";
+import { recruitmentAfterRound, recruitmentWindows } from "../scouting/recruitment";
 import { scoutingAfterRound } from "../scouting/round";
 import { effectiveScoutingLevel } from "../scouting/state";
 import type { SeasonError } from "../season/errors";
@@ -859,7 +860,27 @@ function withScoutingRound(
     renewal: state.renewal,
     freeAgents: state.market?.freeAgents,
   });
-  return scouting === state.scouting ? state : { ...state, scouting };
+  // Captação (040): só na liga do clube do técnico, com as janelas dela.
+  const manager = state.board?.manager.clubId ?? (state.board ? "" : managerClubId);
+  const own = manager !== "" && league.divisions.some((season) => season.clubIds.includes(manager));
+  const recruited =
+    own && state.renewal
+      ? (() => {
+          const { rules, windows, played } = recruitmentWindows(state.world, league);
+          return recruitmentAfterRound(scouting, {
+            world: state.world,
+            renewal: state.renewal,
+            careerSeed,
+            managerClubId: manager,
+            season: league.number,
+            year: league.year,
+            played,
+            marketRules: rules,
+            windows,
+          });
+        })()
+      : scouting;
+  return recruited === state.scouting ? state : { ...state, scouting: recruited };
 }
 
 /**

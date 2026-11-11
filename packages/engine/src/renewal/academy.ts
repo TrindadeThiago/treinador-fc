@@ -10,6 +10,7 @@ import { isWindowOpen, roundsPlayed, transferWindows } from "../market/windows";
 import { POSITIONS, type Position } from "../model/catalogs";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { createRng } from "../rng/xoshiro";
+import { canSignForeign } from "../world/foreign";
 import { squadOf } from "../world/squads";
 import { academyClub, academyLimit, academyRules } from "./academy-levels";
 import { withEstimate } from "./estimate";
@@ -170,6 +171,7 @@ export function withGraduates(
       joinedSeason: entry.joinedSeason,
       peak: entry.player.strength,
       ...(options.keepEstimate && entry.estimate ? { estimate: entry.estimate } : {}),
+      ...(entry.origin ? { origin: entry.origin } : {}),
     };
     graduates[entry.player.id] = graduate;
     promoted.push({ player: entry.player, graduate });
@@ -197,7 +199,7 @@ export function promotionContract(
   return { wage: contract.wage, untilYear: contract.untilYear };
 }
 
-export type AcademyError = "academy.not_found" | "academy.squad_full";
+export type AcademyError = "academy.not_found" | "academy.squad_full" | "academy.foreign_limit";
 
 export type AcademyResult =
   | { ok: true; state: CareerSeasonState; player: PlayerRef }
@@ -220,6 +222,12 @@ export function promoteFromAcademy(
   if (!entry || !state.renewal) return { ok: false, error: "academy.not_found" };
   if (squadOf(state.world, clubId).length >= squadLimit(clubId, clubId)) {
     return { ok: false, error: "academy.squad_full" };
+  }
+  // Captado estrangeiro (040 FR-008): a promoção respeita o limite como uma contratação. Os jovens
+  // da safra são sempre do país do clube, então isso não muda nada para eles.
+  const country = state.world.clubs.find((club) => club.id === clubId)?.countryId;
+  if (entry.player.nationalityId !== country && !canSignForeign(state.world, clubId)) {
+    return { ok: false, error: "academy.foreign_limit" };
   }
   const contract = contractFor(state.world, entry, state.league.year, careerSeed);
   const player: CompletedPlayer = { ...asClubPlayer(entry), contract };

@@ -27,6 +27,16 @@ export function headlineVars(save: SaveFile, vars: HeadlineVars): HeadlineVars {
   if (typeof vars.level === "number") resolved.division = divisionNameOf(save, vars.level);
   if (typeof vars.fee === "number") resolved.feeText = formatMoney(vars.fee);
   if (typeof vars.position === "string") resolved.positionName = label(`position.${vars.position}`);
+  // Manchetes guardadas antes da 040 não têm `scouted`: o texto trata como cria da safra.
+  if (resolved.scouted === undefined) resolved.scouted = "no";
+  // Captado (040): estado pelo nome, país pelo nome do banco.
+  if (typeof vars.originRegion === "string") {
+    resolved.regionName =
+      vars.originKind === "country"
+        ? (save.bank.countries.find((country) => country.id === vars.originRegion)?.name ??
+          vars.originRegion)
+        : vars.originRegion;
+  }
   if (typeof vars.competition === "string") {
     const competition = save.bank.competitions.find((entry) => entry.id === vars.competition);
     resolved.competition = competition?.name ?? vars.competition;

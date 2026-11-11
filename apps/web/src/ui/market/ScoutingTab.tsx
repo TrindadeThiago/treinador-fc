@@ -11,6 +11,7 @@ import { Dialog } from "../Dialog";
 import { EmptyState } from "../EmptyState";
 import { EstimateRange } from "../EstimateRange";
 import styles from "./market.module.css";
+import { RecruitmentPanel } from "./RecruitmentPanel";
 
 type Game = ReturnType<typeof useGame>;
 
@@ -177,6 +178,7 @@ export function ScoutingTab({ save, game }: { save: SaveFile; game: Game }) {
         )}
         {status ? <p role="status">{status}</p> : null}
       </section>
+      <RecruitmentPanel save={save} game={game} />
       {rows.length === 0 ? (
         <EmptyState title={t("scouting.empty.title")}>
           <p>{t("scouting.empty.body")}</p>

@@ -167,6 +167,18 @@ export const newsAcademyStep: TurnoverStep = {
   },
 };
 
+/**
+ * Captado pelos olheiros (040 FR-010): `scouted` e a região de origem (`originKind` "state" com o
+ * nome do estado, ou "country" com o id do país, que a apresentação troca pelo nome).
+ */
+function originVars(graduate: AcademyGraduate | undefined): HeadlineVars {
+  const origin = graduate?.origin;
+  if (origin?.kind !== "scouted") return { scouted: "no" };
+  return origin.region.kind === "state"
+    ? { scouted: "yes", originKind: "state", originRegion: origin.region.region }
+    : { scouted: "yes", originKind: "country", originRegion: origin.region.countryId };
+}
+
 /** Manchetes e marcas novas das crias numa leva de jogos ou transferências. */
 export interface CriaNews {
   headlines: Headline[];
@@ -237,6 +249,7 @@ export function criaMatchNews(
         opponent: clubId === record.home ? record.away : record.home,
         goals: line.goals,
         ...(competitionId ? { competition: competitionId } : {}),
+        ...originVars(graduate),
       };
       const headline = criaHeadline(
         context,
@@ -285,7 +298,13 @@ export function criaSaleNews(
         "academySale",
         deal.playerId,
         manager,
-        { player: deal.displayName, club: manager, opponent: deal.toClubId, fee: deal.fee },
+        {
+          player: deal.displayName,
+          club: manager,
+          opponent: deal.toClubId,
+          fee: deal.fee,
+          ...originVars(graduates[deal.playerId]),
+        },
         firstIndex + headlines.length,
       ),
     );

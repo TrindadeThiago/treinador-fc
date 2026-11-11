@@ -343,3 +343,39 @@ describe("crias nas manchetes (038 R7)", () => {
     expect(again.headlines).toEqual([]);
   });
 });
+
+describe("captado nas manchetes (040 FR-010)", () => {
+  it("a estreia de um captado traz scouted e a região de origem", () => {
+    const state = base();
+    const [a] = state.world.players.filter((player) => player.clubId === MANAGER);
+    if (!a) throw new Error("sem elenco");
+    const graduates = {
+      [a.id]: {
+        clubId: MANAGER,
+        season: 1,
+        origin: {
+          kind: "scouted" as const,
+          region: { kind: "state" as const, countryId: "pais", region: "SP" },
+          season: 1,
+        },
+      },
+    };
+    const result = criaMatchNews(
+      {
+        world: state.world,
+        league: state.league,
+        careerSeed: SEED,
+        managerClubId: MANAGER,
+        news: createNews(),
+        graduates,
+      },
+      [{ record: match(MANAGER, rival(state), { [a.id]: line("home", 90) }) }],
+      3,
+    );
+    expect(result.headlines[0]?.vars).toMatchObject({
+      scouted: "yes",
+      originKind: "state",
+      originRegion: "SP",
+    });
+  });
+});

@@ -14,6 +14,8 @@ import {
   nextClubFixture,
   pruneScouting,
   type QualificationRecord,
+  recruitmentAtSeasonStart,
+  recruitmentWindows,
   resolveFinishedSeasons,
   type Season,
   type SeasonError,
@@ -282,17 +284,40 @@ export function advanceCareerSeason(
       board: turned.board ?? save.board,
       fans: turned.fans ?? save.fans,
       news: turned.news ?? save.news,
-      // Olheiros (039 R6): fora da virada do motor; aqui só a limpeza de aposentados e o teto.
-      scouting: pruneScouting(
-        settledScouting(save.scouting, managerClubOf(turned.board ?? save.board)),
-        turned.world,
-        managerClubOf(turned.board ?? save.board),
-        (turned.market ?? save.market).freeAgents,
-      ),
+      // Olheiros (039 R6): fora da virada do motor; aqui a limpeza de aposentados e o teto, e a
+      // captação da pré-temporada (040 R3).
+      scouting: seasonScouting(save, turned),
       savedAt: now,
     }),
   );
   return { ok: true, save: next };
+}
+
+/** Olheiros depois da virada: limpeza (039) e indicações da janela da pré-temporada (040). */
+function seasonScouting(
+  save: SaveFile,
+  turned: Extract<ReturnType<typeof seasonTurnover>, { ok: true }>,
+): SaveFile["scouting"] {
+  const manager = managerClubOf(turned.board ?? save.board);
+  const market = turned.market ?? save.market;
+  const pruned = pruneScouting(
+    settledScouting(save.scouting, manager),
+    turned.world,
+    manager,
+    market.freeAgents,
+  );
+  const renewal = turned.renewal ?? save.renewal;
+  const { rules, windows } = recruitmentWindows(turned.world, turned.league);
+  return recruitmentAtSeasonStart(pruned, {
+    world: turned.world,
+    renewal,
+    careerSeed: save.seed,
+    managerClubId: manager,
+    season: turned.league.number,
+    year: turned.league.year,
+    marketRules: rules,
+    windows,
+  });
 }
 
 /** Some com o aviso de mudanças do elenco da virada (009 US6). */

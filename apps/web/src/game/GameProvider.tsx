@@ -22,8 +22,10 @@ import {
   type Position,
   type Posture,
   placePlayer as placeLineupPlayer,
+  type RecruitmentError,
   type RosterIssue,
   type ScoutingError,
+  type ScoutingRegion,
   type StartInput,
   squadWithFitness,
   startCareerDay,
@@ -42,6 +44,7 @@ import {
   currentDayOf,
   type DisposalSaveResult,
   declineManagerOffer,
+  declineScoutOffer as declineSavedScoutOffer,
   dismissBoardNotice as dismissSavedBoardNotice,
   dismissSquadNotice as dismissSavedSquadNotice,
   dismissWindowReport as dismissSavedWindowReport,
@@ -67,6 +70,8 @@ import {
   sellManagerPlayer,
   setManagerTicketPrice,
   setScoutingLevel as setSavedScoutingLevel,
+  setScoutingRegion as setSavedScoutingRegion,
+  signScoutOffer as signSavedScoutOffer,
   startManagerNegotiation,
   startManagerStadiumWorks,
   takeManagerLoan,
@@ -273,6 +278,10 @@ interface GameContextValue {
   setScoutingLevel(level: number): ScoutingActionResult;
   scoutPlayer(playerId: string): ScoutingActionResult;
   unscoutPlayer(playerId: string): ScoutingActionResult;
+  /** Captação (040): região, trazer e recusar indicações. */
+  setScoutingRegion(region: ScoutingRegion | undefined): ScoutingActionResult;
+  signScoutOffer(offerId: string): ScoutingActionResult;
+  declineScoutOffer(offerId: string): ScoutingActionResult;
   /** Carreira do técnico (012): aceitar/recusar proposta de emprego e dispensar o aviso. */
   acceptJobOffer(offerId: string): boolean;
   declineJobOffer(offerId: string): void;
@@ -283,7 +292,11 @@ export type DisposalActionResult = { ok: true } | { ok: false; error: MarketErro
 
 export type ScoutingActionResult =
   | { ok: true; cancelled?: string[] }
-  | { ok: false; error: ScoutingError | "scouting.match_in_progress" };
+  | {
+      ok: false;
+      error: ScoutingError | RecruitmentError | "scouting.match_in_progress";
+      params?: Record<string, number>;
+    };
 
 export interface SimulateIssues {
   kind: "blocked" | "confirm";
@@ -904,6 +917,19 @@ export function GameProvider({
     (playerId: string) => scoutingAction((save) => unscoutSavedPlayer(save, playerId)),
     [scoutingAction],
   );
+  const setScoutingRegion = useCallback(
+    (region: ScoutingRegion | undefined) =>
+      scoutingAction((save) => setSavedScoutingRegion(save, region)),
+    [scoutingAction],
+  );
+  const signScoutOffer = useCallback(
+    (offerId: string) => scoutingAction((save) => signSavedScoutOffer(save, offerId)),
+    [scoutingAction],
+  );
+  const declineScoutOffer = useCallback(
+    (offerId: string) => scoutingAction((save) => declineSavedScoutOffer(save, offerId)),
+    [scoutingAction],
+  );
   const upgradeAcademy = useCallback(() => levelAction(upgradeYouthAcademy), [levelAction]);
   const downgradeAcademy = useCallback(() => levelAction(downgradeYouthAcademy), [levelAction]);
   const cancelAcademyChange = useCallback(
@@ -1032,6 +1058,9 @@ export function GameProvider({
       setScoutingLevel,
       scoutPlayer,
       unscoutPlayer,
+      setScoutingRegion,
+      signScoutOffer,
+      declineScoutOffer,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,
@@ -1079,6 +1108,9 @@ export function GameProvider({
       setScoutingLevel,
       scoutPlayer,
       unscoutPlayer,
+      setScoutingRegion,
+      signScoutOffer,
+      declineScoutOffer,
       acceptJobOffer,
       declineJobOffer,
       dismissBoardNotice,

@@ -319,6 +319,24 @@ ajudam a conhecê-los antes de contratar:
 Os relatórios são só informação: não mudam nenhum resultado do jogo. Os clubes do computador não
 usam olheiros.
 
+#### Captação de jovens
+
+Com o departamento aberto, a aba Observação também tem a **captação de jovens**:
+- **Região:** escolha o estado do clube, outro estado, o país inteiro ou outro país; a troca vale
+  a partir da próxima rodada.
+- **Indicações:** na abertura de cada janela de transferências, os olheiros indicam jovens de 15 a
+  17 anos da região (1 a 3 por janela, pelo nível; menos num estado), com:
+  - a faixa de potencial;
+  - o temperamento e as lesões em texto (nos níveis 4 e 5);
+  - o custo de registro e o prazo (o fim da janela).
+- **Trazer:** paga o registro (em "Olheiros") e o jovem entra na base como **captado**, com a região.
+  Precisa de vaga na base, de caixa e, para um estrangeiro, de estar abaixo do limite de
+  estrangeiros do país. Um captado estrangeiro também respeita esse limite ao ser promovido.
+- **Indicações que você não traz somem:** ao recusar, ao vencer o prazo, ao fechar o departamento ou
+  ao trocar de clube, nenhum jogador fica no mundo.
+- **Na carreira do captado:** promovido, ele aparece nas manchetes de estreia, gol e venda com a
+  menção de onde foi captado, e o histórico do clube conta os captados à parte.
+
 ## 11. Carreira: diretoria, propostas, técnicos e torcida
 
 - **Diretoria:**

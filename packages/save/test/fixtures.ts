@@ -632,6 +632,29 @@ export function saveV21(step: SaveV11Step = { rounds: 0 }): SaveV21 {
   return JSON.parse(JSON.stringify(save)) as SaveV21;
 }
 
+export type SaveV24 = Omit<SaveFile, "formatVersion"> & { formatVersion: 24 };
+
+const v24Cache = new Map<string, SaveV24>();
+
+/** Carreira atual no formato v24 (1.12.x): sem os campos da captação (040). */
+export function saveV24(step: SaveV11Step = { rounds: 0 }): SaveV24 {
+  const key = JSON.stringify(step);
+  let save = v24Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, scouting, ...rest } = playedCurrentSave(step);
+    const {
+      region: _region,
+      pendingRegion: _pending,
+      offers: _offers,
+      nextOfferSeq: _seq,
+      ...oldScouting
+    } = scouting;
+    save = { ...rest, scouting: oldScouting, formatVersion: 24 };
+    v24Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV24;
+}
+
 export type SaveV23 = Omit<SaveFile, "formatVersion" | "scouting"> & { formatVersion: 23 };
 
 const v23Cache = new Map<string, SaveV23>();

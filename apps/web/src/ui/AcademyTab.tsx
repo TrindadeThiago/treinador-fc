@@ -12,6 +12,7 @@ import {
   squadIsFull,
 } from "../game/academy-view";
 import type { useGame } from "../game/GameProvider";
+import { regionName } from "../game/scouting-view";
 import { formatMoney, label, useT } from "../i18n";
 import { AcademyPanel } from "./AcademyPanel";
 import styles from "./AcademyTab.module.css";
@@ -76,7 +77,9 @@ export function AcademyTab({
           ? t("academy.squadFull", { max })
           : result.error === "academy.match_in_progress"
             ? t("academy.matchInProgress")
-            : t("academy.error"),
+            : result.error === "academy.foreign_limit"
+              ? t("academy.foreignLimit")
+              : t("academy.error"),
     );
   };
 
@@ -92,6 +95,15 @@ export function AcademyTab({
       header: t("col.player"),
       render: (row) => row.entry.player.displayName,
       sortValue: (row) => row.entry.player.displayName,
+    },
+    {
+      // Captação (040): "Safra" ou "Captado (região)", sempre em texto.
+      key: "origin",
+      header: t("col.origin"),
+      render: (row) =>
+        row.entry.origin
+          ? t("academy.origin.scouted", { region: regionName(save, row.entry.origin.region) })
+          : t("academy.origin.academy"),
     },
     {
       key: "age",
