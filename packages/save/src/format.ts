@@ -20,7 +20,7 @@ import type {
 } from "@brasfoot-like/engine";
 
 /** Versão atual do formato do save (Princípio VI). */
-export const SAVE_FORMAT_VERSION = 26;
+export const SAVE_FORMAT_VERSION = 27;
 
 export const MANAGER_NAME_MAX = 40;
 
@@ -67,7 +67,7 @@ export interface SaveFile {
   renewal: RenewalState;
   /**
    * Livres, negociações, propostas (v6) e resumos de janela (v7) do mercado; cláusulas de revenda
-   * (v26, 041) em `market.resale`. Contratos ficam em `bank.players[].contract`.
+   * (v26, 041) em `market.resale`; relações com empresários (v27, 042) em `market.agents`. Contratos ficam em `bank.players[].contract`.
    */
   market: MarketState;
   /** Diretorias, técnicos da IA e carreira do técnico (v8). */

@@ -10,6 +10,7 @@ import { scoutingPanelOf, scoutReport } from "../../../game/scouting-view";
 import { useT } from "../../../i18n";
 import { Button } from "../../../ui/Button";
 import { EmptyState } from "../../../ui/EmptyState";
+import { AgentsTab } from "../../../ui/market/AgentsTab";
 import { ComparePanel } from "../../../ui/market/ComparePanel";
 import { COMPARE_LIMIT, CompareTray } from "../../../ui/market/CompareTray";
 import { ContractsTab } from "../../../ui/market/ContractsTab";
@@ -32,13 +33,14 @@ import { SquadCounter } from "../../../ui/SquadCounter";
 import { Tabs } from "../../../ui/Tabs";
 
 type Game = ReturnType<typeof useGame>;
-type Tab = "search" | "negotiations" | "incoming" | "contracts" | "scouting" | "report";
+type Tab = "search" | "negotiations" | "incoming" | "contracts" | "scouting" | "agents" | "report";
 const TABS: readonly Tab[] = [
   "search",
   "negotiations",
   "incoming",
   "contracts",
   "scouting",
+  "agents",
   "report",
 ];
 
@@ -166,6 +168,16 @@ function Market({ save, game }: { save: SaveFile; game: Game }) {
             label: counted("scouting", scoutingPanelOf(save).used),
             content: <ScoutingTab save={save} game={game} />,
           },
+          // Empresários (042): só com o técnico empregado (as relações são do clube).
+          ...(save.board.manager.clubId !== null
+            ? [
+                {
+                  id: "agents",
+                  label: t("market.tab.agents"),
+                  content: <AgentsTab save={save} onOpen={(playerId) => setOpened(playerId)} />,
+                },
+              ]
+            : []),
           { id: "report", label: t("market.tab.report"), content: <WindowReport save={save} /> },
         ]}
       />

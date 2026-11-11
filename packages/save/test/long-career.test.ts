@@ -18,7 +18,10 @@ import { defaultBank, SERIE_A } from "./fixtures";
 // Critério de aceite 3 da 014 (research.md R11) e limites de desempenho da 016 (research.md R1),
 // sobre a mesma carreira de 30 temporadas (simulada uma vez só). Limites declarados aqui.
 const SEASONS = 30;
-const MAX_START_OF_SEASON_31 = 1.6 * 1024 * 1024;
+// 1,65 MB: era 1,6 MB. A categoria "Comissões" (042) entra nos resumos financeiros de cada clube em
+// cada temporada (+29,5 KB medidos: 1.661.270 → 1.690.806 bytes). Decisão do usuário em 2026-11-11;
+// o teto do mundo grande (`SCALE_LIMITS`) não mudou.
+const MAX_START_OF_SEASON_31 = 1.65 * 1024 * 1024;
 const MAX_GROWTH_PER_SEASON = 30 * 1024;
 // 5,5 MB: eram 4,5 MB. As jogadas por jogador (033) somam ~11% neste mundo, em que todas as partidas
 // são completas (~400 KB por temporada, 24 bytes por linha): o maior medido foi 4,99 MB. Decisão do

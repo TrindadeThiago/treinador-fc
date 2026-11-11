@@ -41,6 +41,8 @@ export const HEADLINE_TYPES = [
   "academyFirstGoal",
   "academySale",
   "resaleReceived",
+  "agentBroke",
+  "agentBigDeal",
 ] as const;
 export type HeadlineType = (typeof HEADLINE_TYPES)[number];
 

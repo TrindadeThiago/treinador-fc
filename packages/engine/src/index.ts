@@ -1,5 +1,6 @@
 // API pública do motor (contracts/engine-api.md). Nada fora deste arquivo é API pública.
 
+export * from "./agents";
 export { coachOf, coachReputation } from "./board/coaches";
 export { confidenceChange, patiencePct } from "./board/confidence";
 export type { CreateBoardManager } from "./board/create";
@@ -381,6 +382,10 @@ export {
   strengthRank,
 } from "./market/squad";
 export type {
+  AgentDeal,
+  AgentRelation,
+  AgentRelationReason,
+  AgentsState,
   ClubResponse,
   Contract,
   FreeAgent,

@@ -97,7 +97,10 @@ describe("mercado — compra completa (US2, US3)", () => {
     await user.clear(fee);
     await user.type(
       fee,
-      String(Math.min(target.value * 3, save.finances.clubs[save.clubId]?.cash ?? 0)),
+      // Folga no caixa para a comissão do empresário (042), paga junto com a taxa.
+      String(
+        Math.min(target.value * 3, Math.floor((save.finances.clubs[save.clubId]?.cash ?? 0) * 0.8)),
+      ),
     );
     await user.click(within(dialog).getByRole("button", { name: t("market.action.offer") }));
     const wage = await within(dialog).findByLabelText(t("market.form.wage"));

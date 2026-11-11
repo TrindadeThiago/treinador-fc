@@ -1,4 +1,5 @@
 import {
+  AGENT_DEALS_MAX,
   academyIdsProblem,
   advanceSeason,
   type CompletedBank,
@@ -499,6 +500,23 @@ const addResale: Migration = {
   },
 };
 
+/**
+ * v26 → v27: empresários (042). Os empresários e as carteiras são derivados da seed e do banco; o
+ * save só ganha `market.agents` (ausente = relações neutras) e a categoria `commission` zerada nos
+ * resumos de temporada.
+ */
+const addAgents: Migration = {
+  from: 26,
+  migrate(raw) {
+    const save = raw as { finances: { seasons: { totals?: Record<string, number> }[] } };
+    const seasons = save.finances.seasons.map((summary) => ({
+      ...summary,
+      totals: { commission: 0, ...summary.totals },
+    }));
+    return { ...(raw as object), formatVersion: 27, finances: { ...save.finances, seasons } };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -526,6 +544,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addScouting,
   addRecruitment,
   addResale,
+  addAgents,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -667,6 +686,15 @@ const envelopeSchema = z.object({
           ),
           receipts: z.array(z.object({ clauseId: z.string(), amount: z.int().min(0) }).loose()),
           nextSeq: z.int().min(1),
+        })
+        .optional(),
+      agents: z
+        .object({
+          relations: z.record(
+            z.string(),
+            z.record(z.string(), z.object({ value: z.int().min(0).max(100) }).loose()),
+          ),
+          deals: z.array(z.object({ agentId: z.string(), commission: z.int().min(0) }).loose()),
         })
         .optional(),
     })
@@ -898,7 +926,19 @@ function marketProblem(save: SaveFile): string | undefined {
   const open = save.market.negotiations.map((entry) => entry.playerId);
   if (new Set(open).size !== open.length) return "mais de uma negociação por atleta";
   if (save.bank.players.some((player) => !player.contract)) return "jogador sem contrato";
-  return resaleProblem(save);
+  return resaleProblem(save) ?? agentsProblem(save);
+}
+
+/** Relações com empresários (042): só de clubes que existem e no teto de negócios guardados. */
+function agentsProblem(save: SaveFile): string | undefined {
+  const agents = save.market.agents;
+  if (!agents) return undefined;
+  const clubs = new Set(save.bank.clubs.map((club) => club.id));
+  if (Object.keys(agents.relations).some((clubId) => !clubs.has(clubId))) {
+    return "relação com empresário de clube inexistente";
+  }
+  if (agents.deals.length > AGENT_DEALS_MAX) return "negócios com empresários acima do teto";
+  return undefined;
 }
 
 /** Cláusulas de revenda (041): uma por jogador, ids distintos, percentual válido, histórico no teto. */

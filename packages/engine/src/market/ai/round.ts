@@ -1,3 +1,4 @@
+import { aiCommission } from "../../agents/commission";
 import { ageOn, seasonDate } from "../../calendar/date";
 import type { CompletedPlayer } from "../../model/types";
 import { completeLoan, completeSigning, completeTransfer } from "../effects";
@@ -57,6 +58,8 @@ export function aiMarketRound(context: MarketContext): MarketUpdate {
           playerId: plan.player.id,
           toClubId: clubId,
           fee: plan.fee,
+          // Comissão do empresário (042 R3): a de referência, com relação neutra.
+          commission: aiCommission(current, plan.player, clubId),
           contract: {
             wage: plan.wage,
             untilYear: current.league.year + aiContractYears(plan.player, date) - 1,
@@ -101,6 +104,7 @@ export function aiMarketRound(context: MarketContext): MarketUpdate {
     const done = completeSigning(current, {
       agent: plan.agent,
       clubId,
+      commission: aiCommission(current, { ...plan.agent.player, clubId }, clubId),
       contract: {
         wage: plan.wage,
         untilYear:

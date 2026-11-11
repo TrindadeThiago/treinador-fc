@@ -1,3 +1,12 @@
+import {
+  interestReach,
+  minCommission,
+  refCommission,
+  wageAfterCommission,
+} from "../agents/formula";
+import { NEUTRAL_RELATION, relationOf } from "../agents/relations";
+import { agentOf } from "../agents/roster";
+import { agentRules } from "../agents/rules";
 import { seasonDate } from "../calendar/date";
 import { clubDivision } from "../career/league";
 import { deriveWage } from "../derived/economy";
@@ -44,19 +53,46 @@ export function wageDemand(
   return Math.max(500, demand, current);
 }
 
-/** Resposta do atleta a uma proposta de salário (R7). */
+/**
+ * Resposta do atleta a uma proposta de salário (R7), com o empresário (042 R2). A comissão pode
+ * cobrir parte da falta de interesse (até o alcance da influência) e o excedente sobre a pedida baixa
+ * o salário pedido. Sem empresário, ou sem `commission`, a regra é a de antes.
+ */
 export function respondToContract(
   context: MarketContext,
   player: CompletedPlayer | (Omit<CompletedPlayer, "clubId" | "contract"> & { clubId?: string }),
   clubId: string,
   wage: number,
   renewal = false,
+  offer: { commission?: number; years?: number } = {},
 ): PlayerResponse {
   const rules = marketRules(context.world, context.league.competitionId);
-  if (!renewal && attraction(context, clubId) < exigency(player) - rules.player.interestMargin) {
-    return { kind: "refused", reason: "no_interest" };
+  const agent = agentOf(context.world, context.careerSeed, player);
+  const agentRule = agent ? agentRules(context.world, agent.countryId) : undefined;
+  let demand = wageDemand(context, player, clubId, renewal);
+  const commission = offer.commission ?? 0;
+  let asked = 0;
+  if (agent && agentRule) {
+    const relation =
+      clubId === context.managerClubId
+        ? relationOf(context.market, clubId, agent.id)
+        : NEUTRAL_RELATION;
+    asked = refCommission(demand, agent.greed, relation, agentRule);
   }
-  const demand = wageDemand(context, player, clubId, renewal);
+  const gap = exigency(player) - rules.player.interestMargin - attraction(context, clubId);
+  if (!renewal && gap > 0) {
+    if (!agent || !agentRule || gap > interestReach(agent.influence, agentRule)) {
+      return { kind: "refused", reason: "no_interest" };
+    }
+    const minimum = minCommission(asked, demand, gap, agentRule);
+    if (commission < minimum) {
+      return { kind: "refused", reason: "no_interest", minCommission: minimum };
+    }
+    asked = minimum;
+  }
+  if (agentRule) {
+    demand = wageAfterCommission(demand, asked, commission, offer.years ?? 1, agentRule);
+  }
   if (wage >= demand) return { kind: "accepted" };
   if (wage * 100 >= demand * rules.player.demandThresholdPct) {
     return { kind: "demanded", wage: demand };

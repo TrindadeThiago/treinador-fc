@@ -312,6 +312,26 @@ Em troca, o comprador paga menos agora: cada ponto de cláusula tira 1% do valor
 - O detalhe do jogador mostra a cláusula ativa ("20% de revenda para o X"), e Finanças → Revendas
   lista as suas.
 
+### Empresários
+
+Todo jogador tem um **empresário**, do país dele. O detalhe do jogador mostra o empresário e a
+**relação** dele com o seu clube, de 0 a 100, em texto ("Relação: boa (68)").
+
+- Na etapa do contrato (compra, livre ou renovação), a proposta tem uma **comissão**, paga uma vez
+  na assinatura e lançada em **Comissões** nas Finanças. O campo já vem com o que o empresário pede.
+- Comissão acima da pedida **baixa o salário** que o jogador pede, até um limite. A troca nunca sai
+  mais barata que o salário: o que você economiza no contrato é sempre menos que a comissão a mais.
+- Um jogador **sem interesse** no seu clube pode ser convencido: a tela mostra a comissão com que o
+  empresário leva a proposta adiante, até um limite dado pela influência dele. Muito acima disso, nem
+  com comissão.
+- A relação **sobe** quando você contrata ou renova com um jogador do empresário e **cai** quando
+  você rescinde, recusa o salário pedido pelo jogador ou cancela a negociação na etapa do contrato.
+  Com relação ruim o empresário pede mais; a cada virada ela volta um pouco ao neutro.
+- Se a relação chega a 0, o empresário **rompe** com o clube: sai uma manchete e, enquanto durar, ele
+  pede a comissão máxima.
+- Os clubes do computador também pagam comissão nas contratações e renovações deles.
+- **Mercado → Empresários** lista os empresários com quem você já negociou, com a carteira de cada um.
+
 ### Olheiros
 
 O potencial, o temperamento e a propensão a lesões dos jogadores são escondidos. Os **olheiros**

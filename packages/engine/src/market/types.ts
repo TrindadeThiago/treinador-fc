@@ -50,6 +50,8 @@ export interface Negotiation {
   resaleAsk?: { pct: number };
   /** O técnico aceitou a cláusula pedida (041); vale quando a compra se conclui. */
   resaleAccepted?: boolean;
+  /** Comissão proposta ao empresário (042); vale também no pedido de salário do atleta. */
+  commission?: number;
 }
 
 export interface IncomingOffer {
@@ -93,6 +95,9 @@ export interface TransferRecord {
   resalePaid?: { clubId: string; amount: number };
   /** Cláusula de revenda criada nesta venda (041): o credor (o vendedor) e o percentual. */
   resaleCreated?: { clubId: string; pct: number };
+  /** Comissão paga ao empresário na assinatura (042) e o empresário. */
+  commission?: number;
+  agentId?: string;
 }
 
 /** Transferência no resumo da janela (011 R10). */
@@ -126,6 +131,52 @@ export interface MarketState {
   reportSeen?: string;
   /** Cláusulas de revenda (041); ausente = nenhuma criada. */
   resale?: ResaleState;
+  /** Relações com empresários e negócios do técnico (042); ausente = todas neutras. */
+  agents?: AgentsState;
+}
+
+export type AgentRelationReason =
+  | "signed"
+  | "renewed"
+  | "terminated"
+  | "demand_refused"
+  | "abandoned"
+  | "decay";
+
+/** Relação de um empresário com um clube do técnico (042); 50 = neutra. */
+export interface AgentRelation {
+  value: number;
+  reason: AgentRelationReason;
+  season: number;
+  round: number;
+}
+
+/** Negócio do técnico com um empresário (042), para a lista do Mercado. */
+export interface AgentDeal {
+  agentId: string;
+  clubId: string;
+  playerId: string;
+  displayName: string;
+  kind: "buy" | "free" | "renew";
+  commission: number;
+  season: number;
+  round: number;
+}
+
+/** Rompimento de um empresário com um clube do técnico (relação chegou a 0), para a manchete. */
+export interface AgentRupture {
+  agentId: string;
+  clubId: string;
+  reason: AgentRelationReason;
+  season: number;
+  round: number;
+}
+
+export interface AgentsState {
+  relations: Record<string, Record<string, AgentRelation>>;
+  deals: AgentDeal[];
+  /** Rompimentos recentes (042 R6); ausente = nenhum. */
+  ruptures?: AgentRupture[];
 }
 
 /** Cláusula de revenda ativa (041, data-model.md): vale na próxima venda definitiva do jogador. */
@@ -236,7 +287,9 @@ export type ClubResponse =
 export type PlayerResponse =
   | { kind: "accepted" }
   | { kind: "demanded"; wage: number }
-  | { kind: "refused"; reason: "no_interest" | "low_wage" };
+  | { kind: "refused"; reason: "low_wage" }
+  /** Sem interesse; `minCommission` é a comissão que leva a proposta adiante (042), se houver. */
+  | { kind: "refused"; reason: "no_interest"; minCommission?: number };
 
 export interface PlayerFilters {
   positions?: Position[];

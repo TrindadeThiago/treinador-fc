@@ -10,6 +10,7 @@ import {
   userSeason,
 } from "@brasfoot-like/save";
 import { useMemo, useState } from "react";
+import { agentTextOf } from "../game/agents-view";
 import type { useGame } from "../game/GameProvider";
 import { scoutReport } from "../game/scouting-view";
 import { fitnessAt } from "../game/selectors";
@@ -101,6 +102,8 @@ export function PlayerModal({
   if (origin) facts.push(["player.origin", origin]);
   const resale = resaleText(save, player.id, t);
   if (resale) facts.push(["player.resale", resale]);
+  const agent = agentTextOf(save, player.id, t);
+  if (agent) facts.push(["player.agent", agent]);
   const estimate = scoutReport(save, player.id)
     ? undefined
     : promotionEstimateText(save, player.id, t);

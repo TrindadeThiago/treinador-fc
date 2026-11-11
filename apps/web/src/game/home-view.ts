@@ -175,6 +175,8 @@ const CATEGORY: Record<HeadlineType, HeadlineCategory> = {
   academyFirstGoal: "academy",
   academySale: "academy",
   resaleReceived: "market",
+  agentBroke: "market",
+  agentBigDeal: "market",
 };
 
 /** Etiqueta de categoria de uma manchete no cartão da Início (research R5). */

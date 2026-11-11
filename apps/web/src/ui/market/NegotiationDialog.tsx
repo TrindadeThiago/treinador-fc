@@ -12,12 +12,14 @@ import {
 import { formatMarketError } from "@brasfoot-like/i18n";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useState } from "react";
+import { commissionQuoteOf } from "../../game/agents-view";
 import type { MarketActionResult, useGame } from "../../game/GameProvider";
 import { formatMoney, label, useT } from "../../i18n";
 import { Button } from "../Button";
 import { Dialog } from "../Dialog";
 import { Field } from "../Field";
 import { MoneyInput } from "../MoneyInput";
+import { CommissionField } from "./CommissionField";
 import styles from "./market.module.css";
 
 type Game = ReturnType<typeof useGame>;
@@ -80,6 +82,12 @@ export function NegotiationBody({
   const [years, setYears] = useState(row.age >= 33 ? "1" : "3");
   // Cláusula de revenda pedida pelo vendedor (041): recusada até o técnico escolher aceitar.
   const [acceptResale, setAcceptResale] = useState(negotiation.resaleAccepted === true);
+  // Comissão do empresário (042): vazia = a pedida pelo empresário.
+  const [commission, setCommission] = useState("");
+  const quote =
+    negotiation.stage === "contract"
+      ? commissionQuoteOf(save, negotiation.playerId, negotiation.kind === "renew")
+      : undefined;
   const run = (result: MarketActionResult) => onResult(result, negotiation.kind);
   const seller = nameOf(save, negotiation.fromClubId);
   const ask = negotiation.kind === "buy" ? negotiation.resaleAsk : undefined;
@@ -159,6 +167,7 @@ export function NegotiationBody({
                   wage: Number(wage),
                   years: Number(years),
                   ...(ask ? { acceptResale } : {}),
+                  ...(quote && commission !== "" ? { commission: Number(commission) } : {}),
                 }),
               );
             }}
@@ -181,6 +190,16 @@ export function NegotiationBody({
                 />
               )}
             </Field>
+            {quote ? (
+              <CommissionField
+                save={save}
+                quote={quote}
+                value={commission}
+                years={Number(years)}
+                fee={negotiation.kind === "buy" ? (negotiation.agreedFee ?? 0) : 0}
+                onChange={setCommission}
+              />
+            ) : null}
             {ask ? (
               <label className={styles.check}>
                 <input

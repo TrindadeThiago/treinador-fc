@@ -1,3 +1,7 @@
+import { askedCommission, commissionQuote } from "../agents/commission";
+import { bumpRelation, recordDeal } from "../agents/relations";
+import { agentOf } from "../agents/roster";
+import { agentRules } from "../agents/rules";
 import { ageOn, seasonDate } from "../calendar/date";
 import type { CompletedPlayer } from "../model/types";
 import { askingPrice, respondToOffer } from "./club-response";
@@ -8,6 +12,7 @@ import { aiAsksResale, feeWithResale, resaleRules } from "./resale";
 import { marketRules } from "./rules";
 import { canAddPlayer } from "./squad";
 import type {
+  AgentRelationReason,
   ClubResponse,
   MarketContext,
   MarketResult,
@@ -284,16 +289,25 @@ export function answerClubCounter(
 export function proposeContract(
   context: MarketContext,
   negotiationId: string,
-  offer: { wage: number; years: number; acceptResale?: boolean },
+  offer: { wage: number; years: number; acceptResale?: boolean; commission?: number },
 ): MarketResult<NegotiationStep> {
   const found = findNegotiation(context, negotiationId);
   if (!found) return fail("market.not_found");
   if (found.stage !== "contract") return fail("market.invalid_stage");
-  // A escolha sobre a cláusula pedida (041) acompanha a negociação até a conclusão.
-  const negotiation: Negotiation =
-    found.resaleAsk && offer.acceptResale !== undefined
-      ? { ...found, resaleAccepted: offer.acceptResale }
-      : found;
+  if (
+    offer.commission !== undefined &&
+    (!Number.isInteger(offer.commission) || offer.commission < 0)
+  ) {
+    return fail("market.invalid_amount");
+  }
+  // A escolha sobre a cláusula pedida (041) e a comissão (042) acompanham a negociação.
+  const negotiation: Negotiation = {
+    ...found,
+    ...(found.resaleAsk && offer.acceptResale !== undefined
+      ? { resaleAccepted: offer.acceptResale }
+      : {}),
+    ...(offer.commission !== undefined ? { commission: offer.commission } : {}),
+  };
   const player = findPlayer(context, negotiation.playerId);
   if (!player) return fail("market.not_found");
   const rules = rulesOf(context);
@@ -309,6 +323,10 @@ export function proposeContract(
     negotiation.clubId,
     offer.wage,
     renewal,
+    {
+      ...(offer.commission !== undefined ? { commission: offer.commission } : {}),
+      years: offer.years,
+    },
   );
   if (response.kind === "refused") {
     return {
@@ -357,9 +375,11 @@ export function answerPlayerDemand(
     return fail("market.invalid_stage");
   }
   if (!accept) {
+    // O técnico recusou o salário pedido pelo jogador: o empresário guarda isso (042).
+    const closed = closeNegotiation(context, negotiation, "rejected_by_user");
     return {
       ok: true,
-      value: { update: closeNegotiation(context, negotiation, "rejected_by_user") },
+      value: { update: withRelation(context, closed, negotiation, "demand_refused") },
     };
   }
   return conclude(context, negotiation, negotiation.demandWage, negotiation.years, {
@@ -375,7 +395,34 @@ export function cancelNegotiation(
 ): MarketUpdate {
   const negotiation = findNegotiation(context, negotiationId);
   if (!negotiation) return unchanged(context);
-  return closeNegotiation(context, negotiation, "rejected_by_user", reason);
+  const closed = closeNegotiation(context, negotiation, "rejected_by_user", reason);
+  // Só o cancelamento pedido pelo técnico na etapa do jogador pesa na relação (042, A1).
+  const withPlayer = negotiation.stage === "contract" || negotiation.stage === "player_demanded";
+  return reason === undefined && withPlayer
+    ? withRelation(context, closed, negotiation, "abandoned")
+    : closed;
+}
+
+/** Muda a relação do empresário do jogador com o clube do técnico (042 R4). */
+function withRelation(
+  context: MarketContext,
+  update: MarketUpdate,
+  negotiation: Negotiation,
+  reason: Exclude<AgentRelationReason, "decay">,
+): MarketUpdate {
+  if (negotiation.clubId !== context.managerClubId) return update;
+  const player = findPlayer(context, negotiation.playerId);
+  const agent = player ? agentOf(context.world, context.careerSeed, player) : undefined;
+  if (!agent) return update;
+  const { market } = bumpRelation(
+    update.market,
+    negotiation.clubId,
+    agent.id,
+    reason,
+    agentRules(context.world, agent.countryId),
+    { season: context.league.number, round: roundsPlayed(context.league) },
+  );
+  return { ...update, market };
 }
 
 /** Fecha o acordo e aplica os efeitos; revalida janela, caixa e elenco (R9). */
@@ -397,6 +444,17 @@ function conclude(
         ? Math.max(current?.contract?.untilYear ?? year, year + years)
         : year + years - 1,
   };
+  // Comissão do empresário (042 R2): o que o técnico ofereceu, nunca abaixo da pedida.
+  const player = findPlayer(context, negotiation.playerId);
+  const quote = player
+    ? commissionQuote(
+        context,
+        player as CompletedPlayer,
+        negotiation.clubId,
+        negotiation.kind === "renew",
+      )
+    : undefined;
+  const commission = quote ? Math.max(negotiation.commission ?? 0, askedCommission(quote)) : 0;
   let done: MarketResult<MarketUpdate>;
   if (negotiation.kind === "buy") {
     if (!isWindowOpen(context.league, rules)) return windowClosed(context, rules);
@@ -415,24 +473,50 @@ function conclude(
         : agreed,
       contract,
       ...(clause ? { resale: { pct: clause.pct } } : {}),
+      commission,
     });
   } else if (negotiation.kind === "free") {
     const agent = context.market.freeAgents.find(
       (entry) => entry.player.id === negotiation.playerId,
     );
     if (!agent) return fail("market.not_found");
-    done = completeSigning(context, { agent, clubId: negotiation.clubId, contract });
+    done = completeSigning(context, { agent, clubId: negotiation.clubId, contract, commission });
   } else {
-    done = completeRenewal(context, { playerId: negotiation.playerId, contract });
+    done = completeRenewal(context, { playerId: negotiation.playerId, contract, commission });
   }
   if (!done.ok) return done;
-  const update: MarketUpdate = {
+  let update: MarketUpdate = {
     ...done.value,
     market: {
       ...done.value.market,
       negotiations: done.value.market.negotiations.filter((entry) => entry.id !== negotiation.id),
     },
   };
+  if (quote) {
+    // Negócio com o empresário (042): a relação sobe e o negócio vai para a lista do Mercado.
+    update = withRelation(
+      context,
+      update,
+      negotiation,
+      negotiation.kind === "renew" ? "renewed" : "signed",
+    );
+    if (negotiation.clubId === context.managerClubId) {
+      update = {
+        ...update,
+        market: recordDeal(update.market, {
+          agentId: quote.agent.id,
+          clubId: negotiation.clubId,
+          playerId: negotiation.playerId,
+          displayName: player?.displayName ?? negotiation.playerId,
+          kind:
+            negotiation.kind === "renew" ? "renew" : negotiation.kind === "free" ? "free" : "buy",
+          commission,
+          season: context.league.number,
+          round: roundsPlayed(context.league),
+        }),
+      };
+    }
+  }
   return { ok: true, value: { update, playerResponse: response } };
 }
 

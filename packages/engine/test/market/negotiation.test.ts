@@ -11,6 +11,7 @@ import {
 import { wageDemand } from "../../src/market/player-response";
 import {
   applied,
+  commissionsPaid,
   contextAfter,
   MANAGER,
   marketContext,
@@ -157,10 +158,12 @@ describe("contrato com o atleta (US3)", () => {
       clubId: MANAGER,
       contract: { wage: demand, untilYear: YEAR + 2 },
     });
+    // A comissão do empresário (042) sai do caixa e do mundo; a taxa só muda de caixa.
+    expect(commissionsPaid(update)).toBeGreaterThan(0);
     expect(update.finances.clubs[MANAGER]?.cash).toBe(
-      (open.finances.clubs[MANAGER]?.cash ?? 0) - ask,
+      (open.finances.clubs[MANAGER]?.cash ?? 0) - ask - commissionsPaid(update),
     );
-    expect(totalCash(update)).toBe(totalCash(open));
+    expect(totalCash(update)).toBe(totalCash(open) - commissionsPaid(update));
   });
 
   it("salário abaixo da pedida gera um pedido; aceitá-lo conclui", () => {
@@ -219,7 +222,8 @@ describe("contrato com o atleta (US3)", () => {
 
 describe("no máximo uma contraproposta de cada lado (SC-002)", () => {
   const cash = open.finances.clubs[MANAGER]?.cash ?? 0;
-  const FEES = [1000, Math.ceil(ask * 0.75), ask, Math.min(ask * 2, cash)];
+  // Deixa folga no caixa para a comissão do empresário (042), paga junto com a taxa.
+  const FEES = [1000, Math.ceil(ask * 0.75), ask, Math.min(ask * 2, Math.floor(cash * 0.9))];
   const WAGE_FACTORS = [0.1, 0.85, 1, 3];
 
   it("em qualquer caminho há no máximo um pedido do clube e um do atleta", () => {
@@ -264,7 +268,7 @@ describe("no máximo uma contraproposta de cada lado (SC-002)", () => {
             expect(clubCounters).toBeLessThanOrEqual(1);
             expect(playerDemands).toBeLessThanOrEqual(1);
             expect(ctx.market.negotiations).toEqual([]);
-            expect(totalCash(ctx)).toBe(totalCash(open));
+            expect(totalCash(ctx)).toBe(totalCash(open) - commissionsPaid(ctx));
             paths++;
           }
         }

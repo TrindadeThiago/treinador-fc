@@ -632,6 +632,32 @@ export function saveV21(step: SaveV11Step = { rounds: 0 }): SaveV21 {
   return JSON.parse(JSON.stringify(save)) as SaveV21;
 }
 
+export type SaveV26 = Omit<SaveFile, "formatVersion"> & { formatVersion: 26 };
+
+const v26Cache = new Map<string, SaveV26>();
+
+/** Carreira atual no formato v26 (1.14.x): sem as relações com empresários (042). */
+export function saveV26(step: SaveV11Step = { rounds: 0 }): SaveV26 {
+  const key = JSON.stringify(step);
+  let save = v26Cache.get(key);
+  if (!save) {
+    const { formatVersion: _version, market, finances, ...rest } = playedCurrentSave(step);
+    const { agents: _agents, ...oldMarket } = market;
+    const seasons = finances.seasons.map((summary) => {
+      const { commission: _c, ...totals } = summary.totals;
+      return { ...summary, totals };
+    });
+    save = {
+      ...rest,
+      market: oldMarket,
+      finances: { ...finances, seasons } as SaveFile["finances"],
+      formatVersion: 26,
+    };
+    v26Cache.set(key, save);
+  }
+  return JSON.parse(JSON.stringify(save)) as SaveV26;
+}
+
 export type SaveV25 = Omit<SaveFile, "formatVersion"> & { formatVersion: 25 };
 
 const v25Cache = new Map<string, SaveV25>();

@@ -1,3 +1,6 @@
+import { bumpRelation } from "../agents/relations";
+import { agentOf } from "../agents/roster";
+import { agentRules } from "../agents/rules";
 import { isLeagueSeasonOver } from "../career/league";
 import { draft, post } from "../finance/ledger";
 import type { CompletedPlayer } from "../model/types";
@@ -186,6 +189,18 @@ export function terminateContract(
     ...toFreeAgent(player, context.managerClubId, context.league.year),
     releasedByClub: true,
   };
+  // Rescisão: o empresário do jogador guarda isso (042 R4).
+  const agentOfPlayer = agentOf(context.world, context.careerSeed, player);
+  const baseMarket = agentOfPlayer
+    ? bumpRelation(
+        context.market,
+        context.managerClubId,
+        agentOfPlayer.id,
+        "terminated",
+        agentRules(context.world, agentOfPlayer.countryId),
+        { season: context.league.number, round: roundsPlayed(context.league) },
+      ).market
+    : context.market;
   return {
     ok: true,
     value: {
@@ -195,7 +210,7 @@ export function terminateContract(
       },
       finances,
       market: {
-        ...context.market,
+        ...baseMarket,
         freeAgents: [...context.market.freeAgents, agent].sort((a, b) =>
           a.player.id < b.player.id ? -1 : 1,
         ),

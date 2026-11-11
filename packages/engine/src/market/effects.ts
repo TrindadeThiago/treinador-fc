@@ -1,3 +1,4 @@
+import { agentOf } from "../agents/roster";
 import { draft, post } from "../finance/ledger";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { canSignForeign } from "../world/foreign";
@@ -68,6 +69,45 @@ function foreignProblem(
   const limit = world.countries.find((country) => country.id === buyer.countryId)?.rules
     ?.foreignLimit;
   return fail("market.foreign_limit", { limit: limit ?? 0 });
+}
+
+/**
+ * Comissão do empresário na assinatura (042 R3): sai do caixa do clube na categoria `commission`,
+ * sem contrapartida (o dinheiro sai do mundo, como o salário). Devolve os campos do registro.
+ */
+function postCommission(
+  context: MarketContext,
+  update: MarketUpdate,
+  clubId: string,
+  player: Pick<CompletedPlayer, "id" | "nationalityId">,
+  amount: number | undefined,
+): Pick<TransferRecord, "commission" | "agentId"> {
+  if (!amount || amount <= 0) return {};
+  const agent = agentOf(context.world, context.careerSeed, player);
+  if (!agent) return {};
+  post(update.finances, {
+    clubId,
+    season: context.league.number,
+    round: roundsPlayed(context.league),
+    category: "commission",
+    amount: -amount,
+  });
+  // Só os negócios do clube do técnico guardam a comissão no registro (manchetes e lista do
+  // Mercado); nos da IA ela fica só no livro-caixa, sem aumentar o save (metas da 020).
+  return clubId === context.managerClubId ? { commission: amount, agentId: agent.id } : {};
+}
+
+/** Caixa para pagar a comissão (042) numa assinatura sem taxa. */
+function commissionCashProblem(
+  context: MarketContext,
+  clubId: string,
+  amount: number | undefined,
+): MarketResult<never> | undefined {
+  if (!amount || amount <= 0) return undefined;
+  if ((context.finances.clubs[clubId]?.cash ?? 0) < amount) {
+    return fail("market.insufficient_cash", { needed: amount });
+  }
+  return undefined;
 }
 
 /** Valida caixa e elencos antes de mover jogador e dinheiro. */
@@ -165,11 +205,18 @@ export function completeTransfer(
     fee: number;
     contract?: Contract;
     resale?: { pct: number };
+    /** Comissão do empresário (042), paga pelo comprador na assinatura. */
+    commission?: number;
   },
 ): MarketResult<MarketUpdate> {
   const player = context.world.players.find((entry) => entry.id === input.playerId);
   if (!player?.contract) return fail("market.not_found");
-  const problem = checkTransfer(context, player, input.toClubId, input.fee);
+  const problem = checkTransfer(
+    context,
+    player,
+    input.toClubId,
+    input.fee + (input.commission ?? 0),
+  );
   if (problem) return problem;
   const fromClubId = player.clubId;
   const update = working(context);
@@ -186,6 +233,7 @@ export function completeTransfer(
     fee: input.fee,
     ...(input.resale ? { resale: input.resale } : {}),
   });
+  const commission = postCommission(context, update, input.toClubId, player, input.commission);
   if (fromClubId === context.managerClubId) update.departed.push(player.id);
   update.market.log.push(
     record(context, {
@@ -198,6 +246,7 @@ export function completeTransfer(
       wage: contract.wage,
       untilYear: contract.untilYear,
       ...resale,
+      ...commission,
     }),
   );
   return { ok: true, value: update };
@@ -240,7 +289,7 @@ export function completeLoan(
 /** Contratação de livre: entra no banco com clube e contrato (US7). */
 export function completeSigning(
   context: MarketContext,
-  input: { agent: FreeAgent; clubId: string; contract: Contract },
+  input: { agent: FreeAgent; clubId: string; contract: Contract; commission?: number },
 ): MarketResult<MarketUpdate> {
   if (
     !canAddPlayer(context.world, input.clubId, input.agent.player.position, context.managerClubId)
@@ -249,6 +298,8 @@ export function completeSigning(
   }
   const foreign = foreignProblem(context.world, input.agent.player, input.clubId);
   if (foreign) return foreign;
+  const cash = commissionCashProblem(context, input.clubId, input.commission);
+  if (cash) return cash;
   const update = working(context);
   const player = {
     ...input.agent.player,
@@ -259,6 +310,7 @@ export function completeSigning(
   update.market.freeAgents = update.market.freeAgents.filter(
     (entry) => entry.player.id !== player.id,
   );
+  const commission = postCommission(context, update, input.clubId, player, input.commission);
   update.market.log.push(
     record(context, {
       playerId: player.id,
@@ -268,6 +320,7 @@ export function completeSigning(
       fee: 0,
       wage: input.contract.wage,
       untilYear: input.contract.untilYear,
+      ...commission,
     }),
   );
   return { ok: true, value: update };
@@ -276,12 +329,15 @@ export function completeSigning(
 /** Renovação: só muda o contrato (US6). */
 export function completeRenewal(
   context: MarketContext,
-  input: { playerId: string; contract: Contract },
+  input: { playerId: string; contract: Contract; commission?: number },
 ): MarketResult<MarketUpdate> {
   const player = context.world.players.find((entry) => entry.id === input.playerId);
   if (!player) return fail("market.not_found");
+  const cash = commissionCashProblem(context, player.clubId, input.commission);
+  if (cash) return cash;
   const update = working(context);
   replacePlayer(update.world, { ...player, contract: input.contract });
+  const commission = postCommission(context, update, player.clubId, player, input.commission);
   update.market.log.push(
     record(context, {
       playerId: player.id,
@@ -291,6 +347,7 @@ export function completeRenewal(
       fee: 0,
       wage: input.contract.wage,
       untilYear: input.contract.untilYear,
+      ...commission,
     }),
   );
   return { ok: true, value: update };
