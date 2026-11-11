@@ -14,6 +14,7 @@
     "sim:world": "tsx src/simulate-world.ts",
     "gen:example-mod": "tsx src/gen-example-mod.ts",
     "check-release": "tsx src/check-release.ts",
+    "check-ci-image": "tsx src/check-ci-image.ts",
     "screenshots": "tsx src/screenshots.ts",
     "sim:size": "tsx src/measure-save.ts",
     "gen:world-mod": "tsx src/gen-world-example-mod.ts",
