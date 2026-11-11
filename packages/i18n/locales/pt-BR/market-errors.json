@@ -12,5 +12,7 @@
   "market.invalid_stage": "Essa ação não está disponível nesta etapa da negociação.",
   "market.no_buyer": "Nenhum clube quer ou pode pagar por esse jogador agora.",
   "market.season_over": "A temporada acabou: não dá para rescindir contratos até a próxima começar.",
-  "market.recently_released": "Você rescindiu o contrato deste jogador e não pode recontratá-lo."
+  "market.recently_released": "Você rescindiu o contrato deste jogador e não pode recontratá-lo.",
+  "market.resale_invalid_pct": "Percentual de revenda inválido: escolha um dos passos da lista.",
+  "market.resale_above_ceiling": "O comprador não aceita mais de {max}% de revenda."
 }

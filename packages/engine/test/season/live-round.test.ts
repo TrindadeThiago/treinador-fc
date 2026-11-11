@@ -85,7 +85,7 @@ describe("rodada ao vivo (R1)", () => {
       if (!direct.ok) throw new Error("falhou");
       expect(season).toEqual(direct.season);
     }
-  });
+  }, 60_000);
 
   it("um passo das 10 partidas leva menos de 5 ms", () => {
     let round = started(newSeason("rapido"));

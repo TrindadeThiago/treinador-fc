@@ -4,6 +4,7 @@ import type { CompletedPlayer } from "../model/types";
 import { clubNeeds } from "./ai/needs";
 import { completeTransfer } from "./effects";
 import { toFreeAgent } from "./free-agents";
+import { feeWithResale, isValidResalePct, resaleRules } from "./resale";
 import { marketRules, QUICK_SALE_PCT } from "./rules";
 import { canAddPlayer, canRemovePlayer } from "./squad";
 import type { FreeAgent, MarketContext, MarketResult, MarketUpdate } from "./types";
@@ -18,9 +19,16 @@ export const TERMINATION_PCT = 50;
 export interface SaleQuote {
   playerId: string;
   buyerClubId: string;
+  /** Preço da venda imediata sem cláusula. */
   fee: number;
   /** Valor de mercado de referência. */
   value: number;
+  /** Cláusula de revenda pedida (041), se houver. */
+  resalePct?: number;
+  /** Desconto pela cláusula (0 sem cláusula). */
+  discount: number;
+  /** O que o clube recebe: `fee − discount`. */
+  netFee: number;
 }
 
 export interface TerminationQuote {
@@ -47,7 +55,11 @@ function roundThousand(value: number): number {
  * comprador é um clube da IA que cabe o jogador e tem orçamento; entre eles, quem mais precisa da
  * posição e depois quem tem mais orçamento. Determinística: a cotação mostrada é a que se executa.
  */
-export function quoteSale(context: MarketContext, playerId: string): MarketResult<SaleQuote> {
+export function quoteSale(
+  context: MarketContext,
+  playerId: string,
+  resalePct?: number,
+): MarketResult<SaleQuote> {
   const player = ownPlayer(context, playerId);
   if (!player?.contract) return fail("market.not_found");
   if (player.contract.loan) return fail("market.player_on_loan");
@@ -74,17 +86,46 @@ export function quoteSale(context: MarketContext, playerId: string): MarketResul
     );
   const buyer = buyers[0];
   if (!buyer) return fail("market.no_buyer");
-  return { ok: true, value: { playerId, buyerClubId: buyer.clubId, fee, value } };
+  // Cláusula de revenda (041 R5): o comprador é o da cotação sem cláusula; muda só o valor.
+  if (resalePct === undefined) {
+    return {
+      ok: true,
+      value: { playerId, buyerClubId: buyer.clubId, fee, value, discount: 0, netFee: fee },
+    };
+  }
+  const resale = resaleRules(context.world, context.league.competitionId);
+  if (!isValidResalePct(resale, resalePct)) return fail("market.resale_invalid_pct");
+  if (resalePct > resale.aiMaxPct) {
+    return fail("market.resale_above_ceiling", { max: resale.aiMaxPct });
+  }
+  const netFee = feeWithResale(fee, resalePct, resale);
+  return {
+    ok: true,
+    value: {
+      playerId,
+      buyerClubId: buyer.clubId,
+      fee,
+      value,
+      resalePct,
+      discount: fee - netFee,
+      netFee,
+    },
+  };
 }
 
 /** Vende o jogador na hora ao comprador da cotação; o dinheiro passa de um caixa ao outro. */
-export function sellNow(context: MarketContext, playerId: string): MarketResult<MarketUpdate> {
-  const quote = quoteSale(context, playerId);
+export function sellNow(
+  context: MarketContext,
+  playerId: string,
+  resalePct?: number,
+): MarketResult<MarketUpdate> {
+  const quote = quoteSale(context, playerId, resalePct);
   if (!quote.ok) return quote;
   return completeTransfer(context, {
     playerId,
     toClubId: quote.value.buyerClubId,
-    fee: quote.value.fee,
+    fee: quote.value.netFee,
+    ...(resalePct !== undefined ? { resale: { pct: resalePct } } : {}),
   });
 }
 

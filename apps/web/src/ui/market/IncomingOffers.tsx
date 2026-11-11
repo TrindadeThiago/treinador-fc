@@ -1,5 +1,6 @@
 "use client";
 
+import { resaleRules } from "@brasfoot-like/engine";
 import { formatMarketError } from "@brasfoot-like/i18n";
 import type { SaveFile } from "@brasfoot-like/save";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { Button } from "../Button";
 import { Card } from "../Card";
 import { MoneyInput } from "../MoneyInput";
 import styles from "./market.module.css";
+import { ResaleSelect } from "./ResaleSelect";
 
 type Game = ReturnType<typeof useGame>;
 
@@ -25,6 +27,13 @@ export function IncomingOffers({
 }) {
   const t = useT();
   const [counters, setCounters] = useState<Record<string, string>>({});
+  // Cláusula de revenda escolhida por proposta (041); vale no aceite e na contraproposta.
+  const [resale, setResale] = useState<Record<string, number | undefined>>({});
+  const rules = resaleRules(save.bank, save.league.competitionId);
+  const withResale = (offerId: string) => {
+    const pct = resale[offerId];
+    return pct === undefined ? {} : { resalePct: pct };
+  };
   const [message, setMessage] = useState<string | undefined>();
   const disabled = game.state.live !== undefined;
   const clubName = (clubId: string) =>
@@ -72,11 +81,25 @@ export function IncomingOffers({
                 <p className={styles.muted}>
                   {t("market.incoming.expires", { round: offer.expiresRound })}
                 </p>
+                {offer.kind === "buy" ? (
+                  <ResaleSelect
+                    rules={rules}
+                    fee={offer.fee}
+                    value={resale[offer.id]}
+                    disabled={disabled}
+                    onChange={(pct) => setResale({ ...resale, [offer.id]: pct })}
+                  />
+                ) : null}
                 <div className={styles.actions}>
                   <Button
                     variant="primary"
                     disabled={disabled}
-                    onClick={() => answer(offer.id, player.displayName, { kind: "accept" })}
+                    onClick={() =>
+                      answer(offer.id, player.displayName, {
+                        kind: "accept",
+                        ...withResale(offer.id),
+                      })
+                    }
                   >
                     {t("market.action.accept")}
                   </Button>
@@ -103,6 +126,7 @@ export function IncomingOffers({
                       answer(offer.id, player.displayName, {
                         kind: "counter",
                         fee: Number(counters[offer.id] ?? offer.fee),
+                        ...withResale(offer.id),
                       });
                     }}
                   >

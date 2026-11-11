@@ -10,6 +10,7 @@ import { FlowTab } from "../../../ui/finance/FlowTab";
 import { GateTab } from "../../../ui/finance/GateTab";
 import { HistoryTab } from "../../../ui/finance/HistoryTab";
 import { OverviewTab } from "../../../ui/finance/OverviewTab";
+import { ResaleTab } from "../../../ui/finance/ResaleTab";
 import { StadiumTab } from "../../../ui/finance/StadiumTab";
 import { Tabs } from "../../../ui/Tabs";
 import styles from "./page.module.css";
@@ -49,6 +50,16 @@ function Finances({ save, game }: { save: SaveFile; game: Game }) {
             content: <CreditTab save={save} game={game} locked={locked} />,
           },
           { id: "history", label: t("finance.tab.history"), content: <HistoryTab save={save} /> },
+          // Revendas (041): só com o técnico empregado (as cláusulas são do clube).
+          ...(save.board.manager.clubId !== null
+            ? [
+                {
+                  id: "resale",
+                  label: t("finance.tab.resale"),
+                  content: <ResaleTab save={save} />,
+                },
+              ]
+            : []),
         ]}
       />
     </div>

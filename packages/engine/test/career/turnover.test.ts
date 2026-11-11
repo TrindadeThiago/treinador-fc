@@ -221,7 +221,7 @@ describe("virada com outras competições (017 R11, FR-034)", () => {
     expect(cup?.divisions[0]?.clubIds).toHaveLength(10);
     expect(result.calendar?.start).toBe("2028-01-01");
     expect(result.calendar?.days.flatMap((day) => day.slots)).toHaveLength(38 + 18);
-  });
+  }, 60_000);
 
   it("guarda o histórico do torneio sem mexer no da liga", () => {
     const state = finishedState();

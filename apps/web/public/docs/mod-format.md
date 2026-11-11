@@ -727,6 +727,20 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de
   mercado (`aiMarket`) e renovações da IA (`ai`).
+  Cláusula de revenda (041, opcional): `market.resale` com:
+  - `minPct`, `maxPct` e `stepPct`: a faixa de percentuais e o passo (padrão 5, 50 e 5; de 1 a 90, e
+    `maxPct − minPct` múltiplo de `stepPct`);
+  - `discountPerPointPct`: quanto do valor (em %) cada ponto de cláusula tira do preço de agora (padrão
+    1; de 0 a 1, com decimais). O teto em 1 impede a arbitragem de comprar com cláusula e vender em
+    seguida: com ele, o desconto nunca supera o que a cláusula tira da revenda;
+  - `aiMaxPct`: o maior percentual que um clube da IA aceita ao comprar (padrão 30);
+  - `aiAskPct`: o percentual que um clube da IA pede ao vender um jovem ao técnico (padrão 20);
+  - `aiAskMaxAge`: a idade máxima em que a IA pede a cláusula (padrão 21; de 15 a 40);
+  - `headlinePayrollPct`: a revenda recebida vira manchete a partir desta % da folha mensal de
+    referência do clube (padrão 100).
+
+  `aiMaxPct` e `aiAskPct` precisam estar na faixa e no passo. A regra usada é a da competição em que a
+  venda é negociada; o pagamento da cláusula vale entre quaisquer clubes e países.
 - `board` — metas, confiança, demissão, reputação, vagas e propostas da diretoria, e o peso dos
   clássicos (`derbyPct`) e a copa (`cupOut`, `cupTitle`, `cupGoal`).
 - `fans` — humor da torcida: pesos de resultado, expectativa, clássicos, ídolos, público, pressão na

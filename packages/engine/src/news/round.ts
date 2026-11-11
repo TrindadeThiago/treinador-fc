@@ -15,6 +15,7 @@ import { clinched } from "./clinched";
 import { type Fact, matchFacts, matchKey, streakOf } from "./facts";
 import { compare as compareHeadlines, rankFeed } from "./feed";
 import { type RecordCandidate, updateRecords } from "./records";
+import { resaleNews } from "./resale";
 import { newsRules } from "./rules";
 import type { Headline, HeadlineType, HeadlineVars, NewsContext, NewsState } from "./types";
 import { variantOf } from "./variants";
@@ -311,6 +312,8 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
     round,
     debut.headlines.length,
   );
+  // Revenda recebida (041): só as cláusulas a favor do clube do técnico, acima do limiar.
+  const resale = resaleNews(context, roundDeals(context, round), round);
   facts.push(...clinched(context, round));
   facts.push(...boardFacts(context, round));
   facts.push(...transferFacts(context, round, sale.used));
@@ -318,6 +321,7 @@ export function newsAfterRound(context: NewsContext, round: number): NewsState {
     ...toHeadlines(context, round, facts),
     ...debut.headlines,
     ...sale.headlines,
+    ...resale,
   ]);
   const news = clone(context.news);
   if (sale.crias) news.crias = sale.crias;

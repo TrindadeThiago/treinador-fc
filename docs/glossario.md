@@ -59,6 +59,8 @@ novo, use estes termos; ao traduzir, mantenha a mesma distinção entre eles.
 | **diretoria** | quem define metas, avalia e demite o técnico | direção |
 | **torcida** | os torcedores do clube, com humor e expectativa | fãs |
 | **mercado de transferências** / **janela** | contratações e vendas; período em que o mercado abre | — |
+| **cláusula de revenda** / **revenda** | o percentual de uma venda futura que fica com o clube que vendeu o jogador; vale uma vez, na próxima venda definitiva ("20% de revenda para o X") | percentual de venda futura, sell-on |
+| **Revendas** | a categoria do livro-caixa e a aba de Finanças com as cláusulas a receber, a pagar e as recebidas | — |
 | **carreira** | um jogo salvo: técnico + clube + mundo | save, para o jogador |
 | **Carreiras salvas** / **Exportar** / **Importar carreira** | a lista de carreiras e o arquivo `.blsave` para levar a carreira a outro navegador | "save" |
 | **mod** / **banco de dados** | pacote `.zip` com outro mundo de clubes e jogadores, feito pela comunidade | — |

@@ -46,6 +46,10 @@ export interface Negotiation {
   years?: number;
   demandWage?: number;
   openedRound: number;
+  /** Cláusula de revenda que o clube vendedor da IA pede (041), em compras de jovens. */
+  resaleAsk?: { pct: number };
+  /** O técnico aceitou a cláusula pedida (041); vale quando a compra se conclui. */
+  resaleAccepted?: boolean;
 }
 
 export interface IncomingOffer {
@@ -85,6 +89,10 @@ export interface TransferRecord {
   untilYear?: number;
   outcome?: NegotiationOutcome;
   reason?: string;
+  /** Cláusula de revenda paga nesta venda (041): o credor e o valor. */
+  resalePaid?: { clubId: string; amount: number };
+  /** Cláusula de revenda criada nesta venda (041): o credor (o vendedor) e o percentual. */
+  resaleCreated?: { clubId: string; pct: number };
 }
 
 /** Transferência no resumo da janela (011 R10). */
@@ -116,6 +124,52 @@ export interface MarketState {
   reports: WindowReport[];
   /** Id do último resumo que o jogador dispensou. */
   reportSeen?: string;
+  /** Cláusulas de revenda (041); ausente = nenhuma criada. */
+  resale?: ResaleState;
+}
+
+/** Cláusula de revenda ativa (041, data-model.md): vale na próxima venda definitiva do jogador. */
+export interface ResaleClause {
+  id: string;
+  playerId: string;
+  /** Nome do jogador na venda (o histórico precisa dele depois que o jogador sai do mundo). */
+  displayName: string;
+  /** Clube que vendeu com a cláusula e vai receber. */
+  creditorClubId: string;
+  pct: number;
+  season: number;
+  round: number;
+  /** A venda que a criou (o credor é `fromClubId`). */
+  fromClubId: string;
+  toClubId: string;
+  /** Valor pago na venda que a criou, já com o desconto. */
+  fee: number;
+}
+
+export type ResaleOutcome = "paid" | "bought_back" | "retired";
+
+/** Cláusula encerrada (041): paga, recomprada pelo credor ou de jogador que saiu do mundo. */
+export interface ResaleReceipt {
+  clauseId: string;
+  playerId: string;
+  displayName: string;
+  creditorClubId: string;
+  pct: number;
+  outcome: ResaleOutcome;
+  sellerClubId?: string;
+  buyerClubId?: string;
+  /** Valor da venda que encerrou a cláusula (0 em `retired`). */
+  saleFee: number;
+  /** Fatia paga ao credor (0 fora de `paid`). */
+  amount: number;
+  season: number;
+  round: number;
+}
+
+export interface ResaleState {
+  clauses: ResaleClause[];
+  receipts: ResaleReceipt[];
+  nextSeq: number;
 }
 
 export interface MarketWindow {

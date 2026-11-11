@@ -1,6 +1,7 @@
 import { draft, post } from "../finance/ledger";
 import type { CompletedBank, CompletedPlayer } from "../model/types";
 import { canSignForeign } from "../world/foreign";
+import { activeClause, closeClause, openClause, shareOf } from "./resale";
 import { canAddPlayer, canRemovePlayer } from "./squad";
 import type {
   Contract,
@@ -90,13 +91,81 @@ function checkTransfer(
 }
 
 /**
+ * Cláusula de revenda na venda definitiva (041 R2): primeiro encerra a cláusula ativa (paga a fatia
+ * do vendedor ao credor na categoria `resale`, ou nada se o comprador é o credor); depois cria a
+ * nova, a favor do vendedor. O mesmo valor sai de um caixa e entra no outro.
+ */
+function settleResale(
+  context: MarketContext,
+  update: MarketUpdate,
+  sale: {
+    player: CompletedPlayer;
+    fromClubId: string;
+    toClubId: string;
+    fee: number;
+    resale?: { pct: number };
+  },
+): Pick<TransferRecord, "resalePaid" | "resaleCreated"> {
+  const extra: Pick<TransferRecord, "resalePaid" | "resaleCreated"> = {};
+  const clause = activeClause(context.market, sale.player.id);
+  const season = context.league.number;
+  const round = roundsPlayed(context.league);
+  let state = context.market.resale;
+  if (clause && state) {
+    const boughtBack = clause.creditorClubId === sale.toClubId;
+    // Credor sem finanças no mundo (não acontece no jogo): encerra sem pagar, sem criar dinheiro.
+    const tracked = update.finances.clubs[clause.creditorClubId] !== undefined;
+    const amount = boughtBack || !tracked ? 0 : shareOf(sale.fee, clause.pct);
+    if (amount > 0) {
+      const base = { season, round, category: "resale" as const };
+      post(update.finances, { clubId: sale.fromClubId, ...base, amount: -amount });
+      post(update.finances, { clubId: clause.creditorClubId, ...base, amount });
+    }
+    if (!boughtBack) extra.resalePaid = { clubId: clause.creditorClubId, amount };
+    state = closeClause(state, clause, {
+      outcome: boughtBack ? "bought_back" : "paid",
+      displayName: sale.player.displayName,
+      saleFee: sale.fee,
+      amount,
+      season,
+      round,
+      sellerClubId: sale.fromClubId,
+      buyerClubId: sale.toClubId,
+    });
+  }
+  if (sale.resale) {
+    state = openClause(state, {
+      playerId: sale.player.id,
+      displayName: sale.player.displayName,
+      creditorClubId: sale.fromClubId,
+      pct: sale.resale.pct,
+      season,
+      round,
+      fromClubId: sale.fromClubId,
+      toClubId: sale.toClubId,
+      fee: sale.fee,
+    });
+    extra.resaleCreated = { clubId: sale.fromClubId, pct: sale.resale.pct };
+  }
+  if (state !== context.market.resale && state) update.market.resale = state;
+  return extra;
+}
+
+/**
  * Transferência definitiva (compra do usuário ou venda a clube da IA): move o jogador, lança a taxa
  * nos dois caixas (soma inalterada, SC-004) e respeita os limites de elenco (SC-005). Sem
- * `contract`, o jogador leva o contrato atual.
+ * `contract`, o jogador leva o contrato atual. Com `resale`, nasce uma cláusula de revenda a favor
+ * do vendedor (041); uma cláusula ativa do jogador é paga ou encerrada antes.
  */
 export function completeTransfer(
   context: MarketContext,
-  input: { playerId: string; toClubId: string; fee: number; contract?: Contract },
+  input: {
+    playerId: string;
+    toClubId: string;
+    fee: number;
+    contract?: Contract;
+    resale?: { pct: number };
+  },
 ): MarketResult<MarketUpdate> {
   const player = context.world.players.find((entry) => entry.id === input.playerId);
   if (!player?.contract) return fail("market.not_found");
@@ -110,6 +179,13 @@ export function completeTransfer(
   };
   replacePlayer(update.world, { ...player, clubId: input.toClubId, contract });
   postFee(context, update, input.fee, input.toClubId, fromClubId);
+  const resale = settleResale(context, update, {
+    player,
+    fromClubId,
+    toClubId: input.toClubId,
+    fee: input.fee,
+    ...(input.resale ? { resale: input.resale } : {}),
+  });
   if (fromClubId === context.managerClubId) update.departed.push(player.id);
   update.market.log.push(
     record(context, {
@@ -121,6 +197,7 @@ export function completeTransfer(
       fee: input.fee,
       wage: contract.wage,
       untilYear: contract.untilYear,
+      ...resale,
     }),
   );
   return { ok: true, value: update };

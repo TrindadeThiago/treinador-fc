@@ -1,5 +1,6 @@
 "use client";
 
+import { resaleRules } from "@brasfoot-like/engine";
 import { formatMarketError } from "@brasfoot-like/i18n";
 import { quoteManagerSale, quoteManagerTermination, type SaveFile } from "@brasfoot-like/save";
 import { useState } from "react";
@@ -7,6 +8,7 @@ import type { useGame } from "../game/GameProvider";
 import { formatMoney, useT } from "../i18n";
 import { Button } from "./Button";
 import { Dialog } from "./Dialog";
+import { ResaleSelect } from "./market/ResaleSelect";
 
 type Game = ReturnType<typeof useGame>;
 export type Disposal = { kind: "sell" | "terminate"; playerId: string };
@@ -31,11 +33,15 @@ export function DisposalDialog({
 }) {
   const t = useT();
   const [error, setError] = useState<string | undefined>();
+  const [resalePct, setResalePct] = useState<number | undefined>();
   if (!target) return null;
   const player = save.bank.players.find((entry) => entry.id === target.playerId);
   const name = player?.displayName ?? "";
   const clubs = new Map(save.bank.clubs.map((club) => [club.id, club]));
-  const sale = target.kind === "sell" ? quoteManagerSale(save, target.playerId) : undefined;
+  // A cotação sem cláusula escolhe o comprador; a com cláusula só muda o valor (041).
+  const sale =
+    target.kind === "sell" ? quoteManagerSale(save, target.playerId, resalePct) : undefined;
+  const rules = resaleRules(save.bank, save.league.competitionId);
   const termination =
     target.kind === "terminate" ? quoteManagerTermination(save, target.playerId) : undefined;
   const quote = sale ?? termination;
@@ -43,14 +49,24 @@ export function DisposalDialog({
 
   const close = () => {
     setError(undefined);
+    setResalePct(undefined);
     onClose();
   };
   const confirm = () => {
     if (target.kind === "sell" && sale?.ok) {
       const buyer = clubs.get(sale.quote.buyerClubId)?.name ?? "";
-      const result = game.sellPlayer(target.playerId);
+      const result = game.sellPlayer(target.playerId, resalePct);
       if (!result.ok) return setError(formatMarketError(result.error, "pt-BR"));
-      onDone(t("disposal.sold", { name, club: buyer, fee: formatMoney(sale.quote.fee) }));
+      onDone(
+        resalePct === undefined
+          ? t("disposal.sold", { name, club: buyer, fee: formatMoney(sale.quote.netFee) })
+          : t("disposal.soldResale", {
+              name,
+              club: buyer,
+              fee: formatMoney(sale.quote.netFee),
+              pct: resalePct,
+            }),
+      );
     } else if (target.kind === "terminate" && termination?.ok) {
       const result = game.terminateContract(target.playerId);
       if (!result.ok) return setError(formatMarketError(result.error, "pt-BR"));
@@ -85,6 +101,12 @@ export function DisposalDialog({
             })}
           </p>
           <p>{t("disposal.sell.hint", { value: formatMoney(sale.quote.value) })}</p>
+          <ResaleSelect
+            rules={rules}
+            fee={sale.quote.fee}
+            value={resalePct}
+            onChange={setResalePct}
+          />
         </>
       ) : null}
       {termination?.ok ? (

@@ -32,6 +32,7 @@ import {
   MAX_SCOUTING_LEVEL,
   POSTURES,
   playerSeq,
+  RESALE_RECEIPTS_MAX,
   type Season,
   seasonDate,
   seedAcademies,
@@ -482,6 +483,22 @@ const addRecruitment: Migration = {
   },
 };
 
+/**
+ * v25 → v26: cláusula de revenda (041). `market.resale` começa ausente (nenhuma cláusula) e os
+ * resumos de temporada ganham a categoria `resale` zerada.
+ */
+const addResale: Migration = {
+  from: 25,
+  migrate(raw) {
+    const save = raw as { finances: { seasons: { totals?: Record<string, number> }[] } };
+    const seasons = save.finances.seasons.map((summary) => ({
+      ...summary,
+      totals: { resale: 0, ...summary.totals },
+    }));
+    return { ...(raw as object), formatVersion: 26, finances: { ...save.finances, seasons } };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -508,6 +525,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addPotentialEstimates,
   addScouting,
   addRecruitment,
+  addResale,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -635,6 +653,22 @@ const envelopeSchema = z.object({
       log: z.array(z.unknown()),
       nextSeq: z.int().min(1),
       reports: z.array(z.object({ id: z.string() }).loose()),
+      resale: z
+        .object({
+          clauses: z.array(
+            z
+              .object({
+                id: z.string().min(1),
+                playerId: z.string().min(1),
+                creditorClubId: z.string().min(1),
+                pct: z.int(),
+              })
+              .loose(),
+          ),
+          receipts: z.array(z.object({ clauseId: z.string(), amount: z.int().min(0) }).loose()),
+          nextSeq: z.int().min(1),
+        })
+        .optional(),
     })
     .loose(),
   lineup: z.object({
@@ -864,6 +898,22 @@ function marketProblem(save: SaveFile): string | undefined {
   const open = save.market.negotiations.map((entry) => entry.playerId);
   if (new Set(open).size !== open.length) return "mais de uma negociação por atleta";
   if (save.bank.players.some((player) => !player.contract)) return "jogador sem contrato";
+  return resaleProblem(save);
+}
+
+/** Cláusulas de revenda (041): uma por jogador, ids distintos, percentual válido, histórico no teto. */
+function resaleProblem(save: SaveFile): string | undefined {
+  const resale = save.market.resale;
+  if (!resale) return undefined;
+  const players = resale.clauses.map((clause) => clause.playerId);
+  if (new Set(players).size !== players.length) return "mais de uma cláusula de revenda por atleta";
+  const ids = resale.clauses.map((clause) => clause.id);
+  if (new Set(ids).size !== ids.length) return "cláusulas de revenda com o mesmo id";
+  // Limites absolutos do schema: a regra de cada competição pode variar por mod.
+  if (resale.clauses.some((clause) => clause.pct < 1 || clause.pct > 90)) {
+    return "cláusula de revenda com percentual inválido";
+  }
+  if (resale.receipts.length > RESALE_RECEIPTS_MAX) return "histórico de revendas acima do teto";
   return undefined;
 }
 

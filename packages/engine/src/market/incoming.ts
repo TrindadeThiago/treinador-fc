@@ -2,6 +2,7 @@ import { createRng } from "../rng/xoshiro";
 import { incomingOfferFor } from "./ai/offers";
 import { maxBidFor } from "./club-response";
 import { completeLoan, completeTransfer } from "./effects";
+import { feeWithResale, isValidResalePct, resaleRules } from "./resale";
 import { marketRules } from "./rules";
 import type {
   IncomingOffer,
@@ -121,10 +122,14 @@ export function marketAfterRound(context: MarketContext): MarketUpdate {
   return { ...unchanged(context), market };
 }
 
+/**
+ * Resposta do usuário. `resalePct` inclui uma cláusula de revenda (041): o comprador da IA paga o
+ * valor com o desconto da regra e aceita até o teto `aiMaxPct`.
+ */
 export type IncomingAnswer =
-  | { kind: "accept" }
+  | { kind: "accept"; resalePct?: number }
   | { kind: "refuse" }
-  | { kind: "counter"; fee: number };
+  | { kind: "counter"; fee: number; resalePct?: number };
 
 /** Resposta do usuário a uma proposta: aceitar, recusar ou contrapropor uma vez (US4). */
 export function answerIncomingOffer(
@@ -142,11 +147,16 @@ export function answerIncomingOffer(
   }
   const others = context.market.incoming.filter((entry) => entry.id !== offer.id);
 
-  const settle = (fee: number) => {
+  const settle = (fee: number, resale?: { pct: number }) => {
     const done =
       offer.kind === "loan"
         ? completeLoan(context, { playerId: offer.playerId, toClubId: offer.fromClubId, fee })
-        : completeTransfer(context, { playerId: offer.playerId, toClubId: offer.fromClubId, fee });
+        : completeTransfer(context, {
+            playerId: offer.playerId,
+            toClubId: offer.fromClubId,
+            fee,
+            ...(resale ? { resale } : {}),
+          });
     if (!done.ok) return done;
     const update = done.value;
     return {
@@ -179,12 +189,25 @@ export function answerIncomingOffer(
     },
   });
 
-  if (answer.kind === "accept") return settle(offer.fee);
   if (answer.kind === "refuse") return decline("rejected_by_user");
+  // Cláusula de revenda (041 R5): só em venda definitiva, na faixa e até o teto da IA.
+  const pct = answer.resalePct;
+  const resale = resaleRules(context.world, context.league.competitionId);
+  if (pct !== undefined) {
+    if (offer.kind !== "buy") return fail("market.invalid_stage");
+    if (!isValidResalePct(resale, pct)) return fail("market.resale_invalid_pct");
+    if (pct > resale.aiMaxPct) {
+      return fail("market.resale_above_ceiling", { max: resale.aiMaxPct });
+    }
+  }
+  const net = (fee: number) => (pct === undefined ? fee : feeWithResale(fee, pct, resale));
+  const clause = pct === undefined ? undefined : { pct };
+  if (answer.kind === "accept") return settle(net(offer.fee), clause);
   if (offer.countered || offer.kind !== "buy") return fail("market.invalid_stage");
   if (!Number.isInteger(answer.fee) || answer.fee <= 0) return fail("market.invalid_amount");
-  const affordable = answer.fee <= (context.finances.clubs[offer.fromClubId]?.cash ?? 0);
-  return affordable && answer.fee <= maxBidFor(context, player, offer.id)
-    ? settle(answer.fee)
+  const asked = net(answer.fee);
+  const affordable = asked <= (context.finances.clubs[offer.fromClubId]?.cash ?? 0);
+  return affordable && asked <= maxBidFor(context, player, offer.id)
+    ? settle(asked, clause)
     : decline("refused_club");
 }

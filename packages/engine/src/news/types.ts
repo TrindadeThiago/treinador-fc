@@ -40,6 +40,7 @@ export const HEADLINE_TYPES = [
   "academyDebut",
   "academyFirstGoal",
   "academySale",
+  "resaleReceived",
 ] as const;
 export type HeadlineType = (typeof HEADLINE_TYPES)[number];
 

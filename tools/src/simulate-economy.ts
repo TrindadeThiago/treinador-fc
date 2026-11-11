@@ -6,26 +6,47 @@ import { parseArgs } from "node:util";
 import {
   academyUpgradeCost,
   advanceCareer,
+  ageOn,
   annualWageBill,
+  buyAskingPrice,
   type CompletedBank,
+  canAddPlayer,
+  canRemovePlayer,
   completeHiddenAttributes,
+  contractYearsRange,
   createFans,
   createFinances,
   createLeagueSeason,
   emptyMarket,
   ensureContracts,
   type FinanceState,
+  feeWithResale,
   generateDefaultBank,
   generateOffers,
   initialCareerRenewal,
+  type MarketContext,
+  marketRules,
+  marketValue,
+  measureWorld,
+  proposeContract,
+  pruneResale,
+  QUICK_SALE_PCT,
+  resaleRules,
+  resaleSteps,
   type SeasonHistoryEntry,
   scoutingCost,
+  seasonDate,
   seasonFinanceSummary,
   seasonTurnover,
+  sellNow,
+  shareOf,
   signOffer,
   spearman,
+  startNegotiation,
+  wageDemand,
 } from "@brasfoot-like/engine";
 import { DEFAULT_SEED } from "./default-seed";
+import { WORLD_LIMITS } from "./simulate-world";
 
 /** Limites de research.md R10 (os mesmos de finance/long-run.test.ts). */
 export const ECONOMY_LIMITS = {
@@ -571,6 +592,273 @@ export function runRecruitmentScenario(seed: string, seasons = 10): SimulateEcon
   return { exitCode: ok ? 0 : 1, lines };
 }
 
+/** Limites do cenário da cláusula de revenda (041 SC-003, SC-005, research R6 e R7). */
+export const RESALE_SCENARIO_LIMITS = {
+  /** O caixa mediano dos clubes da IA no fim fica a esta distância (%) da mesma carreira sem cláusulas. */
+  maxAiCashShiftPct: 15,
+} as const;
+
+interface ResaleRun {
+  /** Caixa mediano dos clubes (fora o do técnico) no fim. */
+  aiMedianCash: number;
+  /** Parcela média de clubes fora de crise. */
+  healthy: number;
+  /** Temporadas com as faixas de força do mundo dentro de `WORLD_LIMITS`. */
+  seasonsInBands: number;
+  /** Soma dos lançamentos `resale` de todos os clubes (tem de ser 0). */
+  resaleNet: number;
+  created: number;
+  paid: number;
+  received: number;
+}
+
+/**
+ * Cenário da cláusula (041): o clube de reputação mediana tem um técnico automático. A cada
+ * temporada, na janela do começo, vende o jogador mais jovem que pode sair (com 30% de revenda, se
+ * `clauses`) e compra um jovem de até 21 anos de um clube da IA pela pedida (aceitando a cláusula
+ * pedida, se `clauses`). O resto da carreira é da IA.
+ */
+function resaleRun(seed: string, seasons: number, clauses: boolean): ResaleRun {
+  const bank = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  let world: CompletedBank = ensureContracts(bank, created.league.year, seed);
+  const byReputation = [...world.clubs].sort(
+    (a, b) => a.reputation - b.reputation || (a.id < b.id ? -1 : 1),
+  );
+  const club = byReputation[Math.floor(byReputation.length / 2)];
+  if (!club) throw new Error("sem clubes");
+  let market = emptyMarket();
+  let league = created.league;
+  let finances: FinanceState = createFinances(world, league);
+  let renewal = initialCareerRenewal(world, seed, world.manifest.referenceDate);
+  let fans = createFans(world, league);
+  let history: SeasonHistoryEntry[] = [];
+  let healthySum = 0;
+  let seasonsInBands = 0;
+  let resaleNet = 0;
+  let createdCount = 0;
+  const within = (value: number, [min, max]: readonly [number, number]) =>
+    value >= min && value <= max;
+  for (let index = 0; index < seasons; index++) {
+    const context = (): MarketContext => ({
+      world,
+      league,
+      finances,
+      market,
+      managerClubId: club.id,
+      careerSeed: seed,
+    });
+    const date = seasonDate(world.manifest.referenceDate, league.year);
+    // Venda: o mais jovem que pode sair.
+    const young = world.players
+      .filter((player) => player.clubId === club.id && !player.contract?.loan)
+      .filter((player) => canRemovePlayer(world, club.id, player.id))
+      .sort((a, b) => b.birthDate.localeCompare(a.birthDate) || (a.id < b.id ? -1 : 1))[0];
+    if (young) {
+      const sold = sellNow(context(), young.id, clauses ? 30 : undefined);
+      if (sold.ok) {
+        world = sold.value.world;
+        finances = sold.value.finances;
+        market = sold.value.market;
+        if (clauses) createdCount++;
+      }
+    }
+    // Compra: um jovem de até 21 anos, pela pedida, que caiba no caixa e no elenco.
+    const cash = finances.clubs[club.id]?.cash ?? 0;
+    const target = world.players
+      .filter(
+        (player) =>
+          player.clubId !== club.id &&
+          !player.contract?.loan &&
+          ageOn(player.birthDate, date) <= 21 &&
+          canAddPlayer(world, club.id, player.position, club.id) &&
+          canRemovePlayer(world, player.clubId, player.id),
+      )
+      .map((player) => ({ player, fee: buyAskingPrice(context(), player) }))
+      .filter((entry) => entry.fee > 0 && entry.fee <= cash / 3)
+      .sort((a, b) => b.player.hidden.potential - a.player.hidden.potential || a.fee - b.fee)[0];
+    if (target) {
+      const step = startNegotiation(context(), {
+        kind: "buy",
+        playerId: target.player.id,
+        fee: target.fee,
+      });
+      if (step.ok && step.value.negotiation?.stage === "contract") {
+        const negotiation = step.value.negotiation;
+        const opened = { ...context(), market: step.value.update.market };
+        const done = proposeContract(opened, negotiation.id, {
+          wage: wageDemand(opened, target.player, club.id),
+          years: 4,
+          acceptResale: clauses,
+        });
+        if (done.ok) {
+          world = done.value.update.world;
+          finances = done.value.update.finances;
+          market = done.value.update.market;
+          if (clauses && negotiation.resaleAsk) createdCount++;
+        }
+      }
+    }
+    const played = advanceCareer(
+      league,
+      finances,
+      world,
+      { toEnd: true },
+      "",
+      undefined,
+      { state: renewal, careerSeed: seed },
+      { state: market, careerSeed: seed },
+      undefined,
+      { state: fans },
+    );
+    if (!played.ok) throw new Error(JSON.stringify(played.error));
+    resaleNet += played.finances.ledger
+      .filter((entry) => entry.category === "resale")
+      .reduce((sum, entry) => sum + entry.amount, 0);
+    const turned = seasonTurnover(played.league, played.world, history, {
+      careerSeed: seed,
+      finances: played.finances,
+      managerClubId: "",
+      renewal: played.renewal ?? renewal,
+      market: played.market ?? market,
+      fans: played.fans ?? fans,
+    });
+    if (!turned.ok || !turned.finances) throw new Error(JSON.stringify(turned));
+    fans = turned.fans ?? fans;
+    league = turned.league;
+    history = turned.history;
+    finances = turned.finances;
+    world = turned.world;
+    renewal = turned.renewal ?? renewal;
+    market = pruneResale(turned.market ?? market, world, league.number);
+    const clubIds = Object.keys(finances.clubs);
+    healthySum += 1 - clubIds.filter((id) => finances.clubs[id]?.inCrisis).length / clubIds.length;
+    const m = measureWorld(
+      world,
+      league,
+      seasonDate(world.manifest.referenceDate, league.year),
+      renewal.academy,
+    );
+    if (
+      within(m.mean, WORLD_LIMITS.mean) &&
+      within(m.p10, WORLD_LIMITS.p10) &&
+      within(m.p50, WORLD_LIMITS.p50) &&
+      within(m.p90, WORLD_LIMITS.p90) &&
+      within(m.max, WORLD_LIMITS.max) &&
+      m.stars >= WORLD_LIMITS.minStars
+    ) {
+      seasonsInBands++;
+    }
+  }
+  const ai = Object.keys(finances.clubs)
+    .filter((id) => id !== club.id)
+    .map((id) => finances.clubs[id]?.cash ?? 0);
+  const receipts = market.resale?.receipts ?? [];
+  return {
+    aiMedianCash: median(ai),
+    healthy: healthySum / seasons,
+    seasonsInBands,
+    resaleNet,
+    created: createdCount,
+    paid: receipts.filter((receipt) => receipt.outcome === "paid").length,
+    received: receipts
+      .filter((receipt) => receipt.outcome === "paid" && receipt.creditorClubId === club.id)
+      .reduce((sum, receipt) => sum + receipt.amount, 0),
+  };
+}
+
+/** Maior razão recebido/pago do ciclo do A2 (comprar e vender na hora), com e sem cláusula. */
+function resaleCycles(seed: string): { plain: number; withClause: number } {
+  const bank = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  const world = ensureContracts(bank, created.league.year, seed);
+  const manager = world.clubs[0]?.id ?? "";
+  const context: MarketContext = {
+    world,
+    league: created.league,
+    finances: createFinances(world, created.league),
+    market: emptyMarket(),
+    managerClubId: manager,
+    careerSeed: seed,
+  };
+  const year = created.league.year;
+  const rules = marketRules(world, competition.id);
+  const resale = resaleRules(world, competition.id);
+  let plain = 0;
+  let withClause = 0;
+  for (const player of world.players) {
+    if (player.clubId === manager || !player.contract || player.contract.loan) continue;
+    const ask = buyAskingPrice(context, player);
+    if (ask <= 0) continue;
+    const age = ageOn(player.birthDate, seasonDate(world.manifest.referenceDate, year));
+    const [, longest] = contractYearsRange(age, rules);
+    const signed = {
+      ...player,
+      clubId: manager,
+      contract: { wage: player.contract.wage, untilYear: year + longest - 1 },
+    };
+    const quick =
+      Math.round((marketValue(signed, world, year) * QUICK_SALE_PCT) / 100 / 1000) * 1000;
+    plain = Math.max(plain, quick / ask);
+    for (const pct of resaleSteps(resale)) {
+      const paid = feeWithResale(ask, pct, resale);
+      if (paid > 0) withClause = Math.max(withClause, (quick - shareOf(quick, pct)) / paid);
+    }
+  }
+  return { plain, withClause };
+}
+
+/** Cenário da cláusula de revenda (041): arbitragem, conservação, caixa da IA e faixas do mundo. */
+export function runResaleScenario(seed: string, seasons = 30): SimulateEconomyOutput {
+  const cycles = resaleCycles(seed);
+  const without = resaleRun(seed, seasons, false);
+  const withIt = resaleRun(seed, seasons, true);
+  const shift =
+    without.aiMedianCash === 0
+      ? 0
+      : (100 * Math.abs(withIt.aiMedianCash - without.aiMedianCash)) /
+        Math.abs(without.aiMedianCash);
+  const checks: [boolean, string][] = [
+    [
+      cycles.withClause <= cycles.plain && cycles.withClause <= 1,
+      `comprar e vender na hora: razão máxima ${cycles.withClause.toFixed(3)} com cláusula × ${cycles.plain.toFixed(3)} sem (≤ 1)`,
+    ],
+    [
+      withIt.resaleNet === 0,
+      `revendas somadas em todos os clubes: ${withIt.resaleNet} (o dinheiro só muda de caixa)`,
+    ],
+    [
+      withIt.created > 0 && withIt.paid > 0,
+      `${withIt.created} cláusulas criadas, ${withIt.paid} pagas; o clube do técnico recebeu ${millions(withIt.received)}`,
+    ],
+    [
+      shift <= RESALE_SCENARIO_LIMITS.maxAiCashShiftPct,
+      `caixa mediano da IA no fim: ${millions(withIt.aiMedianCash)} com cláusulas × ${millions(without.aiMedianCash)} sem (${shift.toFixed(1)}%, ≤ ${RESALE_SCENARIO_LIMITS.maxAiCashShiftPct}%)`,
+    ],
+    [
+      withIt.healthy >= ECONOMY_LIMITS.minHealthyShareAverage,
+      `clubes fora de crise na média: ${(100 * withIt.healthy).toFixed(1)}% (≥ ${100 * ECONOMY_LIMITS.minHealthyShareAverage}%)`,
+    ],
+    [
+      withIt.seasonsInBands >= without.seasonsInBands,
+      `temporadas com o mundo nas faixas de força: ${withIt.seasonsInBands} com cláusulas × ${without.seasonsInBands} sem (de ${seasons})`,
+    ],
+  ];
+  const lines = [`Cláusula de revenda — ${seasons} temporadas, técnico automático, seed "${seed}"`];
+  let ok = true;
+  for (const [passed, text] of checks) {
+    ok &&= passed;
+    lines.push(`${passed ? "✓" : "✗"} ${text}`);
+  }
+  return { exitCode: ok ? 0 : 1, lines };
+}
+
 const invokedDirectly =
   process.argv[1] !== undefined &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -593,5 +881,14 @@ if (invokedDirectly) {
   const recruitment = runRecruitmentScenario(values.seed ?? "economia");
   console.log("");
   for (const line of recruitment.lines) console.log(line);
-  process.exit(output.exitCode || academy.exitCode || scouting.exitCode || recruitment.exitCode);
+  const resale = runResaleScenario(values.seed ?? "economia");
+  console.log("");
+  for (const line of resale.lines) console.log(line);
+  process.exit(
+    output.exitCode ||
+      academy.exitCode ||
+      scouting.exitCode ||
+      recruitment.exitCode ||
+      resale.exitCode,
+  );
 }
