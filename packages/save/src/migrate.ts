@@ -398,11 +398,18 @@ const addAcademy: Migration = {
  * virada (contratos vencidos). Isso é regra do jogo (bloqueio antes da partida, completar na
  * virada), não defeito do save; os mods continuam validados com elas.
  */
-const LIVE_SQUAD_RULES = new Set(["squad.size", "squad.min_goalkeepers"]);
+const LIVE_BANK_RULES = new Set([
+  "squad.size",
+  "squad.min_goalkeepers",
+  // Os classificados das copas continentais mudam a cada virada e podem trazer mais clubes de um
+  // país do que há grupos; o sorteio da carreira viola o mínimo e avisa (019 FR-014), então essa
+  // regra estrita do banco não torna o save ilegível.
+  "stages.separation_impossible",
+]);
 
 function liveBankValid(bank: unknown): boolean {
   const result = validateBank(bank);
-  return result.ok || result.errors.every((issue) => LIVE_SQUAD_RULES.has(issue.code));
+  return result.ok || result.errors.every((issue) => LIVE_BANK_RULES.has(issue.code));
 }
 
 /**
