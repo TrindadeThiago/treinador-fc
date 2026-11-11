@@ -101,6 +101,25 @@ export function createIndexedDbStore(name = "brasfoot-like", read?: SaveReader):
               : value.status;
         summaries.set(value.id, { ...value, status });
       }
+      // Um save marcado como danificado é lido de novo: uma versão mais nova do jogo pode abri-lo
+      // (validação corrigida), e aí ele volta à lista como normal.
+      for (const [id, summary] of summaries) {
+        if (summary.status !== "corrupt") continue;
+        const raw: unknown = await handle.get("saves", id);
+        if (raw === undefined) continue;
+        const result = reader(raw);
+        if (result.status !== "ok") continue;
+        const recovered: SummaryEntry = { ...summarize(result.save), status: "ok" };
+        const tx = handle.transaction(["saves", "summaries"], "readwrite");
+        await Promise.all([
+          result.migratedFrom !== undefined
+            ? tx.objectStore("saves").put(result.save, id)
+            : Promise.resolve(),
+          tx.objectStore("summaries").put(recovered, id),
+          tx.done,
+        ]);
+        summaries.set(id, recovered);
+      }
       // Saves sem resumo legível são tratados como danificados (FR-010).
       for (const key of await handle.getAllKeys("saves")) {
         const id = String(key);
