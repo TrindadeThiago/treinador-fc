@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.15.0",
+    "date": "2026-11-11",
+    "changes": [
+      "Chegaram os empresários: todo jogador tem um, do país dele, e o detalhe do jogador mostra quem é e como está a relação dele com o seu clube, de 0 a 100, em texto (por exemplo, \"Relação: boa (68)\").",
+      "Na etapa do contrato (compra, livre ou renovação), a proposta tem uma comissão, paga uma vez na assinatura e lançada em \"Comissões\" nas Finanças. O campo já vem com o que o empresário pede. Comissão a mais baixa o salário pedido pelo jogador, até um limite, e nunca sai mais barata que o salário que ela substitui. Um jogador sem interesse no seu clube pode ser convencido: a tela mostra a comissão com que o empresário leva a proposta adiante.",
+      "A relação conta: sobe quando você contrata ou renova e cai quando você rescinde, recusa o salário pedido pelo jogador ou cancela a negociação na etapa do contrato. Com relação ruim o empresário pede mais, e a cada virada ela volta um pouco ao neutro. Se chegar a 0, ele rompe com o clube, sai uma manchete e, enquanto durar, ele pede a comissão máxima. Negócios com comissão alta também viram manchete.",
+      "No Mercado, a aba Empresários mostra com quem você já negociou, a relação, a ganância, a influência e a carteira de cada um.",
+      "Os clubes do computador também pagam comissão nas contratações e renovações deles, por isso a mesma seed não dá mais a mesma carreira da 1.14.0. A comissão foi calibrada para a economia continuar nos limites de sempre em 30 temporadas. Os saves da 1.14 abrem com todas as relações neutras. O formato do save mudou (versão 27), e o formato de mod ganhou a seção opcional market.agents."
+    ]
+  },
+  {
     "version": "1.14.0",
     "date": "2026-11-11",
     "changes": [
