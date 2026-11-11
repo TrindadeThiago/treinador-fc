@@ -12,6 +12,8 @@ const REVENUES: readonly LedgerCategory[] = [
   "prize",
   "loan_in",
   "transfer_sale",
+  // Revendas (041): saldo do que o clube recebeu menos o que pagou por cláusulas.
+  "resale",
 ];
 const EXPENSES: readonly LedgerCategory[] = [
   "wages",

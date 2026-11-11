@@ -12,6 +12,7 @@ import {
   leagueCalendar,
   managerClubOf,
   nextClubFixture,
+  pruneResale,
   pruneScouting,
   type QualificationRecord,
   recruitmentAtSeasonStart,
@@ -280,7 +281,8 @@ export function advanceCareerSeason(
       finances: turned.finances ?? save.finances,
       bank: turned.world,
       renewal: turned.renewal ?? save.renewal,
-      market: turned.market ?? save.market,
+      // Cláusulas de revenda (041 R8): quem saiu do mundo na virada encerra a cláusula sem pagamento.
+      market: pruneResale(turned.market ?? save.market, turned.world, turned.league.number),
       board: turned.board ?? save.board,
       fans: turned.fans ?? save.fans,
       news: turned.news ?? save.news,

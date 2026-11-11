@@ -274,6 +274,7 @@ disputado; antes do primeiro jogo, ela fica no início da temporada.
 | Estádio | A capacidade e as obras de ampliação: cada opção mostra os lugares a mais, o custo e quantas rodadas a obra leva. |
 | Crédito | **Empréstimo bancário**: o limite, o uso, os juros, a amortização e a quitação. |
 | Histórico | O saldo final de cada temporada. |
+| Revendas | As **cláusulas de revenda** a receber e a pagar, o que já foi recebido (com o total) e as que acabaram sem pagamento. |
 
 Caixa negativo por várias rodadas seguidas gera **crise financeira**, que a diretoria cobra.
 
@@ -293,6 +294,23 @@ abre e quando fecha.
 
 Também há **empréstimos** e **rescisão** de contrato. A IA monta os elencos dos outros clubes,
 compra, vende e renova durante as janelas.
+
+### Cláusula de revenda
+
+Ao vender um jogador (numa proposta recebida, numa contraproposta ou na venda imediata), você pode
+pedir uma **cláusula de revenda**: um percentual da próxima venda dele, de 5% a 50% em passos de 5%.
+Em troca, o comprador paga menos agora: cada ponto de cláusula tira 1% do valor, e a IA aceita até
+30%. A tela mostra o valor, o desconto e o valor final antes de confirmar.
+
+- A cláusula vale **uma vez**, na próxima venda definitiva do jogador, por qualquer clube, inclusive
+  de outro país. A parte combinada sai do valor recebido pelo vendedor e entra no seu caixa, em
+  **Revendas**. Uma revenda alta vira manchete.
+- Empréstimo, rescisão e saída como livre não pagam e não acabam com a cláusula.
+- Se você comprar o jogador de volta, a cláusula acaba sem pagamento.
+- A IA também pede cláusula: ao vender a você um jogador de até 21 anos, o clube pede 20% de revenda
+  e mostra o valor com e sem ela. Você aceita ou recusa na etapa do contrato.
+- O detalhe do jogador mostra a cláusula ativa ("20% de revenda para o X"), e Finanças → Revendas
+  lista as suas.
 
 ### Olheiros
 

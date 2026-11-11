@@ -1,10 +1,13 @@
 "use client";
 
-import type {
-  MarketRow,
-  Negotiation,
-  NegotiationKind,
-  NegotiationStep,
+import {
+  activeClause,
+  feeWithResale,
+  type MarketRow,
+  type Negotiation,
+  type NegotiationKind,
+  type NegotiationStep,
+  resaleRules,
 } from "@brasfoot-like/engine";
 import { formatMarketError } from "@brasfoot-like/i18n";
 import type { SaveFile } from "@brasfoot-like/save";
@@ -75,11 +78,35 @@ export function NegotiationBody({
   const t = useT();
   const [wage, setWage] = useState(String(row.wage));
   const [years, setYears] = useState(row.age >= 33 ? "1" : "3");
+  // Cláusula de revenda pedida pelo vendedor (041): recusada até o técnico escolher aceitar.
+  const [acceptResale, setAcceptResale] = useState(negotiation.resaleAccepted === true);
   const run = (result: MarketActionResult) => onResult(result, negotiation.kind);
   const seller = nameOf(save, negotiation.fromClubId);
+  const ask = negotiation.kind === "buy" ? negotiation.resaleAsk : undefined;
+  const askFee = negotiation.agreedFee ?? negotiation.counterFee ?? negotiation.fee;
+  const rules = resaleRules(save.bank, save.league.competitionId);
+  const existing = activeClause(save.market, negotiation.playerId);
   return (
     <div className={styles.card}>
       <p>{t(`market.stage.${negotiation.stage}`)}</p>
+      {existing && existing.creditorClubId !== save.clubId && negotiation.kind === "buy" ? (
+        <p className={styles.muted}>
+          {t("market.resale.existing", {
+            pct: existing.pct,
+            club: nameOf(save, existing.creditorClubId),
+          })}
+        </p>
+      ) : null}
+      {ask && askFee !== undefined ? (
+        <p>
+          {t("market.resale.asked", {
+            club: seller,
+            pct: ask.pct,
+            withFee: formatMoney(feeWithResale(askFee, ask.pct, rules)),
+            withoutFee: formatMoney(askFee),
+          })}
+        </p>
+      ) : null}
       {negotiation.fee !== undefined && negotiation.kind !== "free" ? (
         <p className={styles.muted}>
           {t("market.negotiation.fee", { fee: formatMoney(negotiation.fee) })}
@@ -131,6 +158,7 @@ export function NegotiationBody({
                 game.proposeContract(negotiation.id, {
                   wage: Number(wage),
                   years: Number(years),
+                  ...(ask ? { acceptResale } : {}),
                 }),
               );
             }}
@@ -153,6 +181,17 @@ export function NegotiationBody({
                 />
               )}
             </Field>
+            {ask ? (
+              <label className={styles.check}>
+                <input
+                  type="checkbox"
+                  checked={acceptResale}
+                  disabled={disabled}
+                  onChange={(event) => setAcceptResale(event.target.checked)}
+                />
+                <span>{t("market.resale.accept", { pct: ask.pct })}</span>
+              </label>
+            ) : null}
             <Button type="submit" variant="primary" disabled={disabled}>
               {t("market.action.propose")}
             </Button>

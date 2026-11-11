@@ -257,13 +257,14 @@ interface GameContextValue {
   answerClubCounter(negotiationId: string, accept: boolean): MarketActionResult;
   proposeContract(
     negotiationId: string,
-    offer: { wage: number; years: number },
+    offer: { wage: number; years: number; acceptResale?: boolean },
   ): MarketActionResult;
   answerPlayerDemand(negotiationId: string, accept: boolean): MarketActionResult;
   cancelNegotiation(negotiationId: string): void;
   answerIncomingOffer(offerId: string, answer: IncomingAnswer): IncomingActionResult;
   /** Venda imediata a um clube da IA e rescisão de contrato (010): validam no motor e salvam. */
-  sellPlayer(playerId: string): DisposalActionResult;
+  /** Venda imediata; com `resalePct`, o clube fica com uma cláusula de revenda (041). */
+  sellPlayer(playerId: string, resalePct?: number): DisposalActionResult;
   terminateContract(playerId: string): DisposalActionResult;
   /** Base (036): promover ao elenco e dispensar (vira livre). */
   promoteYouth(playerId: string): AcademyActionResult;
@@ -793,7 +794,7 @@ export function GameProvider({
     [commitMarket],
   );
   const proposeContract = useCallback(
-    (id: string, offer: { wage: number; years: number }) =>
+    (id: string, offer: { wage: number; years: number; acceptResale?: boolean }) =>
       commitMarket((save) => proposeManagerContract(save, id, offer)),
     [commitMarket],
   );
@@ -847,7 +848,8 @@ export function GameProvider({
     [persist],
   );
   const sellPlayer = useCallback(
-    (playerId: string) => disposePlayer(sellManagerPlayer, playerId),
+    (playerId: string, resalePct?: number) =>
+      disposePlayer((save, id) => sellManagerPlayer(save, id, resalePct), playerId),
     [disposePlayer],
   );
 

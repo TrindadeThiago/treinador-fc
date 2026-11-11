@@ -14,6 +14,7 @@ export const ORIGIN_CATEGORIES = [
   "prize",
   "loan_in",
   "transfer_sale",
+  "resale",
 ] as const satisfies readonly LedgerCategory[];
 export const DESTINATION_CATEGORIES = [
   "wages",
@@ -23,6 +24,7 @@ export const DESTINATION_CATEGORIES = [
   "academy",
   "scouting",
   "transfer_purchase",
+  "resale",
 ] as const satisfies readonly LedgerCategory[];
 
 export interface BalancePoint {
@@ -132,7 +134,11 @@ export function breakdown(
   const categories = kind === "origin" ? ORIGIN_CATEGORIES : DESTINATION_CATEGORIES;
   const amounts: { category: BreakdownCategory; amount: number }[] = categories.map((category) => ({
     category,
-    amount: Math.abs(totals[category]),
+    // Revendas (041) têm os dois sinais: o saldo positivo é receita; o negativo, despesa.
+    amount:
+      category === "resale"
+        ? Math.max(0, kind === "origin" ? totals.resale : -totals.resale)
+        : Math.abs(totals[category]),
   }));
   if (kind === "destination") {
     // A rescisão é lançada na categoria de salários; o registro do mercado diz quanto foi multa.

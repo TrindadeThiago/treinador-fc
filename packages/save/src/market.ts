@@ -70,10 +70,11 @@ export function answerManagerClubCounter(
   return applyStep(save, answerClubCounter(marketContextOf(save), negotiationId, accept));
 }
 
+/** Proposta de contrato; `acceptResale` responde à cláusula de revenda pedida pelo vendedor (041). */
 export function proposeManagerContract(
   save: SaveFile,
   negotiationId: string,
-  offer: { wage: number; years: number },
+  offer: { wage: number; years: number; acceptResale?: boolean },
 ): MarketSaveResult {
   return applyStep(save, proposeContract(marketContextOf(save), negotiationId, offer));
 }
@@ -126,8 +127,9 @@ export type DisposalSaveResult = { ok: true; save: SaveFile } | { ok: false; err
 export function quoteManagerSale(
   save: SaveFile,
   playerId: string,
+  resalePct?: number,
 ): { ok: true; quote: SaleQuote } | { ok: false; error: MarketError } {
-  const result = quoteSale(marketContextOf(save), playerId);
+  const result = quoteSale(marketContextOf(save), playerId, resalePct);
   return result.ok ? { ok: true, quote: result.value } : result;
 }
 
@@ -140,9 +142,16 @@ export function quoteManagerTermination(
   return result.ok ? { ok: true, quote: result.value } : result;
 }
 
-/** Vende o jogador na hora; quem sai também sai da escalação (com aviso). */
-export function sellManagerPlayer(save: SaveFile, playerId: string): DisposalSaveResult {
-  const result = sellNow(marketContextOf(save), playerId);
+/**
+ * Vende o jogador na hora; quem sai também sai da escalação (com aviso). Com `resalePct`, o clube
+ * fica com uma cláusula de revenda e recebe o valor com desconto (041).
+ */
+export function sellManagerPlayer(
+  save: SaveFile,
+  playerId: string,
+  resalePct?: number,
+): DisposalSaveResult {
+  const result = sellNow(marketContextOf(save), playerId, resalePct);
   return result.ok ? { ok: true, save: applyMarketUpdate(save, result.value) } : result;
 }
 

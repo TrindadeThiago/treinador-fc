@@ -11,7 +11,7 @@ import { Dialog } from "../Dialog";
 import { evolutionText, lastEvolution } from "../evolution-text";
 import { Meter } from "../Meter";
 import { conditionText } from "../PlayerCondition";
-import { PlayerStats } from "../PlayerDetails";
+import { PlayerStats, resaleText } from "../PlayerDetails";
 import { ScoutReport } from "../ScoutReport";
 import styles from "./MarketPlayerModal.module.css";
 
@@ -83,6 +83,9 @@ export function MarketPlayerModal({
     ["player.evolution", evolutionText(lastEvolution(save, row.playerId))],
     ["player.condition", conditionText(t, condition)],
   ];
+  // Cláusula de revenda ativa (041): quem comprar sabe que uma venda futura paga essa fatia.
+  const resale = resaleText(save, row.playerId, t);
+  if (resale) facts.push(["player.resale", resale]);
   const canOffer = !own && !row.onLoan;
   return (
     <Dialog

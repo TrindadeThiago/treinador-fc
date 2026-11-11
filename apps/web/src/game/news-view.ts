@@ -49,6 +49,7 @@ export const GENERAL_TYPES = [
   "bigTransfer",
   "academyRevelation",
   "academySale",
+  "resaleReceived",
 ] as const satisfies readonly HeadlineType[];
 
 const GENERAL = "general";

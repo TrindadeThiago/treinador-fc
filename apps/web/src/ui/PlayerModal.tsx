@@ -21,7 +21,7 @@ import { evolutionText, lastEvolution } from "./evolution-text";
 import { Meter } from "./Meter";
 import { NegotiationDialog, type NegotiationTarget } from "./market/NegotiationDialog";
 import { conditionText } from "./PlayerCondition";
-import { academyOriginText, PlayerStats, promotionEstimateText } from "./PlayerDetails";
+import { academyOriginText, PlayerStats, promotionEstimateText, resaleText } from "./PlayerDetails";
 import styles from "./PlayerModal.module.css";
 import { ScoutReport } from "./ScoutReport";
 
@@ -99,6 +99,8 @@ export function PlayerModal({
   ];
   const origin = academyOriginText(save, player.id, t);
   if (origin) facts.push(["player.origin", origin]);
+  const resale = resaleText(save, player.id, t);
+  if (resale) facts.push(["player.resale", resale]);
   const estimate = scoutReport(save, player.id)
     ? undefined
     : promotionEstimateText(save, player.id, t);

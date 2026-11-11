@@ -376,6 +376,47 @@ export const economySchema = z.object({
 
 const pct = intInRange(0, 1000);
 
+/**
+ * Cláusula de revenda (041, data-model.md); tudo opcional, com os padrões de `DEFAULT_RESALE`.
+ * As checagens entre campos valem só entre os campos presentes; `resaleRules` confere de novo
+ * com os padrões preenchidos.
+ */
+const resaleSchema = z
+  .object({
+    minPct: intInRange(1, 90).optional(),
+    maxPct: intInRange(1, 90).optional(),
+    stepPct: intInRange(1, 90).optional(),
+    /** Desconto no valor por ponto de percentual; no máximo 1 para não reabrir a arbitragem do A2. */
+    discountPerPointPct: z.number().min(0).max(1).optional(),
+    aiMaxPct: intInRange(1, 90).optional(),
+    aiAskPct: intInRange(1, 90).optional(),
+    aiAskMaxAge: intInRange(15, 40).optional(),
+    headlinePayrollPct: intInRange(0, 10000).optional(),
+  })
+  .superRefine((value, ctx) => {
+    const min = value.minPct ?? 5;
+    const max = value.maxPct ?? 50;
+    const step = value.stepPct ?? 5;
+    if (min > max) {
+      ctx.addIssue({ code: "custom", path: ["minPct"], message: "minPct maior que maxPct" });
+      return;
+    }
+    if ((max - min) % step !== 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["stepPct"],
+        message: "a faixa (maxPct − minPct) precisa ser múltiplo de stepPct",
+      });
+      return;
+    }
+    for (const key of ["aiMaxPct", "aiAskPct"] as const) {
+      const v = value[key] ?? (key === "aiMaxPct" ? 30 : 20);
+      if (v < min || v > max || (v - min) % step !== 0) {
+        ctx.addIssue({ code: "custom", path: [key], message: `${key} fora da faixa ou do passo` });
+      }
+    }
+  });
+
 /** Regras do mercado de transferências (010, research.md R5–R11); tudo opcional. */
 export const marketSchema = z.object({
   windows: list(
@@ -462,6 +503,7 @@ export const marketSchema = z.object({
       wageReviewPct: intInRange(0, 200),
     })
     .optional(),
+  resale: resaleSchema.optional(),
 });
 
 /** Regras da diretoria (012, research.md R17); tudo opcional. */
@@ -566,6 +608,7 @@ const headlineMap = (max: number) =>
       academyDebut: intInRange(0, max),
       academyFirstGoal: intInRange(0, max),
       academySale: intInRange(0, max),
+      resaleReceived: intInRange(0, max),
     })
     .partial();
 

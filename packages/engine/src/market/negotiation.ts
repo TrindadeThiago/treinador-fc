@@ -4,6 +4,7 @@ import { askingPrice, respondToOffer } from "./club-response";
 import { contractYearsRange } from "./contracts";
 import { completeLoan, completeRenewal, completeSigning, completeTransfer } from "./effects";
 import { respondToContract } from "./player-response";
+import { aiAsksResale, feeWithResale, resaleRules } from "./resale";
 import { marketRules } from "./rules";
 import { canAddPlayer } from "./squad";
 import type {
@@ -186,6 +187,8 @@ export function startNegotiation(
   }
 
   const response = respondToOffer(context, target, input.fee, input.kind);
+  // Cláusula de revenda (041 R5): o clube da IA pede uma nos jovens, só pela idade (sem sorte).
+  const resaleAsk = input.kind === "buy" ? aiAsksResale(context, target) : undefined;
   const opened: Negotiation = {
     ...base,
     kind: input.kind,
@@ -193,6 +196,7 @@ export function startNegotiation(
     stage: "club_offer",
     fee: input.fee,
     openedRound,
+    ...(resaleAsk ? { resaleAsk } : {}),
   };
   if (response.kind === "refused") {
     const closed = closeNegotiation(
@@ -280,11 +284,16 @@ export function answerClubCounter(
 export function proposeContract(
   context: MarketContext,
   negotiationId: string,
-  offer: { wage: number; years: number },
+  offer: { wage: number; years: number; acceptResale?: boolean },
 ): MarketResult<NegotiationStep> {
-  const negotiation = findNegotiation(context, negotiationId);
-  if (!negotiation) return fail("market.not_found");
-  if (negotiation.stage !== "contract") return fail("market.invalid_stage");
+  const found = findNegotiation(context, negotiationId);
+  if (!found) return fail("market.not_found");
+  if (found.stage !== "contract") return fail("market.invalid_stage");
+  // A escolha sobre a cláusula pedida (041) acompanha a negociação até a conclusão.
+  const negotiation: Negotiation =
+    found.resaleAsk && offer.acceptResale !== undefined
+      ? { ...found, resaleAccepted: offer.acceptResale }
+      : found;
   const player = findPlayer(context, negotiation.playerId);
   if (!player) return fail("market.not_found");
   const rules = rulesOf(context);
@@ -391,11 +400,21 @@ function conclude(
   let done: MarketResult<MarketUpdate>;
   if (negotiation.kind === "buy") {
     if (!isWindowOpen(context.league, rules)) return windowClosed(context, rules);
+    // Com a cláusula pedida aceita (041), paga o valor com desconto e o vendedor fica credor.
+    const clause = negotiation.resaleAccepted ? negotiation.resaleAsk : undefined;
+    const agreed = negotiation.agreedFee ?? 0;
     done = completeTransfer(context, {
       playerId: negotiation.playerId,
       toClubId: negotiation.clubId,
-      fee: negotiation.agreedFee ?? 0,
+      fee: clause
+        ? feeWithResale(
+            agreed,
+            clause.pct,
+            resaleRules(context.world, context.league.competitionId),
+          )
+        : agreed,
       contract,
+      ...(clause ? { resale: { pct: clause.pct } } : {}),
     });
   } else if (negotiation.kind === "free") {
     const agent = context.market.freeAgents.find(

@@ -307,7 +307,13 @@ export {
 export { aiClubs, aiContractYears, aiMarketRound } from "./market/ai/round";
 export type { AiMarketRules } from "./market/ai/rules";
 export { aiMarketRules, DEFAULT_AI_MARKET } from "./market/ai/rules";
-export { askingPrice, loanAskingPrice, maxBidFor, respondToOffer } from "./market/club-response";
+export {
+  askingPrice,
+  buyAskingPrice,
+  loanAskingPrice,
+  maxBidFor,
+  respondToOffer,
+} from "./market/club-response";
 export {
   contractYearsRange,
   ensureContracts,
@@ -344,6 +350,21 @@ export {
 } from "./market/negotiation";
 export { attraction, exigency, respondToContract, wageDemand } from "./market/player-response";
 export { releaseManagerClub } from "./market/release";
+export type { ClubResaleView, ResaleRules } from "./market/resale";
+export {
+  activeClause,
+  aiAsksResale,
+  clubResaleView,
+  DEFAULT_RESALE,
+  feeWithResale,
+  isValidResalePct,
+  pruneResale,
+  RESALE_RECEIPTS_MAX,
+  resaleRules,
+  resaleShare,
+  resaleSteps,
+  shareOf,
+} from "./market/resale";
 export { DEFAULT_MARKET, marketRules } from "./market/rules";
 export {
   comparePlayers,
@@ -380,6 +401,10 @@ export type {
   PlayerFilters,
   PlayerResponse,
   ReportEntry,
+  ResaleClause,
+  ResaleOutcome,
+  ResaleReceipt,
+  ResaleState,
   TransferKind,
   TransferRecord,
   WindowReport,

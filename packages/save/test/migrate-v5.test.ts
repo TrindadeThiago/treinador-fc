@@ -26,7 +26,7 @@ describe("migração v4 → v5 (009 R12, FR-019, SC-008)", () => {
       const v4 = build();
       const result = migrated(v4);
       expect(result.migratedFrom).toBe(4);
-      expect(result.save.formatVersion).toBe(25);
+      expect(result.save.formatVersion).toBe(26);
       expect(sansAcademy({ renewal: result.save.renewal })).toEqual(
         sansAcademy({ renewal: initialRenewal(v4.bank) }),
       );
@@ -44,7 +44,7 @@ describe("migração v4 → v5 (009 R12, FR-019, SC-008)", () => {
   it("v1 → v6 em cadeia", () => {
     const result = migrated(saveV1());
     expect(result.migratedFrom).toBe(1);
-    expect(result.save.formatVersion).toBe(25);
+    expect(result.save.formatVersion).toBe(26);
     expect(result.save.renewal.nextPlayerSeq).toBeGreaterThan(1);
   });
 

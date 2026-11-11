@@ -1,6 +1,12 @@
 "use client";
 
-import { ageOn, clubUnavailability, graduateOf, seasonStats } from "@brasfoot-like/engine";
+import {
+  activeClause,
+  ageOn,
+  clubUnavailability,
+  graduateOf,
+  seasonStats,
+} from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
 import { regionName, scoutReport } from "../game/scouting-view";
 import { clubSeasonRatings } from "../game/selectors";
@@ -25,6 +31,20 @@ const STATS = [
 
 /** Estatísticas do jogador na temporada, com o aviso de quem ainda não jogou (compartilhada com o modal do Elenco). */
 /** Origem "cria da base" (036 FR-015): clube e ano da promoção, quando o jogador subiu da base. */
+/** Cláusula de revenda ativa do jogador (041): "20% de revenda para o X", ou nada. */
+export function resaleText(
+  save: SaveFile,
+  playerId: string,
+  t: ReturnType<typeof useT>,
+): string | undefined {
+  const clause = activeClause(save.market, playerId);
+  if (!clause) return undefined;
+  const club =
+    save.bank.clubs.find((entry) => entry.id === clause.creditorClubId)?.name ??
+    clause.creditorClubId;
+  return t("player.resaleValue", { pct: clause.pct, club });
+}
+
 export function academyOriginText(
   save: SaveFile,
   playerId: string,
@@ -126,6 +146,8 @@ export function PlayerDetails({
   ];
   const origin = academyOriginText(save, player.id, t);
   if (origin) visible.push(["player.origin", origin]);
+  const resale = resaleText(save, player.id, t);
+  if (resale) visible.push(["player.resale", resale]);
   // Com relatório do olheiro (039), ele já parte da faixa da promoção e a substitui.
   const estimate = scoutReport(save, player.id)
     ? undefined

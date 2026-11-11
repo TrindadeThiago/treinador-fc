@@ -26,6 +26,8 @@ export function headlineVars(save: SaveFile, vars: HeadlineVars): HeadlineVars {
   }
   if (typeof vars.level === "number") resolved.division = divisionNameOf(save, vars.level);
   if (typeof vars.fee === "number") resolved.feeText = formatMoney(vars.fee);
+  // Revenda recebida (041): a fatia paga ao clube da cláusula.
+  if (typeof vars.amount === "number") resolved.amountText = formatMoney(vars.amount);
   if (typeof vars.position === "string") resolved.positionName = label(`position.${vars.position}`);
   // Manchetes guardadas antes da 040 não têm `scouted`: o texto trata como cria da safra.
   if (resolved.scouted === undefined) resolved.scouted = "no";
