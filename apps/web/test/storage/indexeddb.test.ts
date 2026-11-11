@@ -55,6 +55,24 @@ describe("SaveStore no IndexedDB (FR-006 a FR-010)", () => {
     expect(list.find((summary) => summary.id === "ok")?.status).toBe("ok");
   });
 
+  it("save marcado como danificado volta a abrir quando a leitura passa a aceitá-lo", async () => {
+    const name = dbName();
+    let accept = false;
+    const reader = (raw: unknown) =>
+      accept ? migrateSave(raw) : { status: "corrupt" as const, reason: "teste" };
+    const store = createIndexedDbStore(name, reader);
+    await store.save(careerSave("salvo"));
+    expect((await store.load("salvo")).status).toBe("corrupt");
+    expect((await store.listSummaries())[0]?.status).toBe("corrupt");
+    accept = true;
+    const [summary] = await store.listSummaries();
+    expect(summary?.status).toBe("ok");
+    expect(summary?.managerName).not.toBe("");
+    expect((await store.load("salvo")).status).toBe("ok");
+    const again = createIndexedDbStore(name, () => ({ status: "corrupt", reason: "não lê" }));
+    expect((await again.listSummaries())[0]?.status).toBe("ok");
+  });
+
   it("save de versão futura aparece marcado e não abre", async () => {
     const name = dbName();
     const store = createIndexedDbStore(name, migrateSave);

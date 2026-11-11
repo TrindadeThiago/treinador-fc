@@ -11,6 +11,13 @@
     ]
   },
   {
+    "version": "1.14.1",
+    "date": "2026-11-11",
+    "changes": [
+      "Corrigido: algumas carreiras apareciam como \"Carreira danificada\" depois de uma virada de temporada. Isso acontecia quando mais clubes de um mesmo país se classificavam para uma copa continental do que havia grupos para separá-los. O sorteio já resolvia esse caso, mas a checagem ao abrir o save recusava a carreira. Essas carreiras voltam a abrir, e as que já estavam marcadas como danificadas são reavaliadas na lista de Carreiras salvas."
+    ]
+  },
+  {
     "version": "1.14.0",
     "date": "2026-11-11",
     "changes": [
