@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.14.0",
+    "date": "2026-11-11",
+    "changes": [
+      "Cláusula de revenda: ao vender um jogador, numa proposta recebida, numa contraproposta ou na venda imediata, você pode ficar com um percentual da próxima venda dele, de 5% a 50%. Em troca, o comprador paga menos agora: cada ponto tira 1% do valor, e a IA aceita até 30%. A tela mostra o valor, o desconto e o que você recebe antes de confirmar.",
+      "Quando um jogador vendido com cláusula é vendido de novo, por qualquer clube e até em outro país, a sua parte sai do valor recebido pelo vendedor e entra no seu caixa em Revendas. Uma revenda alta vira manchete. Empréstimo, rescisão e saída como livre não pagam nem acabam com a cláusula; se você comprar o jogador de volta, ela acaba sem pagamento.",
+      "A IA também aposta: ao vender a você um jogador de até 21 anos, o clube pede 20% de revenda e mostra o valor com e sem a cláusula, e você escolhe na etapa do contrato. O detalhe do jogador mostra a cláusula ativa (\"20% de revenda para o X\"), e Finanças ganhou a aba Revendas, com o que você tem a receber e a pagar e o que já recebeu.",
+      "A cláusula nunca cria dinheiro: cada revenda sai de um caixa e entra em outro, e comprar com cláusula para vender logo em seguida não rende mais do que sem ela. Sem usar cláusulas, a mesma seed dá a mesma carreira da 1.13.0. Os saves da 1.13 abrem sem cláusulas. O formato do save mudou (versão 26), e o formato de mod ganhou a seção opcional market.resale."
+    ]
+  },
+  {
     "version": "1.13.0",
     "date": "2026-11-11",
     "changes": [
