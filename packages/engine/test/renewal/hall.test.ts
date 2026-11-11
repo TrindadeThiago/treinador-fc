@@ -97,3 +97,25 @@ describe("refreshHall (038 R9)", () => {
     expect(seeded.hall?.["clube-9"]?.best.map((legend) => legend.playerId)).toEqual(["x"]);
   });
 });
+
+describe("captados no histórico (040 FR-011)", () => {
+  it("withGraduates copia a origem; o hall conta os captados e marca a lenda", () => {
+    const scouted = {
+      ...entry("cap", "clube-1", 70),
+      origin: {
+        kind: "scouted" as const,
+        region: { kind: "country" as const, countryId: "pais-b" },
+        season: 2,
+      },
+    };
+    let academy: AcademyState = emptyAcademy();
+    academy = withGraduates(academy, [scouted, entry("loc", "clube-1", 50)], 3);
+    expect(academy.graduates.cap?.origin).toEqual(scouted.origin);
+    expect(academy.graduates.loc?.origin).toBeUndefined();
+    const hall = academyHallOf({ academy } as never, "clube-1");
+    expect(hall.promoted).toBe(2);
+    expect(hall.scouted).toBe(1);
+    expect(hall.best.find((legend) => legend.playerId === "cap")?.scouted).toBe(true);
+    expect(hall.best.find((legend) => legend.playerId === "loc")?.scouted).toBeUndefined();
+  });
+});

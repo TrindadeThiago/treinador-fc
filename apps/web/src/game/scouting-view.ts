@@ -1,5 +1,11 @@
 import {
+  academyLimit,
+  academyOf,
+  foreignCountWithAcademy,
+  recruitmentWindows,
   type ScoutingPanel,
+  type ScoutingRegion,
+  type ScoutOffer,
   type ScoutReportView,
   scoutingPanel,
   scoutReportOf,
@@ -41,4 +47,45 @@ export function reportSortValue(report: ScoutReportView | undefined): number | u
   return report
     ? (report.estimate.low + report.estimate.high) * 1000 + report.estimate.high
     : undefined;
+}
+
+/** Nome de uma região de captação (040): o estado ou o nome do país. */
+export function regionName(save: SaveFile, region: ScoutingRegion): string {
+  if (region.kind === "state") return region.region;
+  return (
+    save.bank.countries.find((country) => country.id === region.countryId)?.name ?? region.countryId
+  );
+}
+
+/** Motivo (chave de texto e parâmetros) para não poder trazer a indicação agora, ou nada. */
+export function signBlock(
+  save: SaveFile,
+  offer: ScoutOffer,
+): { key: string; params?: Record<string, string | number> } | undefined {
+  const clubId = save.clubId;
+  const count = academyOf(save.renewal, clubId).length;
+  if (count >= academyLimit(save.renewal, save.bank, clubId)) {
+    return { key: "recruitment.blocked.academyFull" };
+  }
+  const cash = save.finances.clubs[clubId]?.cash ?? 0;
+  if (offer.cost > cash) {
+    return { key: "recruitment.blocked.cash", params: { missing: offer.cost - cash } };
+  }
+  const club = save.bank.clubs.find((entry) => entry.id === clubId);
+  const limit = save.bank.countries.find((country) => country.id === club?.countryId)?.rules
+    ?.foreignLimit;
+  if (
+    offer.player.nationalityId !== club?.countryId &&
+    limit !== undefined &&
+    foreignCountWithAcademy(save.bank, save.renewal, clubId) + 1 > limit
+  ) {
+    return { key: "recruitment.blocked.foreign", params: { limit } };
+  }
+  return undefined;
+}
+
+/** Rodada (jogadas) em que abre a próxima janela da temporada; nada = só na pré-temporada. */
+export function nextOfferRound(save: SaveFile): number | undefined {
+  const { windows, played } = recruitmentWindows(save.bank, save.league);
+  return windows.find((window) => window.fromRound > played)?.fromRound;
 }

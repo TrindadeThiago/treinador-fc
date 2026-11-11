@@ -1,5 +1,6 @@
 import type { Position } from "../model/catalogs";
 import type { CompletedPlayer } from "../model/types";
+import type { ScoutingRegion } from "../scouting/types";
 
 /** Renovação do mundo (data-model.md da 009). */
 
@@ -62,6 +63,15 @@ export interface AcademyPlayer {
   joinedSeason: number;
   /** Faixa de potencial estimado (038); ausente só antes da primeira atribuição. */
   estimate?: PotentialEstimate;
+  /** Captado pelos olheiros (040); ausente = safra da academia. */
+  origin?: AcademyOrigin;
+}
+
+/** Origem de um jovem captado (040): a região e a temporada em que foi trazido. */
+export interface AcademyOrigin {
+  kind: "scouted";
+  region: ScoutingRegion;
+  season: number;
 }
 
 /** Origem de um jogador promovido da base. */
@@ -74,6 +84,8 @@ export interface AcademyGraduate {
   estimate?: PotentialEstimate;
   /** Força máxima vista na promoção e nas viradas (038). */
   peak?: number;
+  /** Captado pelos olheiros (040). */
+  origin?: AcademyOrigin;
 }
 
 /** Uma das maiores revelações de um clube formador (038). */
@@ -84,11 +96,15 @@ export interface AcademyLegend {
   peak: number;
   /** Temporada da promoção. */
   season: number;
+  /** Captado pelos olheiros (040). */
+  scouted?: true;
 }
 
 /** Crias de um clube formador (038): total promovido e as maiores revelações. */
 export interface AcademyHall {
   promoted: number;
+  /** Quantos dos promovidos foram captados (040); incluídos também em `promoted`. */
+  scouted?: number;
   best: AcademyLegend[];
 }
 

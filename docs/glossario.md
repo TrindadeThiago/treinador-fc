@@ -42,6 +42,9 @@ novo, use estes termos; ao traduzir, mantenha a mesma distinção entre eles.
 | **potencial estimado** / **faixa** | a estimativa do potencial de um jovem da base, mostrada como faixa ("68–84"); estreita com o tempo na base e com uma academia melhor; o potencial real nunca aparece; no jogo, a coluna "Potencial" | nota de potencial, potencial (sem dizer que é estimado, fora da coluna) |
 | **olheiro** / **departamento de olheiros** | quem observa jogadores de outros clubes para o técnico; o departamento tem nível de 1 a 5 (vagas, precisão e custo) e começa fechado | scout |
 | **relatório (do olheiro)** | o que se sabe de um jogador observado: a faixa de potencial, o temperamento e a propensão a lesões em texto, a confiança e a data | ficha, avaliação |
+| **captação** / **região de captação** | a busca de jovens de fora pelos olheiros, numa região escolhida (um estado, o país ou outro país) | peneira, garimpo |
+| **indicação** | um jovem que os olheiros apontam, com faixa e custo de registro; só entra no mundo se for trazido | proposta, oferta |
+| **captado** | o jovem da base que veio de uma indicação; a origem fica registrada com a região | contratado, importado |
 | **observar** / **em observação** | mandar um olheiro acompanhar um jogador; ocupa uma vaga até cancelar | monitorar, seguir |
 | **revelação da safra** | o jovem da safra que chegou na virada anterior com a maior força atual, no clube e na divisão; vira manchete na virada | promessa (termo da medida do mundo), joia |
 | **promover / dispensar** | levar um jovem da base ao elenco / tirá-lo da base (ele vira livre) | subir, cortar |

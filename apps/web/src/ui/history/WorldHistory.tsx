@@ -182,7 +182,12 @@ function hallColumns(save: SaveFile, t: ReturnType<typeof useT>): Column<Academy
   const clubOf = new Map(save.bank.players.map((player) => [player.id, player.clubId]));
   const yearOf = (season: number) => save.league.year - (save.league.number - season);
   return [
-    { key: "name", header: t("col.player"), render: (row) => row.name },
+    {
+      key: "name",
+      header: t("col.player"),
+      render: (row) =>
+        row.scouted ? t("history.clubs.academy.scoutedName", { name: row.name }) : row.name,
+    },
     {
       key: "position",
       header: t("col.playerPosition"),
@@ -264,6 +269,9 @@ export function ClubHistory({ save }: { save: SaveFile }) {
         ) : (
           <>
             <p>{t("history.clubs.academy.promoted", { count: hall.promoted })}</p>
+            {hall.scouted ? (
+              <p>{t("history.clubs.academy.scouted", { count: hall.scouted })}</p>
+            ) : null}
             <DataTable
               rows={hall.best}
               columns={hallColumns(save, t)}

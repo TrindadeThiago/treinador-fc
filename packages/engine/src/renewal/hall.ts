@@ -49,6 +49,7 @@ function legendOf(player: HallPlayer, graduate: AcademyGraduate, peak: number): 
     position: player.position,
     peak,
     season: graduate.season,
+    ...(graduate.origin?.kind === "scouted" ? { scouted: true as const } : {}),
   };
 }
 
@@ -92,8 +93,10 @@ export function hallWithPromotions(
   const hall: Record<string, AcademyHall> = { ...(academy.hall ?? {}) };
   for (const { player, graduate } of promoted) {
     const current = hall[graduate.clubId] ?? emptyHall();
+    const scouted = (current.scouted ?? 0) + (graduate.origin?.kind === "scouted" ? 1 : 0);
     hall[graduate.clubId] = {
       promoted: current.promoted + 1,
+      ...(scouted > 0 ? { scouted } : {}),
       best: mergeLegends(current.best, [legendOf(player, graduate, graduate.peak ?? 0)]),
     };
   }

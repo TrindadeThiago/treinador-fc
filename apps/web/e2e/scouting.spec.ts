@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
-import { createCareer, simulate, t } from "./helpers";
+import { createCareer, simulate, simulateSeason, t } from "./helpers";
 
 // 039: olheiros pelo caminho do jogador. Abrir o departamento pelo teclado, observar a partir da
 // busca, jogar rodadas e ver a faixa no relatório e "Olheiros" em Finanças; filtrar os observados.
@@ -55,4 +55,52 @@ test("olheiros: abrir pelo teclado, observar, relatório nas rodadas e custo nas
   await page.keyboard.press("m");
   await page.getByRole("checkbox", { name: t("market.filter.observedOnly") }).check();
   await expect(page.getByText("1 jogador encontrado")).toBeVisible();
+});
+
+// 040: captação. Abrir o departamento, escolher a região, passar a virada (as indicações da
+// pré-temporada chegam), trazer um indicado e vê-lo na base como captado.
+test("captação: região, indicações na virada e trazer para a base (040)", async ({ page }) => {
+  test.setTimeout(300_000);
+  await createCareer(page, "Ana Souza", 1, undefined, { noFiring: true });
+  await page.keyboard.press("m");
+  await page.getByRole("tab", { name: t("market.tab.scouting") }).click();
+  const panel = page.getByRole("region", { name: t("scouting.title") });
+  await panel.getByRole("button", { name: t("scouting.open") }).click();
+  const dialog = page.getByRole("dialog", { name: t("scouting.dialog.title") });
+  await dialog.getByRole("combobox").selectOption("5");
+  await dialog.getByRole("button", { name: t("scouting.confirm") }).click();
+  const recruitment = page.getByRole("region", { name: t("recruitment.title") });
+  const region = recruitment.getByRole("combobox", { name: t("recruitment.region") });
+  const country =
+    (await region
+      .locator("option")
+      .filter({ hasText: /^País:/ })
+      .first()
+      .getAttribute("value")) ?? "";
+  await region.selectOption(country);
+  await expect(page.getByText(t("recruitment.done.region"))).toBeVisible();
+
+  await simulateSeason(page);
+  await page
+    .getByRole("button", { name: t("seasonEnd.next") })
+    .first()
+    .click();
+  await expect(page.getByText(/rodada 1 de/)).toBeVisible();
+  await page.keyboard.press("m");
+  await page.getByRole("tab", { name: /^Observação/ }).click();
+  const table = page.getByRole("table", { name: t("recruitment.caption") });
+  const sign = table.getByRole("button", { name: /^Trazer / }).first();
+  const name = ((await sign.getAttribute("aria-label")) ?? "")
+    .replace(/^Trazer /, "")
+    .replace(/ para a base$/, "");
+  await sign.click();
+  await page
+    .getByRole("dialog", { name: t("recruitment.confirmTitle", { name }) })
+    .getByRole("button", { name: t("recruitment.sign") })
+    .click();
+  await expect(page.getByText(t("recruitment.done.sign", { name }))).toBeVisible();
+
+  await page.keyboard.press("2");
+  await page.getByRole("tab", { name: t("squad.tab.academy") }).click();
+  await expect(page.getByRole("row", { name: new RegExp(name) })).toContainText("Captado");
 });

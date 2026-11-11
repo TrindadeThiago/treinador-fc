@@ -1,3 +1,4 @@
+import type { CompletedPlayer } from "../model/types";
 import type { PotentialEstimate } from "../renewal/types";
 
 /**
@@ -29,6 +30,28 @@ export interface ScoutReport {
   updated: ScoutingMoment;
 }
 
+/** Região de captação (040): um estado (`clubs[].region`) de um país, ou um país inteiro. */
+export type ScoutingRegion =
+  | { kind: "state"; countryId: string; region: string }
+  | { kind: "country"; countryId: string };
+
+/**
+ * Indicação de um jovem (040): ainda fora do mundo, com id provisório (`scout-offer-N`) que nunca é
+ * id de jogador do mundo. Só ao ser trazido ganha o id real e entra na base.
+ */
+export interface ScoutOffer {
+  id: string;
+  player: Omit<CompletedPlayer, "clubId" | "contract">;
+  estimate: PotentialEstimate;
+  temperament?: ScoutGrade;
+  injury?: ScoutGrade;
+  region: ScoutingRegion;
+  cost: number;
+  /** A indicação vale enquanto as rodadas jogadas da liga forem ≤ este número. */
+  expiresRound: number;
+  season: number;
+}
+
 export interface ScoutingState {
   /** Clube do departamento; se o técnico não está mais nele, o departamento conta como fechado. */
   clubId?: string;
@@ -37,4 +60,12 @@ export interface ScoutingState {
   watch: Observation[];
   /** Por id de jogador. */
   reports: Record<string, ScoutReport>;
+  /** Região de captação em vigor (040). */
+  region?: ScoutingRegion;
+  /** Região escolhida, que vale a partir da rodada seguinte (040 FR-001). */
+  pendingRegion?: ScoutingRegion | null;
+  /** Indicações abertas (040). */
+  offers?: ScoutOffer[];
+  /** Numeração local das indicações (040). */
+  nextOfferSeq?: number;
 }

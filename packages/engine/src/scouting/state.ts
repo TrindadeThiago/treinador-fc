@@ -43,7 +43,14 @@ export function effectiveScoutingLevel(
 
 /** Troca de clube do técnico: fecha o departamento e mantém os relatórios. */
 export function closeScouting(scouting: ScoutingState): ScoutingState {
-  const { clubId: _clubId, ...rest } = scouting;
+  // Fechar também encerra a captação (040): a região e as indicações abertas somem.
+  const {
+    clubId: _clubId,
+    region: _region,
+    pendingRegion: _pending,
+    offers: _offers,
+    ...rest
+  } = scouting;
   return { ...rest, level: 0, watch: [] };
 }
 

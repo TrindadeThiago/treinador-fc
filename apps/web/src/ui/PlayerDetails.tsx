@@ -2,7 +2,7 @@
 
 import { ageOn, clubUnavailability, graduateOf, seasonStats } from "@brasfoot-like/engine";
 import { currentDate, type SaveFile, userSeason } from "@brasfoot-like/save";
-import { scoutReport } from "../game/scouting-view";
+import { regionName, scoutReport } from "../game/scouting-view";
 import { clubSeasonRatings } from "../game/selectors";
 import { formatRating, label, useT } from "../i18n";
 import { Button } from "./Button";
@@ -34,7 +34,11 @@ export function academyOriginText(
   if (!origin) return undefined;
   const club = save.bank.clubs.find((entry) => entry.id === origin.clubId)?.name ?? origin.clubId;
   const year = save.league.year - (save.league.number - origin.season);
-  return t("player.academyGraduate", { club, year });
+  const base = t("player.academyGraduate", { club, year });
+  // Captado pelos olheiros (040): a região e o ano em que chegou à base.
+  if (origin.origin?.kind !== "scouted") return base;
+  const scoutedYear = save.league.year - (save.league.number - origin.origin.season);
+  return `${base} · ${t("player.scouted", { region: regionName(save, origin.origin.region), year: scoutedYear })}`;
 }
 
 /**

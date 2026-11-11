@@ -714,6 +714,15 @@ valores padrão do jogo, e você pode informar só o que quer mudar. Todos os va
   redução 1 a 5, largura mínima 14/12/10/8/6, largura inicial 24 e 300 relatórios. Uma largura mínima
   que cresce do nível 1 ao 5 gera aviso (`economy.scouting_width_order`). Os clubes da IA não usam
   olheiros.
+  Captação de jovens (040, opcional): `economy.scouting.recruitment` com:
+  - `offersPerWindow.country` e `offersPerWindow.state`: 5 inteiros de 0 a 10, as indicações por
+    janela em cada nível (padrão 1/1/2/2/3 e 1/1/1/1/2);
+  - `registrationPct.state`, `.country` e `.abroad`: o custo de registro em % da folha mensal de
+    referência (padrão 10, 20 e 35);
+  - `ageRange`: as idades dos indicados (padrão [15, 17]);
+  - `levelBasis`: o nível da academia usado na força e no potencial dos indicados (padrão 1);
+  - `offerSteps`: as etapas de observação com que a indicação já chega, por nível (padrão
+    1/1/2/2/2).
 - `market` — janelas (`windows[]` com `fromRound`/`toRound`), anos de contrato (`contractYears`),
   valor no fim de contrato (`lastYearValuePct`, `twoYearsValuePct`), respostas dos clubes (`club`),
   exigências dos jogadores (`player`), propostas recebidas (`incoming`), livres (`freeAgents`), IA de

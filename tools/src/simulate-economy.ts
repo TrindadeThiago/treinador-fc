@@ -16,11 +16,13 @@ import {
   ensureContracts,
   type FinanceState,
   generateDefaultBank,
+  generateOffers,
   initialCareerRenewal,
   type SeasonHistoryEntry,
   scoutingCost,
   seasonFinanceSummary,
   seasonTurnover,
+  signOffer,
   spearman,
 } from "@brasfoot-like/engine";
 import { DEFAULT_SEED } from "./default-seed";
@@ -405,6 +407,170 @@ export function runScoutingScenario(seed: string, seasons = 10): SimulateEconomy
   return { exitCode: ok ? 0 : 1, lines };
 }
 
+/** Limites do cenário da captação (040 SC-004, Princípio V). */
+export const RECRUITMENT_SCENARIO_LIMITS = {
+  /** Registros pagos sobre a receita da temporada. */
+  maxRevenueShare: 0.06,
+} as const;
+
+interface RecruitmentRun {
+  /** Potencial médio da base do clube no fim de cada temporada. */
+  basePotential: number;
+  scouted: { strength: number; potential: number; count: number };
+  worstShare: number;
+}
+
+/**
+ * Cenário da captação (040): o clube de menor reputação por `seasons` temporadas. Com `recruit`, a
+ * cada virada o departamento (nível 5, região = o país do clube) gera as indicações de duas janelas, e
+ * o clube traz a de maior centro de faixa enquanto houver vaga e caixa. A IA cuida das promoções.
+ */
+function recruitmentRun(seed: string, seasons: number, recruit: boolean): RecruitmentRun {
+  const bank = completeHiddenAttributes(generateDefaultBank({ seed: DEFAULT_SEED }), seed);
+  const competition = bank.competitions[0];
+  if (!competition) throw new Error("banco sem competição");
+  const created = createLeagueSeason(bank, { competitionId: competition.id, careerSeed: seed });
+  if (!created.ok) throw new Error(JSON.stringify(created.error));
+  let world: CompletedBank = ensureContracts(bank, created.league.year, seed);
+  const club = [...world.clubs].sort(
+    (a, b) => a.reputation - b.reputation || (a.id < b.id ? -1 : 1),
+  )[0];
+  if (!club) throw new Error("sem clubes");
+  let market = emptyMarket();
+  let league = created.league;
+  let finances: FinanceState = createFinances(world, league);
+  let renewal = initialCareerRenewal(world, seed, world.manifest.referenceDate);
+  let fans = createFans(world, league);
+  let history: SeasonHistoryEntry[] = [];
+  const potentials: number[] = [];
+  const scouted: { strength: number; potential: number }[] = [];
+  let worstShare = 0;
+  let scouting = {
+    clubId: club.id,
+    level: 5,
+    watch: [],
+    reports: {},
+    region: { kind: "country" as const, countryId: club.countryId },
+  } as Parameters<typeof generateOffers>[0];
+  for (let index = 0; index < seasons; index++) {
+    let paid = 0;
+    if (recruit) {
+      for (const round of [0, 1]) {
+        scouting = generateOffers(
+          { ...scouting, offers: [] },
+          {
+            world,
+            renewal,
+            careerSeed: seed,
+            managerClubId: club.id,
+            season: league.number,
+            round,
+            expiresRound: round + 3,
+            year: league.year,
+          },
+        );
+        const best = [...(scouting.offers ?? [])].sort(
+          (a, b) => b.estimate.low + b.estimate.high - (a.estimate.low + a.estimate.high),
+        )[0];
+        if (!best) continue;
+        const state = {
+          league,
+          world,
+          renewal,
+          finances,
+          competitions: [],
+          scouting,
+          board: { manager: { clubId: club.id } },
+        } as unknown as Parameters<typeof signOffer>[0];
+        const signed = signOffer(state, best.id);
+        if (!signed.ok) continue;
+        renewal = signed.state.renewal ?? renewal;
+        finances = signed.state.finances;
+        paid += best.cost;
+        scouted.push({ strength: best.player.strength, potential: best.player.hidden.potential });
+      }
+    }
+    const played = advanceCareer(
+      league,
+      finances,
+      world,
+      { toEnd: true },
+      "",
+      undefined,
+      { state: renewal, careerSeed: seed },
+      { state: market, careerSeed: seed },
+      undefined,
+      { state: fans },
+    );
+    if (!played.ok) throw new Error(JSON.stringify(played.error));
+    const totals = seasonFinanceSummary(played.finances, club.id).totals;
+    const revenue = totals.gate + totals.sponsorship + totals.prize + totals.transfer_sale;
+    if (revenue > 0) worstShare = Math.max(worstShare, paid / revenue);
+    const turned = seasonTurnover(played.league, played.world, history, {
+      careerSeed: seed,
+      finances: played.finances,
+      managerClubId: "",
+      renewal: played.renewal ?? renewal,
+      market: played.market ?? market,
+      fans: played.fans ?? fans,
+    });
+    if (!turned.ok || !turned.finances) throw new Error(JSON.stringify(turned));
+    market = turned.market ?? market;
+    fans = turned.fans ?? fans;
+    league = turned.league;
+    history = turned.history;
+    finances = turned.finances;
+    world = turned.world;
+    renewal = turned.renewal ?? renewal;
+    const base = (renewal.academy?.players ?? []).filter((entry) => entry.clubId === club.id);
+    if (base.length > 0) {
+      potentials.push(
+        base.reduce((sum, entry) => sum + entry.player.hidden.potential, 0) / base.length,
+      );
+    }
+  }
+  const mean = (values: number[]) =>
+    values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+  return {
+    basePotential: mean(potentials),
+    scouted: {
+      strength: mean(scouted.map((item) => item.strength)),
+      potential: mean(scouted.map((item) => item.potential)),
+      count: scouted.length,
+    },
+    worstShare,
+  };
+}
+
+/** Cenário captação × sem captação × safra da academia nível 5 (040 SC-004). */
+export function runRecruitmentScenario(seed: string, seasons = 10): SimulateEconomyOutput {
+  const without = recruitmentRun(seed, seasons, false);
+  const withIt = recruitmentRun(seed, seasons, true);
+  const academy5 = academyRun(seed, 5, seasons);
+  const checks: [boolean, string][] = [
+    [
+      withIt.basePotential > without.basePotential,
+      `potencial médio da base: ${withIt.basePotential.toFixed(1)} com captação × ${without.basePotential.toFixed(1)} sem`,
+    ],
+    [
+      withIt.scouted.strength <= academy5.strength &&
+        withIt.scouted.potential <= academy5.potential,
+      `${withIt.scouted.count} captados: força ${withIt.scouted.strength.toFixed(1)} e potencial ${withIt.scouted.potential.toFixed(1)} ≤ safra nível 5 (${academy5.strength.toFixed(1)} e ${academy5.potential.toFixed(1)})`,
+    ],
+    [
+      withIt.worstShare <= RECRUITMENT_SCENARIO_LIMITS.maxRevenueShare,
+      `registros custam no máximo ${(100 * withIt.worstShare).toFixed(1)}% da receita da temporada (≤ ${100 * RECRUITMENT_SCENARIO_LIMITS.maxRevenueShare}%)`,
+    ],
+  ];
+  const lines = [`Captação — ${seasons} temporadas, clube de menor reputação, seed "${seed}"`];
+  let ok = true;
+  for (const [passed, text] of checks) {
+    ok &&= passed;
+    lines.push(`${passed ? "✓" : "✗"} ${text}`);
+  }
+  return { exitCode: ok ? 0 : 1, lines };
+}
+
 const invokedDirectly =
   process.argv[1] !== undefined &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
@@ -424,5 +590,8 @@ if (invokedDirectly) {
   const scouting = runScoutingScenario(values.seed ?? "economia");
   console.log("");
   for (const line of scouting.lines) console.log(line);
-  process.exit(output.exitCode || academy.exitCode || scouting.exitCode);
+  const recruitment = runRecruitmentScenario(values.seed ?? "economia");
+  console.log("");
+  for (const line of recruitment.lines) console.log(line);
+  process.exit(output.exitCode || academy.exitCode || scouting.exitCode || recruitment.exitCode);
 }

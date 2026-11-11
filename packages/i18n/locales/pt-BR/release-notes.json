@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.13.0",
+    "date": "2026-11-11",
+    "changes": [
+      "Captação de jovens: com o departamento de olheiros aberto, a aba Observação do Mercado ganhou a Captação. Escolha uma região (o estado do clube, outro estado, o país inteiro ou outro país) e, na abertura de cada janela de transferências, os olheiros indicam jovens de 15 a 17 anos de lá, com a faixa de potencial e, nos níveis mais altos, o temperamento e as lesões.",
+      "Traga para a base quem valer a aposta: o registro é pago na hora, em Olheiros, e o jovem entra como captado, com a região. É preciso ter vaga na base, caixa e, para um estrangeiro, estar abaixo do limite de estrangeiros do país, que também vale ao promover um captado. As indicações que você não traz somem sem deixar ninguém no mundo.",
+      "Os captados aparecem na aba Base com a origem, nas manchetes de estreia, gol e venda com a menção de onde foram captados, e no histórico do clube, contados à parte.",
+      "Sem escolher uma região, a mesma seed dá a mesma carreira da 1.12.0. Os saves da 1.12 abrem sem região e sem indicações. O formato do save mudou (versão 25), e o formato de mod ganhou a seção opcional economy.scouting.recruitment."
+    ]
+  },
+  {
     "version": "1.12.0",
     "date": "2026-11-10",
     "changes": [

@@ -26,7 +26,7 @@ describe("migração v3 → v4 (R12, FR-026, SC-008)", () => {
       const v3 = build();
       const result = migrated(v3);
       expect(result.migratedFrom).toBe(3);
-      expect(result.save.formatVersion).toBe(24);
+      expect(result.save.formatVersion).toBe(25);
       expect(result.save.finances).toEqual(createFinances(result.save.bank, v3.league));
       const {
         finances: _finances,
@@ -47,7 +47,7 @@ describe("migração v3 → v4 (R12, FR-026, SC-008)", () => {
   it("v1 → v5 em cadeia", () => {
     const result = migrated(saveV1());
     expect(result.migratedFrom).toBe(1);
-    expect(result.save.formatVersion).toBe(24);
+    expect(result.save.formatVersion).toBe(25);
     expect(Object.keys(result.save.finances.clubs)).toHaveLength(40);
   });
 });

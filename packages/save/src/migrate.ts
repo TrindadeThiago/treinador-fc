@@ -474,6 +474,14 @@ const addScouting: Migration = {
   },
 };
 
+/** v24 → v25: captação de jovens (040). Os campos novos são opcionais e começam ausentes. */
+const addRecruitment: Migration = {
+  from: 24,
+  migrate(raw) {
+    return { ...(raw as object), formatVersion: 25 };
+  },
+};
+
 /** Migrações reais do formato, em ordem. */
 export const MIGRATIONS: readonly Migration[] = [
   addLineup,
@@ -499,6 +507,7 @@ export const MIGRATIONS: readonly Migration[] = [
   addAcademyLevels,
   addPotentialEstimates,
   addScouting,
+  addRecruitment,
 ];
 
 /** Problemas que tornam a escalação gravada ilegível (os demais o jogo corrige ou avisa). */
@@ -685,6 +694,21 @@ const envelopeSchema = z.object({
           since: z.object({ season: z.int(), round: z.int() }),
         }),
       ),
+      offers: z
+        .array(
+          z
+            .object({
+              id: z.string().min(1),
+              player: z.object({ id: z.string().min(1) }).loose(),
+              estimate: z.object({ low: z.int(), high: z.int() }),
+              cost: z.int().min(0),
+              expiresRound: z.int(),
+              season: z.int(),
+            })
+            .loose(),
+        )
+        .optional(),
+      nextOfferSeq: z.int().min(1).optional(),
       reports: z.record(
         z.string(),
         z
@@ -787,6 +811,18 @@ function renewalProblem(save: SaveFile): string | undefined {
     save.market.freeAgents.map((agent) => agent.player.id),
   );
   if (ids) return ids;
+  // Captação (040): indicações com ids próprios (nunca de jogador do mundo) e faixas em ordem.
+  const offers = save.scouting.offers ?? [];
+  const offerIds = offers.map((offer) => offer.id);
+  if (new Set(offerIds).size !== offerIds.length) return "indicação repetida";
+  const taken = new Set([
+    ...save.bank.players.map((player) => player.id),
+    ...save.market.freeAgents.map((agent) => agent.player.id),
+    ...(save.renewal.academy?.players ?? []).map((entry) => entry.player.id),
+  ]);
+  if (offers.some((offer) => taken.has(offer.id) || offer.estimate.low > offer.estimate.high)) {
+    return "indicação incoerente";
+  }
   // Olheiros (039): observação sem repetição e faixas em ordem.
   const watched = save.scouting.watch.map((entry) => entry.playerId);
   if (new Set(watched).size !== watched.length) return "observação repetida";
