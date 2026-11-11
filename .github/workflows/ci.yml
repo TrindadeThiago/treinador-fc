@@ -77,11 +77,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
+      # A imagem do e2e precisa ter a mesma versão do @playwright/test do lockfile.
+      - run: pnpm --filter @brasfoot-like/tools check-ci-image
 
   unit:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Um shard leva ~17 min num runner normal; a folga cobre runners lentos sem cancelar no meio.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -94,14 +97,22 @@ jobs:
           node-version: 22.13
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Com 2 vCPUs o Vitest usaria 1 worker por padrão.
-      - run: pnpm test --shard=${{ matrix.shard }}/2 --maxWorkers=2
+      # Com 2 vCPUs o Vitest usaria 1 worker por padrão. O tempo-limite padrão de 5 s por teste
+      # sobe para 15 s só no CI: testes que simulam rodadas inteiras levam 2 a 3 s localmente e
+      # estouravam os 5 s em runners lentos. Testes com tempo-limite próprio mantêm o deles.
+      - run: pnpm test --shard=${{ matrix.shard }}/2 --maxWorkers=2 --testTimeout=15000
 
   e2e:
     needs: scope
     if: needs.scope.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Imagem oficial do Playwright: navegadores e bibliotecas do sistema já vêm nela, sem apt no
+    # CI (uma queda dos espelhos do Ubuntu derrubava o e2e antes de rodar). A tag acompanha o
+    # @playwright/test do lockfile (o job `checks` confere) e usa o mesmo Ubuntu do runner.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-resolute
+      options: --user 1001
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -111,17 +122,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:web
-      # Navegador em cache (baixar o Chromium a cada execução custa ~1 minuto); as bibliotecas do
-      # sistema vêm do apt e não entram no cache.
-      - id: browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      - if: steps.browsers.outputs.cache-hit != 'true'
-        run: pnpm --filter @brasfoot-like/web exec playwright install --with-deps chromium
-      - if: steps.browsers.outputs.cache-hit == 'true'
-        run: pnpm --filter @brasfoot-like/web exec playwright install-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
