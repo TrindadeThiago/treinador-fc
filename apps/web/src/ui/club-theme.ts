@@ -41,6 +41,10 @@ const TINT: Record<ThemeMode, Record<keyof (typeof CLUB_THEME_BASE)["dark"], num
 };
 
 const MIN_CONTRAST = 4.5;
+/** Alvo do ajuste, com folga para o arredondamento do navegador ao misturar o realce. */
+const FIT_TARGET = 4.6;
+/** Opacidade do realce (`--color-highlight`), a mesma do tema padrão. */
+export const HIGHLIGHT_ALPHA = 0.12;
 const DARK_INK = "#0a0e13";
 const LIGHT_INK = "#ffffff";
 
@@ -99,11 +103,33 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/** Aproxima `color` de `toward` até atingir o contraste mínimo contra `against`. */
-function fit(color: string, against: string, toward: string): string {
+/** Cor que aparece com `color` translúcido (opacidade `alpha`) sobre o fundo `bg`. */
+function over(color: string, alpha: number, bg: string): string {
+  return mix(bg, color, alpha);
+}
+
+/**
+ * Pior contraste de `color` como texto entre os fundos dados. Com `alpha`, conta também cada
+ * fundo coberto pelo realce (`--color-highlight`, a própria cor translúcida).
+ */
+function worstContrast(color: string, backgrounds: readonly string[], alpha?: number): number {
+  const all =
+    alpha === undefined
+      ? backgrounds
+      : [...backgrounds, ...backgrounds.map((bg) => over(color, alpha, bg))];
+  return Math.min(...all.map((bg) => contrast(color, bg)));
+}
+
+/** Aproxima `color` de `toward` até atingir o contraste mínimo contra todos os fundos. */
+function fit(
+  color: string,
+  backgrounds: readonly string[],
+  toward: string,
+  alpha?: number,
+): string {
   let result = color;
-  for (let step = 1; step <= 25 && contrast(result, against) < MIN_CONTRAST; step++) {
-    result = mix(color, toward, step * 0.04);
+  for (let step = 1; step <= 50 && worstContrast(result, backgrounds, alpha) < FIT_TARGET; step++) {
+    result = mix(color, toward, step * 0.02);
   }
   return result;
 }
@@ -145,23 +171,30 @@ export function buildClubTheme(
     candidates[0] ??
     colors.primary;
   const brand = candidates[0] ?? colors.primary;
-  const accent = fit(source, base.surface, dark ? "#ffffff" : "#000000");
-  const strong = fit(
-    mix(accent, "#000000", dark ? 0.18 : 0.25),
-    base.surface,
-    dark ? "#ffffff" : "#000000",
-  );
-  const onAccent = contrast(accent, DARK_INK) >= contrast(accent, LIGHT_INK) ? DARK_INK : LIGHT_INK;
+  const surfaces = {
+    bg: mix(base.bg, brand, tint.bg),
+    sidebar: mix(base.sidebar, brand, tint.sidebar),
+    surface: mix(base.surface, brand, tint.surface),
+    surface2: mix(base.surface2, brand, tint.surface2),
+  };
+  // O destaque vira texto em qualquer fundo da interface, inclusive sob o realce.
+  const backgrounds = Object.values(surfaces);
+  const ink = dark ? "#ffffff" : "#000000";
+  const accent = fit(source, backgrounds, ink, HIGHLIGHT_ALPHA);
+  const strong = fit(mix(accent, "#000000", dark ? 0.18 : 0.25), backgrounds, ink);
+  // O texto sobre o destaque vale também para o hover dos botões (o destaque forte).
+  const legible = (on: string) => Math.min(contrast(on, accent), contrast(on, strong));
+  const onAccent = legible(DARK_INK) >= legible(LIGHT_INK) ? DARK_INK : LIGHT_INK;
 
   return {
-    "--color-bg": mix(base.bg, brand, tint.bg),
-    "--color-sidebar": mix(base.sidebar, brand, tint.sidebar),
-    "--color-surface": mix(base.surface, brand, tint.surface),
-    "--color-surface-2": mix(base.surface2, brand, tint.surface2),
+    "--color-bg": surfaces.bg,
+    "--color-sidebar": surfaces.sidebar,
+    "--color-surface": surfaces.surface,
+    "--color-surface-2": surfaces.surface2,
     "--color-border": mix(base.border, brand, tint.border),
     "--color-accent": accent,
     "--color-accent-strong": strong,
-    "--color-highlight": rgba(accent, dark ? 0.16 : 0.12),
+    "--color-highlight": rgba(accent, HIGHLIGHT_ALPHA),
     "--color-on-accent": onAccent,
   };
 }

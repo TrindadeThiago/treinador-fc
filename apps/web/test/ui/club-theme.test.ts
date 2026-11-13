@@ -1,7 +1,13 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildClubTheme, CLUB_THEME_BASE, contrast, type ThemeMode } from "../../src/ui/club-theme";
+import {
+  buildClubTheme,
+  CLUB_THEME_BASE,
+  contrast,
+  HIGHLIGHT_ALPHA,
+  type ThemeMode,
+} from "../../src/ui/club-theme";
 
 const TOKENS = readFileSync(join(import.meta.dirname, "../../src/styles/tokens.css"), "utf8");
 const TOKEN_NAMES = {
@@ -11,6 +17,35 @@ const TOKEN_NAMES = {
   surface2: "--color-surface-2",
   border: "--color-border",
 } as const;
+
+const MODS = join(import.meta.dirname, "../../../../mods");
+/** Cores de todos os clubes dos mods do repositório. */
+const MOD_CLUBS = readdirSync(MODS).flatMap((dir) => {
+  let raw: string;
+  try {
+    raw = readFileSync(join(MODS, dir, "clubs.json"), "utf8");
+  } catch {
+    return [];
+  }
+  const parsed = JSON.parse(raw) as
+    | { colors?: { primary: string; secondary: string } }[]
+    | { clubs: { colors?: { primary: string; secondary: string } }[] };
+  const list = Array.isArray(parsed) ? parsed : parsed.clubs;
+  return list.flatMap((club) => (club.colors ? [club.colors] : []));
+});
+
+/** Cor que aparece com `hex` translúcido (opacidade `alpha`) sobre `bg`. */
+function over(hex: string, alpha: number, bg: string): string {
+  const channel = (color: string, i: number) =>
+    Number.parseInt(color.slice(1 + i * 2, 3 + i * 2), 16);
+  return `#${[0, 1, 2]
+    .map((i) =>
+      Math.round(channel(bg, i) + (channel(hex, i) - channel(bg, i)) * alpha)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
 
 /** Valor de `name` no primeiro bloco cujo seletor é `selector`. */
 function tokenOf(selector: string, name: string): string | undefined {
@@ -68,6 +103,36 @@ describe("tema do clube", () => {
         ).toBeGreaterThanOrEqual(4.5);
       }
     }
+  });
+
+  it("o destaque é legível em todos os fundos e sob o realce, para todo clube dos mods", () => {
+    expect(MOD_CLUBS.length).toBeGreaterThan(100);
+    const failures: string[] = [];
+    for (const mode of ["dark", "light"] as const) {
+      for (const colors of MOD_CLUBS) {
+        const theme = buildClubTheme(colors, mode);
+        if (!theme) continue;
+        const accent = theme["--color-accent"];
+        const surfaces = [
+          theme["--color-bg"],
+          theme["--color-sidebar"],
+          theme["--color-surface"],
+          theme["--color-surface-2"],
+        ];
+        const backgrounds = [
+          ...surfaces,
+          ...surfaces.map((bg) => over(accent, HIGHLIGHT_ALPHA, bg)),
+        ];
+        for (const bg of backgrounds) {
+          if (contrast(accent, bg) < 4.5)
+            failures.push(`${mode} ${JSON.stringify(colors)} sobre ${bg}`);
+        }
+        if (contrast(theme["--color-on-accent"], theme["--color-accent-strong"]) < 4.5) {
+          failures.push(`${mode} ${JSON.stringify(colors)}: texto sobre o destaque forte`);
+        }
+      }
+    }
+    expect(failures).toEqual([]);
   });
 
   it("cores inválidas não geram tema", () => {
