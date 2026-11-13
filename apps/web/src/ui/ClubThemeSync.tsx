@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { settingsOf } from "../storage/preferences";
 import { usePreferences } from "../storage/usePreferences";
 import { buildClubTheme, CLUB_THEME_VARS, type ThemeMode } from "./club-theme";
 
 function currentMode(): ThemeMode {
+  if (typeof document === "undefined") return "dark";
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";
 }
 
@@ -17,8 +19,9 @@ export function ClubThemeSync({
 }: {
   colors?: { primary: string; secondary: string } | undefined;
 }) {
-  const enabled = usePreferences().clubColors ?? true;
-  const [mode, setMode] = useState<ThemeMode>("dark");
+  const enabled = settingsOf(usePreferences()).clubColors;
+  // Lê o modo já na montagem: começar fixo em "dark" pintaria o tema claro errado por um quadro.
+  const [mode, setMode] = useState<ThemeMode>(currentMode);
   const primary = colors?.primary;
   const secondary = colors?.secondary;
 

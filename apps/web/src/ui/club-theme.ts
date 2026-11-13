@@ -10,7 +10,11 @@ export type ThemeMode = "dark" | "light";
 
 type Rgb = readonly [number, number, number];
 
-const BASE: Record<
+/**
+ * Cores padrão das superfícies, iguais às de `apps/web/src/styles/tokens.css` (escuro em `:root`,
+ * claro em `[data-theme="light"]`). Um teste garante que os dois continuam iguais.
+ */
+export const CLUB_THEME_BASE: Record<
   ThemeMode,
   Record<"bg" | "sidebar" | "surface" | "surface2" | "border", string>
 > = {
@@ -31,7 +35,7 @@ const BASE: Record<
 };
 
 /** Quanto da cor do clube entra em cada superfície (0 a 1). */
-const TINT: Record<ThemeMode, Record<keyof (typeof BASE)["dark"], number>> = {
+const TINT: Record<ThemeMode, Record<keyof (typeof CLUB_THEME_BASE)["dark"], number>> = {
   dark: { bg: 0.05, sidebar: 0.06, surface: 0.05, surface2: 0.08, border: 0.12 },
   light: { bg: 0.04, sidebar: 0.03, surface: 0, surface2: 0.05, border: 0.1 },
 };
@@ -128,7 +132,7 @@ export function buildClubTheme(
   mode: ThemeMode,
 ): Record<ClubThemeVar, string> | undefined {
   if (!toRgb(colors.primary) || !toRgb(colors.secondary)) return undefined;
-  const base = BASE[mode];
+  const base = CLUB_THEME_BASE[mode];
   const tint = TINT[mode];
   const dark = mode === "dark";
 
@@ -143,7 +147,7 @@ export function buildClubTheme(
   const brand = candidates[0] ?? colors.primary;
   const accent = fit(source, base.surface, dark ? "#ffffff" : "#000000");
   const strong = fit(
-    mix(accent, dark ? "#000000" : "#000000", dark ? 0.18 : 0.25),
+    mix(accent, "#000000", dark ? 0.18 : 0.25),
     base.surface,
     dark ? "#ffffff" : "#000000",
   );
