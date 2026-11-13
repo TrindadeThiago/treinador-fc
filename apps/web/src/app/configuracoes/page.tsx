@@ -86,6 +86,15 @@ export default function SettingsPage() {
             )}
           </Field>
         </div>
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            checked={settings.clubColors}
+            onChange={(event) => writePreferences({ clubColors: event.target.checked })}
+          />
+          <span>{t("settings.clubColors")}</span>
+        </label>
+        <p className={styles.muted}>{t("settings.clubColorsHelp")}</p>
         <div className={styles.narrow}>
           <Field label={t("settings.language")}>
             {(props) => (
