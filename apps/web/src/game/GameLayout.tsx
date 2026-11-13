@@ -7,6 +7,7 @@ import { type ReactNode, Suspense, useEffect, useMemo } from "react";
 import { useT } from "../i18n";
 import { type RoundMode, readPreferences } from "../storage/preferences";
 import { AssetsProvider } from "../ui/AssetsProvider";
+import { ClubThemeSync } from "../ui/ClubThemeSync";
 import { ConflictDialog } from "../ui/ConflictDialog";
 import { requestLeave } from "../ui/leave-guard";
 import { SimulateDialogs } from "../ui/SimulateDialogs";
@@ -83,6 +84,7 @@ function Layout({ children }: { children: Render }) {
   if (blocked) return <main className={styles.message}>{t("common.loading")}</main>;
   return (
     <AssetsProvider assets={save.assets}>
+      <ClubThemeSync colors={save.bank.clubs.find((entry) => entry.id === save.clubId)?.colors} />
       {isFocusPath(pathname) ? (
         // Tela de foco (025 FR-008): sem barra lateral, com o jeito de voltar ao Início.
         <div className={styles.focus}>

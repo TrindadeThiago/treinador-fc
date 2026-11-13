@@ -1289,6 +1289,8 @@
   "settings.theme.system": "Seguir o sistema",
   "settings.theme.light": "Claro",
   "settings.theme.dark": "Escuro",
+  "settings.clubColors": "Usar as cores do meu clube na interface",
+  "settings.clubColorsHelp": "Destaques, botões e fundos assumem as cores do escudo, sempre com contraste legível.",
   "settings.language": "Idioma",
   "settings.tips": "Dicas",
   "settings.tipsHelp": "As dicas explicam cada tela na primeira visita. Você pode vê-las de novo quando quiser.",

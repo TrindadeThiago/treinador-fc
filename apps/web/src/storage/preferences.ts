@@ -34,6 +34,7 @@ const preferencesSchema = z
     roundSpeed: optional(z.enum(["slow", "normal", "fast"])),
     autoPause: optional(z.boolean()),
     theme: optional(z.enum(["system", "light", "dark"])),
+    clubColors: optional(z.boolean()),
     locale: optional(z.string()),
     tips: optional(
       z.object({
@@ -52,6 +53,8 @@ export interface Settings {
   roundSpeed: RoundSpeed;
   autoPause: boolean;
   theme: Theme;
+  /** Usar as cores do clube na interface do jogo. */
+  clubColors: boolean;
   locale: string;
   tips: TipsState;
 }
@@ -60,6 +63,7 @@ export const PREFERENCE_DEFAULTS: Settings = {
   roundSpeed: "normal",
   autoPause: true,
   theme: "system",
+  clubColors: true,
   locale: "pt-BR",
   tips: { dismissed: [], skipAll: false },
 };
@@ -69,6 +73,7 @@ export function settingsOf(prefs: Preferences): Settings {
     roundSpeed: prefs.roundSpeed ?? PREFERENCE_DEFAULTS.roundSpeed,
     autoPause: prefs.autoPause ?? PREFERENCE_DEFAULTS.autoPause,
     theme: prefs.theme ?? PREFERENCE_DEFAULTS.theme,
+    clubColors: prefs.clubColors ?? PREFERENCE_DEFAULTS.clubColors,
     locale: prefs.locale ?? PREFERENCE_DEFAULTS.locale,
     tips: prefs.tips ?? PREFERENCE_DEFAULTS.tips,
   };
