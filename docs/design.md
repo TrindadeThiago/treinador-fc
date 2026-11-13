@@ -136,7 +136,7 @@ Desenvolvimento via Spec-Driven Development com Spec Kit. Os prompts de `/specki
 | **M11 — Categorias de base** | Elenco de base (sub-20) separado do profissional, promoção e dispensa, academia com nível, obra e manutenção, safra pela academia, potencial estimado em faixa e revelações nas manchetes e no histórico. | Jogo 10 temporadas investindo na academia e vejo crias da base virarem titulares; em 30 temporadas sem interação o mundo e o caixa da IA continuam saudáveis. |
 | **M12 — Olheiros** | Departamento de olheiros com nível e custo, relatórios de jogadores de outros clubes com potencial em faixa e atributos ocultos em texto, mercado filtrando pelos observados, regiões de captação e jovens indicados para a base. | Observo um jogador antes de comprá-lo e a faixa estreita até a compra; trago um jovem captado de outro país para a base; sem olheiros, a mesma seed dá a mesma carreira. |
 | **M13 — Mercado: cláusulas e empresários** | Cláusula de revenda nas vendas (pedida pelo técnico e pela IA), empresários com comissão e relação com o clube. | Vendo uma cria com cláusula e recebo a fatia quando ela é revendida; convenço um jogador com comissão; nenhum ciclo de compra e venda cria dinheiro, e o caixa da IA segue saudável em 30 temporadas. |
-| **M14 — Sócio-torcedor** | Sócios por clube com mensalidade e adesão pelo humor, ligação com a bilheteria, meta de sócios da diretoria, campanhas, manchetes e histórico. | Ajusto a mensalidade e vejo o efeito em sócios e caixa; a diretoria cobra a meta de sócios; o caixa da IA continua nas faixas em 30 temporadas. |
+| **M14 — Sócio-torcedor** (adiado) | Sócios por clube com mensalidade e adesão pelo humor, ligação com a bilheteria, meta de sócios da diretoria, campanhas, manchetes e histórico. | Ajusto a mensalidade e vejo o efeito em sócios e caixa; a diretoria cobra a meta de sócios; o caixa da IA continua nas faixas em 30 temporadas. |
 
 **Estado do M6:** export/import de carreiras e formato de mod (015); dicas de primeiro acesso,
 Configurações (tema claro/escuro), ajuda de atalhos em todas as telas, revisão de
@@ -207,13 +207,15 @@ Lançado na 1.11.0.
 Os marcos 12 a 14 vêm das ideias de feature da auditoria pós-1.0.0: olheiros (039 e 040), cláusula
 de revenda e empresários (041 e 042) e sócio-torcedor (043 e 044). Os prompts estão em
 [`speckit-prompts/`](speckit-prompts/README.md), pastas `marco12` a `marco14`.
+Os marcos 12 e 13 foram lançados até a 1.15.0. O marco 14 foi adiado por decisão (2026-11-13) e
+fica para o futuro; os prompts 043 e 044 continuam guardados para quando ele voltar.
 
 ## 14. Pós-lançamento
 
 - Copas e outras competições (nacionais, continentais) → marcos 7 a 9
 - Editor de mods embutido
 - Gestão profunda: categorias de base → marco 11 (036 a 038); olheiros → marco 12 (039 e 040);
-  cláusulas e empresários → marco 13 (041 e 042); sócio-torcedor → marco 14 (043 e 044); outras
+  cláusulas e empresários → marco 13 (041 e 042); sócio-torcedor → marco 14 (043 e 044, adiado); outras
   estruturas do clube (CT)
 - Vestiário/moral e coletivas de imprensa
 - Multiplayer (hot-seat local, ligas entre amigos, desafios por seed)
