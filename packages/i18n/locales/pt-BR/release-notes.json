@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.16.0",
+    "date": "2026-11-13",
+    "changes": [
+      "A interface do jogo assume as cores do seu clube: destaques, botões e um toque nos fundos e bordas saem das cores do escudo, no tema claro e no escuro, sempre com contraste legível. As cores de vitória, derrota e aviso não mudam, e o menu e as demais telas fora do jogo continuam no tema padrão.",
+      "Nas Configurações, a opção \"Usar as cores do meu clube na interface\" liga e desliga o tema (vem ligada). Os saves não mudaram."
+    ]
+  },
+  {
     "version": "1.15.0",
     "date": "2026-11-11",
     "changes": [
