@@ -58,7 +58,7 @@ ficam na constituição e entram no `/speckit-plan`.
 | | [040](marco12/prompt040.md) | Captação de jovens | 037, 039 |
 | M13 — Mercado: cláusulas e empresários | [041](marco13/prompt041.md) | Cláusula de revenda | 011, 036 |
 | | [042](marco13/prompt042.md) | Empresários | 011, 041 |
-| M14 — Sócio-torcedor | [043](marco14/prompt043.md) | Programa de sócio-torcedor | 008, 013 |
+| M14 — Sócio-torcedor (adiado) | [043](marco14/prompt043.md) | Programa de sócio-torcedor | 008, 013 |
 | | [044](marco14/prompt044.md) | Sócios na vida do clube | 012, 014, 043 |
 
 O marco 10 é uma refatoração só visual: não muda motor, regras nem saves. As decisões de design que
@@ -77,7 +77,8 @@ Os marcos 12 a 14 vêm das ideias de feature da [`AUDITORIA-v1.0.0.md`](../../AU
 - **M13 — Mercado** (ideias 2 e 1): cláusula de revenda e empresários, que mexem na mesma
   negociação; a cláusula vem antes porque não muda a IA entre clubes e combina com as crias;
 - **M14 — Sócio-torcedor** (ideia 4): a receita nova e, depois, a meta da diretoria, as campanhas,
-  as manchetes e o histórico.
+  as manchetes e o histórico. **Adiado** por decisão (2026-11-13): fica para o futuro, e os prompts
+  043 e 044 continuam guardados para quando ele voltar.
 
 Os marcos são independentes entre si; a ordem pode mudar sem retrabalho.
 
