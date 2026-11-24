@@ -1,5 +1,12 @@
 [
   {
+    "version": "1.16.1",
+    "date": "2026-11-24",
+    "changes": [
+      "Atualização de segurança: o Next.js, base do site, foi atualizado para a versão 16.4.6, que corrige vulnerabilidades conhecidas. Nada muda no jogo, e os saves continuam os mesmos."
+    ]
+  },
+  {
     "version": "1.16.0",
     "date": "2026-11-13",
     "changes": [
